@@ -1,14 +1,31 @@
-# Physics Interactive Lab
+# Physics Interactive Lab — 3D Studio
 
-**Turn equations into experiments.** A browser-only physics laboratory built for IGCSE and A Level students, with two working numerical simulations, live Chart.js graphs and classroom investigations.
+**Ten experiments. Three dimensions. A clearer way to understand physics.**
 
-[Open the lab](https://206713-dotcom.github.io/physics-interactive-lab/) · [Source](https://github.com/206713-dotcom/physics-interactive-lab)
+[Open the live laboratory](https://206713-dotcom.github.io/physics-interactive-lab/) · [Browse the source](https://github.com/206713-dotcom/physics-interactive-lab) · [Automated checks](https://github.com/206713-dotcom/physics-interactive-lab/actions)
 
-An independent student prototype prepared for discussion with the Head of Physics and as a proposed contribution to [FocusPhysics](https://focusphysics.com). It is not an official FocusPhysics product or endorsed integration.
+A browser-only laboratory for IGCSE and A Level exploration. Rotate a real WebGL scene, compare a calibrated diagram, change parameters, and follow the calculated graphs. Each experiment includes **three guided investigations, five worked questions, learning objectives, equations, assumptions and applications**: 30 investigations and 50 questions in total.
+
+This is an independent student prototype and a proposed contribution to [FocusPhysics](https://focusphysics.com), not an official or endorsed FocusPhysics integration.
+
+## What is in the laboratory?
+
+| Experiment         | Explore                                                                               | Model                                             |
+| ------------------ | ------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| Mass & spring      | Mass, stiffness, displacement, damping, displacement/velocity/acceleration and energy | Linear spring with RK4                            |
+| Orbital mechanics  | Both masses, separation, launch velocity, circular/elliptical/escape paths            | Relative two-body velocity Verlet                 |
+| Nonlinear pendulum | Length, release angle, gravity, damping, bob mass                                     | Full sine equation with RK4                       |
+| Projectile motion  | Launch speed, angle, height, gravity, quadratic drag                                  | RK4 with vacuum reference and ground contact      |
+| Collisions         | Two masses and velocities, restitution, momentum, kinetic energy                      | Exact 1D contact event and impulse equations      |
+| Wave studio        | Travelling/standing waves, superposition, wavelength, speed, probe position           | Analytic counter-propagating waves                |
+| Double slit        | Wavelength, slit separation and width, screen distance, fringe intensity              | Fraunhofer interference with diffraction envelope |
+| Bending light      | Two refractive indices, angle, wavelength, TIR and reflected power                    | Snell's law and unpolarised Fresnel reflectance   |
+| RC circuits        | Supply, resistance, capacitance, charging/discharging, current and stored energy      | Exact exponential solutions                       |
+| Electric fields    | Two charges, separation, movable probe, field and potential profiles                  | Coulomb superposition and geometric streamlines   |
 
 ## Run locally
 
-Install Node.js 22 or newer, then run:
+Install Node.js 22 or newer:
 
 ```sh
 git clone https://github.com/206713-dotcom/physics-interactive-lab.git
@@ -16,155 +33,223 @@ cd physics-interactive-lab
 npm run dev
 ```
 
-Open <http://127.0.0.1:4173/physics-interactive-lab/>. No package installation, build step, account, API key or backend is required. Chart.js 4.5.1 and its MIT licence are included in `vendor/`, so runtime graphs do not require a CDN. Use an HTTP server instead of opening `index.html` directly, because the source uses JavaScript modules.
+Open <http://localhost:4173/physics-interactive-lab/>. No install or build step, account, API key, backend or external runtime CDN is required. Chart.js 4.5.1 and Three.js 0.180.0 are vendored with their licences. Use HTTP rather than opening `index.html` directly, because the source uses JavaScript modules.
 
-## The simulations
+## Using the studio
 
-### Simple harmonic motion
+- **3D:** drag / touch to rotate and scroll to zoom. With the canvas focused, arrow keys rotate, `+` / `−` zoom, and `0` resets the camera. A reset-camera button is also provided.
+- **2D diagram:** switch at any time without restarting the physics. Diagram mode also serves browsers without working WebGL2.
+- **Playback:** pause/resume, reset, single-step, 0.25×–4× speed and fullscreen. Space toggles playback when focus is not in a form control.
+- **Parameters:** sliders and editable numbers use explicit units. Enter or blur commits a numeric edit. Invalid inputs show an explanation and restore the valid value. Parameters and presets start a fresh run.
+- **Graphs:** choose time histories or explicitly labelled spatial/parameter curves. Zero is included to avoid visually magnifying tiny round-off changes in a circular orbit. Wave components use the same colours in the scene and graph.
+- **Notebook:** record actual readings to compare different setups. Up to 12 readings per experiment are kept in this device's browser storage, with their numerical state and initial parameters. Nothing is uploaded. Clear readings from the notebook when needed.
+- **CSV:** export up to 1,200 recent calculated time samples, or the selected calculated spatial/parameter curve. The first line gives the parameters, and headers label the units. Missing values near an excluded point charge or beyond a critical angle stay blank. No fabricated detections or experimental measurements are added.
+- **Share:** copy a link that contains the current initial parameters, graph and camera mode. It opens a fresh run; it does not include the notebook or elapsed state.
+- **Library:** search by topic or filter by subject. The experiment selector makes it easy to move between studios.
 
-A horizontal ideal spring and mass, released from rest. Adjust mass (0.2–5 kg), stiffness (1–100 N/m), signed initial displacement (−0.8–0.8 m) and linear damping (0–10 kg/s). Watch the animated spring alongside independent displacement, velocity and acceleration plots, or switch to energy traces. The natural period, natural frequency and angular frequency are always labelled as undamped reference values. The damped period is shown for underdamped motion.
-
-### Newton’s law of gravitation
-
-A Newtonian two-body orbital model with adjustable central mass (10²⁴–2×10²⁵ kg), satellite mass (10²–10²³ kg), centre-to-centre launch separation (8–40 million metres, outside the central surface) and initial tangential relative speed (0–25 km/s). Circular, elliptical and escape presets make useful comparisons. The satellite-mass slider is logarithmic; its numeric input is in kg. Charts show relative speed, separation or energy. A calibrated distance bar and calculated trail accompany the animation.
-
-### Teaching tools
-
-- Pause, resume, reset and 0.25×–4× playback speed.
-- Toggle velocity vectors and orbital trails.
-- Each parameter change resets the run to prevent mixing different experiments.
-- Three guided investigations, five questions with worked answers, learning objectives, equations, assumptions and applications **per simulation**.
-- Share a URL containing the current initial parameters. Opening it creates a fresh run.
-- Export up to 600 recent calculated samples as CSV in SI units. The first line records the initial parameters; the second contains column headers. No synthetic experimental results are added.
-- Hash navigation and relative asset paths work under a GitHub Pages repository subdirectory.
-- Responsive desktop, tablet and phone layouts; keyboard controls, labelled inputs and accessible learning tabs. Reduced-motion preference starts simulations paused. Background tabs do not accumulate simulation time.
+Reduced-motion preference starts experiments paused and keeps the home orbit preview still. Background tabs do not accumulate simulation time. Very small numerical readouts may display `≈ 0`; CSV exports retain their full numerical values.
 
 ## Physics and numerical methods
 
-All calculations use SI units. Display conversions are explicitly labelled.
+Models calculate in SI units. Interface conversions such as km, nm, µC, µF, mA and millimetres are labelled; angles in degrees are explicitly identified. Exported angles are labelled radians or degrees as appropriate. The physics modules are shared by the browser and tests.
 
-### Spring
-
-The equation of motion is
+### Mass–spring system
 
 ```text
 m x″ + b x′ + kx = 0
-a = −(kx + bv)/m
-ω₀ = √(k/m),  f₀ = ω₀/(2π),  T₀ = 2π√(m/k)
-K = ½mv²,  U = ½kx²,  E = K + U
+ω₀ = √(k/m), f₀ = ω₀/(2π), T₀ = 2π√(m/k)
+K = ½mv², U = ½kx², E = K + U
 dE/dt = −bv²
-ζ = b/(2√(km))
-ωd = √(k/m − (b/2m)²)   when ζ < 1
 ```
 
-Fourth-order Runge–Kutta advances position and velocity at a fixed **1/240 s** step. The mass begins at the selected displacement with zero velocity. The spring is massless and linear, on a horizontal frictionless support. The block and spring length are illustrative; the ruler maps displacement linearly in metres. Damped motion is not exact SHM. For critical or overdamping there is no oscillation period.
+Fixed RK4 step: **1/240 s**. A point mass starts at rest on a horizontal, frictionless support with a massless Hookean spring and optional linear damping. Period/frequency are undamped reference values. The spring ruler is in metres; block size and coil geometry are illustrative. Supported ranges: mass 0.2–5 kg, stiffness 1–100 N/m, initial displacement −0.8–0.8 m, damping 0–10 kg/s.
 
-At 1× playback one real second advances one simulated second. Accumulated time is subdivided into fixed integration steps; changing animation speed never changes the physics step. A long frame is capped at 0.1 real seconds, so a slow or background device can advance less simulation time than wall time instead of taking unstable large steps.
-
-### Gravitation
+### Orbital mechanics
 
 ```text
 G = 6.67430 × 10⁻¹¹ m³ kg⁻¹ s⁻²
 F = GMm/r²
-r″ = −G(M + m) r / |r|³
-vc = √(G(M + m)/r₀),  ve = √2 vc
+r″ = −G(M + m)r / |r|³
+vc = √(G(M + m)/r₀), ve = √2 vc
 μ = Mm/(M + m)
-K = ½μv²,  U = −GMm/r,  E = K + U
-T_circular = 2π√(r³/[G(M + m)])
+E = ½μv² − GMm/r
 ```
 
-Velocity Verlet advances the relative position and relative velocity at a fixed **2 s** step. Including both masses makes the dynamics meaningful even at the largest supported satellite mass. Mechanical energy uses reduced mass and belongs to the **centre-of-mass frame**; speed and separation are relative quantities. The visual camera follows the central body, whose rest frame is not inertial for non-negligible satellite mass.
+Fixed velocity-Verlet step: **2 s**. Both masses contribute to relative acceleration. Speed and separation are relative; energy is in the centre-of-mass frame. The camera follows the central body. Its absorbing surface has Earth-like mean density, `R = 6.371×10⁶ (M/5.9722×10²⁴)^(1/3) m`. Surface intersection is resolved on the drift segment before a singular acceleration can occur. There is no softening, atmosphere, thrust or relativistic correction. The satellite is treated as a point for collision.
 
-The central sphere has fixed Earth-like mean density:
+At 1×, one real second represents one simulated hour. Orbits remain planar in the 3D scene. Linear distance scale adjusts to keep the trajectory visible; the spacecraft is an enlarged illustrative point marker. The faint grid identifies the orbital plane, rather than a physical ground. The cyan trail contains calculated positions and fades toward older samples. The planet grid and atmospheric rim are illustrative; no planetary rotation or atmospheric force is modelled. A run pauses at 100 initial separations, an explicit display limit. Supported ranges: central mass 10²⁴–2×10²⁵ kg, satellite mass 10²–10²³ kg, launch separation 8–40 million metres outside the surface, launch speed 0–25 km/s.
+
+Gold **v** shows relative velocity; coral **a** shows relative acceleration. Their directions come from the state and inverse-square law. Arrow lengths use separate linear display scales with caps: in 3D, 1 scene unit per 6,000 m/s for velocity (maximum 2 units), and 0.38 scene units per m/s² for acceleration (maximum 2 units). In 2D, the scales are 1 px per 150 m/s (maximum 85 px) and 22 px per m/s² (maximum 75 px). They do not share units and should not be compared by length. Both vanish at impact, where the run stops. `r` marks centre-to-centre separation; altitude is `r − R`.
+
+Scenario buttons preserve the chosen masses and launch separation and recalculate the launch speed. The interpretation panel shows circular and escape thresholds for that setup, the ideal Kepler period for a non-intersecting bound orbit, and a warning for trajectories that cross the absorbing surface. These predictions use the initial conic; the trail and graphs use the integrated state. Eccentricity is computed from its vector to avoid cancellation near a circle:
 
 ```text
-R = 6.371 × 10⁶ × (M/[5.9722 × 10²⁴])^(1/3) metres
+κ = G(M + m), ε = v²/2 − κ/r, h = x vy − y vx
+e⃗ = [(v² − κ/r)r⃗ − (r⃗ · v⃗)v⃗] / κ
+e = |e⃗|, a = −κ/(2ε), rp = h²/[κ(1 + e)]
+T = 2π√(a³/κ)  (bound trajectories)
 ```
 
-Runs stop at the first surface intersection, interpolated on the Verlet drift segment. This absorbing boundary avoids the point-mass singularity; there is no gravitational softening. Energy interpretation and conservation tests apply before impact. The satellite is treated as a point object for collision, even when its mass is large. Drag, thrust, other celestial bodies, deformation and relativistic effects are omitted.
+The energy diagnostic reports `(E(t) − E(0))/|U(0)|`, so a zero-energy escape does not produce a meaningless division by zero. Orbital-element references: [Bryan Weber's derivation](https://orbital-mechanics.space/classical-orbital-elements/orbital-elements-and-the-state-vector.html) and [NASA/JPL eccentricity glossary](https://ssd.jpl.nasa.gov/glossary/eccentricity.html).
 
-At 1× playback one real second advances **one simulated hour**. The scene uses a common linear distance scale and automatically zooms out. The satellite marker and velocity vector are enlarged for visibility. Trail points are numerically calculated positions, limited to 2,000 recent samples. An escaping trajectory pauses at 100 initial separations; this is a display limit, not a physical edge of gravity.
+### Nonlinear pendulum
 
-## Tests and accuracy
+```text
+θ″ = −(g/L) sin θ − βθ′
+E = ½mL²θ′² + mgL(1 − cos θ)
+Tsmall ≈ 2π√(L/g)
+```
+
+Fixed RK4 step: **1/240 s**. The model uses a rigid massless link and point bob; a flexible string could go slack at large release angles. The full sine term is retained, so the small-angle period is labelled as an approximation. Mass changes energy, not angular motion. β is angular damping in s⁻¹.
+
+### Projectile motion
+
+```text
+v′ = (0, −g) − β|v|v
+x′ = vx, y′ = vy
+Evacuum/m = ½|v|² + gy
+```
+
+Fixed RK4 step: **1/240 s**. Uniform gravity, flat ground and constant quadratic drag coefficient per unit mass β (m⁻¹). Ground contact is interpolated within the final step and stops the run. The dashed reference is the analytic zero-drag prediction from the same initial conditions. Energy is **specific energy in J/kg**, not joules. Lift, spin, wind and changing atmospheric density are omitted. The 3D scene shows the same planar trajectory.
+
+### Collisions
+
+```text
+m₁u₁ + m₂u₂ = m₁v₁ + m₂v₂
+v₂ − v₁ = e(u₁ − u₂)
+Kloss = ½[m₁m₂/(m₁ + m₂)](1 − e²)(u₁ − u₂)²
+```
+
+Both carts translate exactly between events. The model solves contact time within a display step and applies the simultaneous conservation/restitution equations once. The rail has no external horizontal force or wall collision. Cart length is 0.8 m, initial centre positions are −2 and +2 m, and the observation ends after 10 s. The camera may zoom as carts separate. Restitution is limited to 0–1.
+
+### Waves and superposition
+
+```text
+y(x,t) = A sin(kx − ωt) + RA sin(kx + ωt)
+k = 2π/λ, ω = kv, f = v/λ
+For R = 1: y = 2A sin(kx) cos(ωt)
+```
+
+An exact analytic model on an extended linear medium. The displayed 0–8 m segment does not impose endpoint boundary conditions. Equal counter-waves produce fixed nodes spaced λ/2 apart. The 3D ribbon is a visual representation with exaggerated transverse scale; no tension or energy measurement is inferred from its width or shading.
+
+### Double-slit interference
+
+```text
+sin θ = y/√(L² + y²)
+I/I₀ = sinc²(πa sin θ/λ) cos²(πd sin θ/λ)
+sinc(z) = sin(z)/z, sinc(0) = 1
+Central fringe spacing ≈ λL/d
+Envelope first minimum ≈ λL/a
+```
+
+Coherent monochromatic illumination, identical slits and the Fraunhofer approximation. The screen graph shows **time-averaged normalised intensity**, including finite slit-width diffraction. The two spacing readouts are small-angle approximations. Screen brightness uses a square-root display mapping for visibility; colour is an approximate wavelength palette. Apparatus and wavefront spacing/propagation are schematic, enlarged and slowed. No photons or detections are generated.
+
+### Refraction and reflection
+
+```text
+n₁ sin i = n₂ sin r
+critical angle = asin(n₂/n₁), only for n₁ > n₂
+v = c/n, λmedium = λvacuum/n
+Rs = [(n₁ cos i − n₂ cos r)/(n₁ cos i + n₂ cos r)]²
+Rp = [(n₂ cos i − n₁ cos r)/(n₂ cos i + n₁ cos r)]²
+Runpolarised = (Rs + Rp)/2
+```
+
+Lossless, homogeneous, non-dispersive media with a flat interface. No propagating transmitted ray is drawn during TIR. Ray brightness is illustrative; the reflected-power readout uses the Fresnel equations. Pulses are slowed for visibility and retain the incident wavelength colour. Evanescent fields, absorption, multilayer interference and dispersion are omitted.
+
+### RC circuits
+
+```text
+τ = RC
+Charging: Vc = V₀(1 − e^(−t/τ)), I = (V₀/R)e^(−t/τ)
+Discharging: Vc = V₀e^(−t/τ), I = −(V₀/R)e^(−t/τ)
+Q = CVc, U = ½CVc²
+```
+
+Exact analytic solutions for an ideal circuit. Charging starts at zero voltage; discharge starts at V₀ with the source disconnected. Changing mode starts a new run, not a live switching transient. The clock uses steps of 1/2400 s, and sampling scales with τ. Short time constants play more slowly, with the time scaling stated below the scene. The run ends at six time constants. Moving dots indicate **conventional-current direction and relative magnitude**, not electron drift speed; dots do not traverse the capacitor dielectric.
+
+### Electric fields
+
+```text
+k = 8.9875517923 × 10⁹ N m²/C²
+E = Σ kqᵢrᵢ / |rᵢ|³
+V = Σ kqᵢ/|rᵢ|
+```
+
+Fixed ideal point charges and a passive probe. Points within 0.16 m of a non-zero charge are explicitly excluded, without softening Coulomb's law. Field lines use midpoint integration of the normalised field direction; line count is illustrative. The 3D representation rotates representative meridional streamlines around the charge axis. Lines are geometric maps, not particle trajectories. Spatial profiles are cuts at the probe's current y position and contain gaps at excluded points.
+
+### Shared display and clock rules
+
+The camera never changes the numerical state or graph data. Most systems are intentionally planar even when viewed in 3D. Object size, grid spacing, glow and arrows may be illustrative; calibrated quantities are explicitly labelled. Fixed substeps are independent of animation speed. A long frame is capped at 0.1 real seconds to avoid an unstable catch-up step; on a slow device, simulated time can therefore advance less than wall time. Unit-converted slider endpoints tolerate a few floating-point rounding units, while genuinely invalid values remain rejected.
+
+## Accuracy and testing
 
 ```sh
 npm test
 npm run check
 ```
 
-The Node built-in test runner exercises the same pure physics functions used in the browser. No test dependencies are required. The 16 tests cover:
+There are **50 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
 
-| Check | Acceptance criterion |
-| --- | --- |
-| Default spring against analytic cosine, 30 s | Maximum position error < 10⁻⁶ m |
-| Undamped default spring energy, 120 s | Relative drift < 10⁻⁷ |
-| Highest supported spring frequency, 120 s | Relative energy drift < 0.04% |
-| Damped release | Mechanical energy decreases, tends to equilibrium |
-| Critical and overdamping | No crossing of equilibrium from rest |
-| All spring parameter corners | Finite state and no energy increase |
-| Inverse-square law | Doubling r gives ¼F; tripling r gives F/9 |
-| Circular orbit, 10 periods | Radius error < 10⁻⁶; relative energy drift < 10⁻⁹ |
-| Elliptical orbit, 100,000 s | Energy drift < 10⁻⁵; relative angular momentum error < 10⁻¹¹ |
-| Escape | Zero energy at threshold; outward unbound path above threshold |
-| Surface collision | Finite state, stops at model radius |
-| Supported orbital corners | Finite states, including massive satellites |
-| Invalid input | Nonfinite, out-of-range and inside-surface setups rejected |
+- Default spring position against the analytic solution over 30 s, with maximum error below 10⁻⁶ m; default undamped energy drift below 10⁻⁷ over 120 s.
+- Worst supported spring frequency with energy drift below 0.04% over 120 s; damping and critical/overdamped behaviour.
+- Orbital inverse-square force, circular radius/energy over ten periods, elliptical energy/angular momentum, escape, surface contact and supported corners.
+- Circular eccentricity at arbitrary phases, analytical conic elements, a complete Kepler period, surface-crossing classification and setup-preserving scenario speeds.
+- Nonlinear pendulum energy conservation, small-angle agreement, large-angle period increase and mass independence.
+- Projectile vacuum range/flight time, energy, drag effects and complementary angles.
+- Collision momentum, restitution, energy loss and contact resolution across parameter combinations.
+- Standing-wave nodes, antinode amplitude, propagation and superposition.
+- Interference symmetry, intensity bounds, dark fringes and diffraction minima.
+- Snell's law, Fresnel reflection, critical angle, TIR and equal-index media.
+- RC one-time-constant fractions, current/charge derivative and stored energy over supported corners.
+- Field/potential scaling, dipole and like-charge cancellation, singularity handling and E = −∇V.
+- All ten catalogue entries, 30 valid presets, 30 investigations and 50 questions; finite dynamic parameter corners and spatial datasets; invalid inputs and converted endpoints.
 
-Other assertions check units, known periods, restoring acceleration and mass/stiffness scaling. These numerical bounds are regression thresholds for the documented durations and setups, not claims of exact or indefinite conservation. GitHub Actions runs the checks on pushes and pull requests. `npm run check` verifies required files, vendored Chart.js and subdirectory-safe asset paths.
+These are bounded regression checks for the stated scenarios, not claims of exact or indefinite numerical conservation. `npm run check` verifies assets, every relative JavaScript module import, vendored libraries and GitHub Pages subdirectory compatibility. GitHub Actions runs both commands on pushes and pull requests.
 
-Manual browser checks: open both routes, pause and resume, edit sliders and numeric inputs, reset, select each launch preset and graph, open the learning tabs and answers, export data and reopen a shared setup link. Resize to a tablet or phone viewport. Use `?` parameters after a route, for example `#/spring?mass=1&k=20&displacement=0.5&damping=0`.
+Browser verification covers all ten 3D scenes and all ten 2D views, camera controls, graph selection, pause/reset/step, presets, editable inputs, notebook, lesson resources, CSV/share actions and responsive layouts. WebGL failure has an explicit diagram fallback rather than an empty experiment.
 
-## Deploy to GitHub Pages
+## GitHub Pages deployment
 
-The project is static and publishes directly from the repository root.
+This project publishes from **main → / (root)**. It has no build step and includes `.nojekyll`.
 
-1. Create a **public** repository named `physics-interactive-lab` in your GitHub account if it does not already exist.
-2. Commit and push the project:
+1. Push source to `206713-dotcom/physics-interactive-lab` (or fork to your account).
+2. In **Settings → Pages → Build and deployment**, select **Deploy from a branch**.
+3. Choose **main** and **/ (root)**, then save.
+4. Wait for the **pages-build-deployment** workflow to succeed.
+5. Open `https://YOUR-USERNAME.github.io/physics-interactive-lab/` and verify both assets and hash routes such as `#/pendulum`.
 
-   ```sh
-   git init -b main
-   git add .
-   git commit -m "Build interactive physics laboratory"
-   git remote add origin https://github.com/YOUR-USERNAME/physics-interactive-lab.git
-   git push -u origin main
-   ```
+All runtime assets are relative, including Three.js's core import, so the repository subdirectory works. For a fork, update the repository/footer links to your own account. See [GitHub's publishing-source documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site).
 
-   Skip `git init` or `git remote add` if already configured. Use your own account name.
-
-3. Open **Settings → Pages → Build and deployment**.
-4. Select **Deploy from a branch**, choose **main** and **/ (root)**, then **Save**.
-5. Wait for the Pages deployment to complete and open `https://YOUR-USERNAME.github.io/physics-interactive-lab/`.
-6. Check `#/spring` and `#/gravity` on the published URL and confirm that the live graphs and controls work. The included `.nojekyll` bypasses Jekyll processing.
-
-The CI workflow checks physics but does not require a deployment token. Branch-based GitHub Pages supplies its own deployment workflow. See [GitHub’s publishing-source documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site).
-
-## File structure
+## Source structure
 
 ```text
-index.html                 Semantic app shell and navigation
-styles.css                 Responsive design and accessibility styling
-assets/favicon.svg         Original vector identity
-js/app.js                  Routes, controls, graphs, lessons and data export
-js/physics.js              Pure numerical models and validation
-js/canvas.js               High-DPI simulation drawing
-js/content.js              Lesson copy, experiments, questions and equations
-vendor/                    Chart.js 4.5.1 and its MIT licence
-tests/physics.test.mjs      Physics regression tests
-scripts/serve.mjs          Dependency-free local static server
-scripts/check.mjs          Asset and packaging checks
-.github/workflows/test.yml Continuous integration
-.nojekyll                  GitHub Pages static publishing
+index.html                   Semantic shell, experiment selector and local assets
+styles.css                   Base layout, controls and lesson styles
+studio.css                   Responsive v2 catalogue and 3D studio design
+js/app.js                    Small application bootstrap
+js/studio-app.js             Routes, playback, controls, Chart.js, notebook, export
+js/simulations.js            Declarative catalogue and graph/parameter configuration
+js/physics.js                Spring and orbital models, shared validation
+js/physics-extra.js          Eight additional pure physics models
+js/canvas.js                 Original calibrated spring/orbit diagram renderers
+js/render2d.js               Additional diagram renderers
+js/scene3d.js                Three.js scenes, camera controls and GPU lifecycle
+js/content.js                Spring/orbit teaching resources
+js/content-extra.js          Eight additional lesson packages
+tests/physics.test.mjs        Original 16 physics regression tests
+tests/expanded.test.mjs       29 expansion, catalogue and validation tests
+tests/orbit-refinement.test.mjs Five focused orbital elements/scenario regressions
+scripts/serve.mjs            Dependency-free local static server
+scripts/check.mjs            Required assets and relative-import checks
+vendor/                      Pinned Chart.js and Three.js modules and licences
+.github/workflows/test.yml   Continuous physics and asset checks
 ```
 
-## References
+To add an experiment, implement a pure model, register its parameters, presets, samples and graphs in `simulations.js`, add a renderer and teaching package, and test its invariants. Avoid advancing physics inside a rendering function.
 
-- [OpenStax: simple harmonic motion](https://openstax.org/books/university-physics-volume-1/pages/15-1-simple-harmonic-motion)
-- [OpenStax: damped oscillations](https://openstax.org/books/university-physics-volume-1/pages/15-5-damped-oscillations)
-- [OpenStax: Newton’s law of universal gravitation](https://openstax.org/books/university-physics-volume-1/pages/13-1-newtons-law-of-universal-gravitation)
-- [OpenStax: satellite orbits and energy](https://openstax.org/books/university-physics-volume-1/pages/13-4-satellite-orbits-and-energy)
-- [NIST: Newtonian constant of gravitation](https://physics.nist.gov/cgi-bin/cuu/Value?bg)
-- [Chart.js documentation](https://www.chartjs.org/docs/latest/)
+## References and licences
 
-## Licence
+Each lesson links to the relevant [OpenStax University Physics](https://openstax.org/subjects/science) chapter. Further references: [NIST gravitational constant](https://physics.nist.gov/cgi-bin/cuu/Value?bg), [Chart.js](https://www.chartjs.org/docs/latest/), [Three.js](https://threejs.org/docs/).
 
-Original source is distributed under the MIT licence; see [LICENSE](LICENSE). Chart.js retains its separate MIT licence in `vendor/Chart.LICENSE.md`.
+Original source is MIT licensed; see [LICENSE](LICENSE). Chart.js and Three.js retain their separate MIT licences in `vendor/Chart.LICENSE.md` and `vendor/Three.LICENSE.txt`.

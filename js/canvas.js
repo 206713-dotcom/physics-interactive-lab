@@ -1,5 +1,5 @@
 /** High-DPI Canvas views. All motion positions come from the numerical models. */
-import { centralRadius } from "./physics.js";
+import { centralRadius, orbitAcceleration } from "./physics.js";
 const TAU = Math.PI * 2;
 function line(c, x1, y1, x2, y2, color, width = 1) {
   c.beginPath();
@@ -204,7 +204,27 @@ export function drawOrbit(canvas, lab) {
   c.setLineDash([3, 5]);
   line(c, cx, cy, sx, sy, "#bed4df32");
   c.setLineDash([]);
-  if (lab.vectors) arrow(c, sx, sy, s.vx / 150, -s.vy / 150, "#ffcd83");
+  if (Math.hypot(s.x, s.y) * scale > radius * 2.2)
+    text(c, "r", (cx + sx) / 2 + 5, (cy + sy) / 2 - 7, "#b9d4e3", 12);
+  if (lab.vectors && !s.collided) {
+    const speed = Math.hypot(s.vx, s.vy),
+      vScale = speed ? Math.min(85, speed / 150) / speed : 0;
+    arrow(c, sx, sy, s.vx * vScale, -s.vy * vScale, "#ffcd83");
+    if (speed > 0)
+      text(
+        c,
+        "v",
+        sx + s.vx * vScale + 6,
+        sy - s.vy * vScale - 6,
+        "#ffcd83",
+        12,
+      );
+    const a = orbitAcceleration(s, p),
+      magnitude = Math.hypot(a.x, a.y),
+      aScale = Math.min(75, magnitude * 22) / magnitude;
+    arrow(c, sx, sy, a.x * aScale, -a.y * aScale, "#ff9d91");
+    text(c, "a", sx + a.x * aScale + 6, sy - a.y * aScale - 6, "#ff9d91", 12);
+  }
   c.shadowColor = "#7bfff1";
   c.shadowBlur = 12;
   c.fillStyle = s.collided ? "#ffb596" : "#b1fff0";

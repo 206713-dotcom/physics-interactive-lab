@@ -1,4 +1,5 @@
-import { readFile, access } from "node:fs/promises";
+import { readFile, access, readdir } from "node:fs/promises";
+import path from "node:path";
 import assert from "node:assert/strict";
 const html = await readFile("index.html", "utf8");
 for (const match of html.matchAll(/(?:src|href)="(\.\/[^"?#]+)"/g))
@@ -17,10 +18,32 @@ for (const file of [
   "js/canvas.js",
   "js/content.js",
   "js/app.js",
+  "js/studio-app.js",
+  "js/simulations.js",
+  "js/scene3d.js",
+  "js/render2d.js",
+  "js/physics-extra.js",
+  "js/content-extra.js",
+  "studio.css",
+  "vendor/three.module.min.js",
+  "vendor/three.core.min.js",
+  "vendor/Three.LICENSE.txt",
   "README.md",
   "vendor/Chart.LICENSE.md",
 ])
   await access(file);
+// Validate local module imports, including Three.js's own pinned core module.
+for (const directory of ["js", "vendor"]) {
+  for (const file of await readdir(directory)) {
+    if (!file.endsWith(".js")) continue;
+    const full = path.join(directory, file),
+      source = await readFile(full, "utf8");
+    for (const match of source.matchAll(
+      /(?:from\s*|import\s*\(\s*|import\s*)['"](\.{1,2}\/[^'"]+)['"]/g,
+    ))
+      await access(path.resolve(path.dirname(full), match[1]));
+  }
+}
 console.log(
-  "Static asset paths, required files and vendored Chart.js verified.",
+  "Static assets, local module imports, ten-lab source files, Chart.js and Three.js verified.",
 );

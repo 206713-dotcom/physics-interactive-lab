@@ -27,18 +27,24 @@ export const ORBIT_DEFAULTS = {
 };
 
 export function validate(params, limits) {
+  const normalised = { ...params };
   for (const [key, [min, max]] of Object.entries(limits)) {
+    // Unit conversions such as 700 * 1e-9 can land one ULP beyond a bound.
+    // Tolerances belong to each bound separately (important for wide log ranges).
+    const lowerTolerance = 8 * Number.EPSILON * Math.abs(min);
+    const upperTolerance = 8 * Number.EPSILON * Math.abs(max);
     if (
       !Number.isFinite(params[key]) ||
-      params[key] < min ||
-      params[key] > max
+      params[key] < min - lowerTolerance ||
+      params[key] > max + upperTolerance
     ) {
       throw new RangeError(
         `${key} must be a finite number from ${min} to ${max}.`,
       );
     }
+    normalised[key] = Math.max(min, Math.min(max, params[key]));
   }
-  return { ...params };
+  return normalised;
 }
 
 export function springInfo(p) {
@@ -118,23 +124,47 @@ export function orbitInfo(s, p) {
   const mu = G * (p.centralMass + p.bodyMass),
     specificEnergy = 0.5 * speed ** 2 - mu / r;
   const angularMomentum = s.x * s.vy - s.y * s.vx;
-  const eccentricity = Math.sqrt(
-    Math.max(0, 1 + (2 * specificEnergy * angularMomentum ** 2) / mu ** 2),
-  );
+  // The eccentricity vector avoids cancellation in e² = 1 + 2εh²/μ²
+  // when the orbit is almost circular.
+  const radialProduct = s.x * s.vx + s.y * s.vy;
+  const ex = ((speed ** 2 - mu / r) * s.x - radialProduct * s.vx) / mu;
+  const ey = ((speed ** 2 - mu / r) * s.y - radialProduct * s.vy) / mu;
+  const eccentricity = Math.hypot(ex, ey);
+  const parabolic = Math.abs(specificEnergy / (mu / r)) < 1e-7;
+  const semiMajorAxis = parabolic ? Infinity : -mu / (2 * specificEnergy);
+  const periapsis = angularMomentum ** 2 / (mu * (1 + eccentricity));
+  const apoapsis =
+    specificEnergy < 0 && !parabolic
+      ? semiMajorAxis * (1 + eccentricity)
+      : Infinity;
+  const intersectsSurface = periapsis <= centralRadius(p);
   return {
     r,
     speed,
     eccentricity,
     specificEnergy,
     angularMomentum,
-    kind:
-      Math.abs(specificEnergy / (mu / r)) < 1e-7
-        ? "Parabolic escape"
-        : specificEnergy > 0
-          ? "Hyperbolic escape"
-          : eccentricity < 0.002
-            ? "Circular orbit"
-            : "Elliptical orbit",
+    semiMajorAxis,
+    periapsis,
+    apoapsis,
+    intersectsSurface,
+    period:
+      semiMajorAxis > 0 && Number.isFinite(semiMajorAxis)
+        ? 2 * Math.PI * Math.sqrt(semiMajorAxis ** 3 / mu)
+        : Infinity,
+    kind: s.collided
+      ? "Surface impact"
+      : angularMomentum === 0
+        ? "Radial fall"
+        : intersectsSurface && specificEnergy < 0
+          ? "Surface-crossing path"
+          : parabolic
+            ? "Parabolic escape"
+            : specificEnergy > 0
+              ? "Hyperbolic escape"
+              : eccentricity < 1e-5
+                ? "Circular orbit"
+                : "Elliptical orbit",
   };
 }
 export function createOrbit(params = ORBIT_DEFAULTS) {

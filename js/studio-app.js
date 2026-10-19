@@ -1,0 +1,1056 @@
+/** Shared application shell for all ten models. Rendering never advances physics. */
+import { SIMULATIONS, CATEGORIES, spatialRows } from "./simulations.js";
+import { LESSONS as ORIGINAL_LESSONS } from "./content.js";
+import { EXTRA_LESSONS } from "./content-extra.js";
+import { draw2D } from "./render2d.js";
+import {
+  createOrbit,
+  stepOrbit,
+  ORBIT_DEFAULTS,
+  circularSpeed,
+  escapeSpeed,
+  orbitInfo,
+  centralRadius,
+} from "./physics.js";
+const LESSONS = { ...ORIGINAL_LESSONS, ...EXTRA_LESSONS };
+const $ = (s, r = document) => r.querySelector(s),
+  $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+const esc = (s) =>
+  String(s).replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ],
+  );
+const fmt = (n, d = 2) =>
+  typeof n !== "number"
+    ? String(n ?? "—")
+    : !Number.isFinite(n)
+      ? "—"
+      : Math.abs(n) > 0 && Math.abs(n) < 1e-12
+        ? "≈ 0"
+        : Math.abs(n) >= 1e6 || (Math.abs(n) > 0 && Math.abs(n) < 0.001)
+          ? n.toExponential(2)
+          : n.toLocaleString("en", {
+              maximumFractionDigits: d,
+              minimumFractionDigits: d,
+            });
+const icons = {
+  play: '<path d="m6 3 9 6-9 6z"/>',
+  pause: '<path d="M6 4v10M12 4v10"/>',
+  reset: '<path d="M3 8a6 6 0 1 1 1 6M3 3v5h5"/>',
+  arrow: '<path d="M3 9h12m-5-5 5 5-5 5"/>',
+  download: '<path d="M9 2v10m-4-4 4 4 4-4M3 13v3h12v-3"/>',
+  share: '<path d="M6 9h9m-4-4 4 4-4 4M8 3H3v12h5"/>',
+  expand: '<path d="M6 2H2v4m10-4h4v4M2 12v4h4m10-4v4h-4"/>',
+  step: '<path d="m3 4 8 5-8 5zM14 4v10"/>',
+  record: '<circle cx="9" cy="9" r="5"/>',
+  cube: '<path d="m9 1 7 4v8l-7 4-7-4V5zM2 5l7 4 7-4M9 9v8"/>',
+};
+const icon = (n) =>
+  `<svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[n]}</svg>`;
+let lab = null,
+  hero = null,
+  view = null,
+  heroView = null,
+  charts = [],
+  lastFrame = 0,
+  toastTimer,
+  routeToken = 0,
+  viewToken = 0;
+const COLORS = ["#098d90", "#6978da", "#c38227"];
+const SERIES_COLORS = {
+  incident: COLORS[1],
+  reflected: COLORS[2],
+  resultant: COLORS[0],
+  v1: COLORS[0],
+  v2: COLORS[2],
+  intensity: COLORS[0],
+  envelope: COLORS[2],
+};
+const stored = (key, fallback) => {
+  try {
+    return JSON.parse(localStorage.getItem(key)) ?? fallback;
+  } catch {
+    return fallback;
+  }
+};
+const save = (key, value) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch {
+    return false;
+  }
+};
+function toast(message) {
+  $("#toast").textContent = message;
+  $("#toast").classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $("#toast").classList.remove("show"), 4500);
+}
+function thumbnail(id) {
+  const drawing = {
+    spring:
+      '<path d="M48 80h35l8-20 14 40 14-40 14 40 14-40 14 40 14-40 14 40 14-40 12 20h28"/><rect x="233" y="54" width="50" height="50" rx="8" fill="currentColor" opacity=".8"/><path d="M40 108h295M48 40v70" opacity=".3"/>',
+    gravity:
+      '<ellipse cx="191" cy="83" rx="123" ry="48" transform="rotate(-20 191 83)"/><circle cx="181" cy="87" r="27" fill="currentColor" opacity=".23"/><ellipse cx="181" cy="87" rx="27" ry="10" opacity=".3"/><circle cx="303" cy="45" r="7" fill="currentColor"/><path d="m307 47 18 24m-1-10 1 10-10-3" stroke="#ffcd84"/>',
+    pendulum:
+      '<path d="M187 27v107" opacity=".25" stroke-dasharray="4 5"/><path d="m187 27 66 91" stroke="#c7dce6"/><circle cx="253" cy="118" r="19" fill="currentColor"/><path d="M124 117q63 47 129 1" opacity=".35"/><path d="M156 26h62" stroke-width="4"/>',
+    projectile:
+      '<path d="M45 133h300" opacity=".3"/><path d="M56 129Q190-40 330 129" stroke-dasharray="4 5" opacity=".35"/><path d="M56 129Q123 27 194 38" stroke-width="3"/><circle cx="194" cy="38" r="9" fill="currentColor"/><path d="m201 40 36 4m-8-7 8 7-10 4" stroke="#ffcd84"/>',
+    collisions:
+      '<path d="M40 117h310" opacity=".3"/><rect x="82" y="74" width="67" height="37" rx="7" fill="currentColor"/><rect x="239" y="74" width="67" height="37" rx="7" fill="#ffcd84"/><path d="M114 55h58m-8-6 8 6-8 6M271 55h-40m8-6-8 6 8 6"/>',
+    waves:
+      '<path d="M35 85h320" opacity=".2"/><path d="M35 85q20-68 40 0t40 0t40 0t40 0t40 0t40 0t40 0t40 0" stroke-width="2.5"/><path d="M35 85q20-30 40 0t40 0t40 0t40 0t40 0t40 0t40 0t40 0" stroke="#ffcc85" opacity=".5"/>',
+    interference:
+      '<path d="M105 25v40m0 12v20m0 12v40M298 20v134" stroke="#698eaa" stroke-width="5"/><path d="M108 72q65 0 180-40M108 103q60 0 180 40M108 72q65 0 180 72M108 103q60 0 180-72" opacity=".35"/><path d="M303 35v12m0 13v12m0 9v16m0 9v12m0 9v12" stroke-width="8"/>',
+    refraction:
+      '<path d="M25 86h330M190 20v132" opacity=".3"/><path d="m91 20 99 66 50 67" stroke-width="3"/><path d="m190 86 99-66" stroke="#ffce87" opacity=".6"/><path d="M26 88h328v67H26z" fill="currentColor" opacity=".08"/>',
+    circuits:
+      '<path d="M80 75V35h200v39M80 99v39h200V99"/><path d="M60 75h40M68 99h24M255 75h50M255 99h50" stroke-width="4"/><path d="m150 35 7-10 13 20 13-20 13 20 7-10" stroke="#ffcc84" stroke-width="2"/>',
+    fields:
+      '<path d="M104 82q85-100 170 0M104 82q85 100 170 0M104 82q85-55 170 0M104 82q85 55 170 0M104 82h170" opacity=".65"/><circle cx="103" cy="82" r="18" fill="#ff8aaa"/><circle cx="275" cy="82" r="18" fill="#8dabff"/><path d="M96 82h14m-7-7v14M268 82h14" stroke="#fff"/>',
+  }[id];
+  return `<svg viewBox="0 0 390 170" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">${drawing}</svg>`;
+}
+function card(id) {
+  const d = SIMULATIONS[id];
+  return `<a class="simulation-card" href="#/${id}" style="--accent:${d.color}"><div class="card-art">${thumbnail(id)}<span class="art-label">${d.category.toUpperCase()}</span><span class="card-dimension">${icon("cube")} 3D + 2D</span></div><div class="card-body"><div class="card-meta">${d.level}</div><h3>${d.short}</h3><p>${d.summary}</p><div class="card-bottom"><span class="card-equation">${d.formula}</span><span>Explore ${icon("arrow")}</span></div></div></a>`;
+}
+function home() {
+  $("#main").innerHTML =
+    `<section class="hero"><div class="hero-copy"><div class="eyebrow"><span class="status-dot"></span> YOUR PHYSICS PLAYGROUND, IN 3D</div><h1>See the invisible.<br><em>Understand<br>the incredible.</em></h1><p>From the swing of a pendulum to the dance of an orbit. Step inside the physics, change the variables, and find your own answers.</p><div class="hero-actions"><a class="button" href="#simulations">Explore all 10 experiments ${icon("arrow")}</a><a class="hero-link" href="#/gravity">Enter the 3D orbit studio ↗</a></div><div class="hero-stats"><div><strong>10</strong><span>interactive experiments</span></div><div><strong>50</strong><span>questions with answers</span></div><div><strong>30</strong><span>guided investigations</span></div></div></div><div class="hero-art"><canvas id="hero-canvas" tabindex="0" aria-label="Interactive 3D orbital preview. Drag to rotate, scroll to zoom, arrow keys to rotate, plus and minus to zoom."></canvas><div id="hero-fallback" hidden>${thumbnail("gravity")}</div><div class="hero-view-tag">${icon("cube")} THE ORBIT STUDIO <span>LIVE MODEL</span></div><div class="hero-art-label">Drag to orbit · Scroll to zoom<br><span>Planet grid and satellite size illustrative</span></div><div class="hero-formula">F = <span>GMm</span> / r²</div></div></section><div class="page-width"><section id="simulations" class="catalogue"><div class="section-heading"><div><div class="eyebrow">FOLLOW YOUR CURIOSITY</div><h2>What will you discover today?</h2><p>A complete experiment in every card. Make a prediction, then put it to the test.</p></div><label class="library-search"><span aria-hidden="true">⌕</span><input type="search" id="search" aria-label="Search simulations" placeholder="Find an experiment…"></label></div><div class="catalogue-tools"><div class="category-filters" aria-label="Filter simulations">${CATEGORIES.map((c, i) => `<button class="${i === 0 ? "active" : ""}" data-category="${c}" aria-pressed="${i === 0}">${c}</button>`).join("")}</div><span id="result-count">10 experiments</span></div><div class="simulation-grid" id="cards">${Object.keys(SIMULATIONS).map(card).join("")}</div><p id="empty-results" hidden>No experiments match that search. Try a topic such as waves, light or motion.</p></section><section class="method-band"><div><div class="eyebrow">MORE THAN AN ANIMATION</div><h3>A little curiosity.<br>A deeper understanding.</h3></div>${[
+      [
+        "01",
+        "Predict it.",
+        "Use a guided experiment to ask a better “what if?”",
+      ],
+      [
+        "02",
+        "Test it.",
+        "Change one parameter. Read live graphs. Save a measurement.",
+      ],
+      [
+        "03",
+        "Explain it.",
+        "Connect what you see to equations and worked answers.",
+      ],
+    ]
+      .map(
+        ([n, title, t]) =>
+          `<div class="method-item"><span class="number">${n}</span><div><strong>${title}</strong><p>${t}</p></div></div>`,
+      )
+      .join(
+        "",
+      )}</section><p class="home-note"><strong>Real models. Clear assumptions.</strong> Every experiment runs locally in your browser. Rotate the 3D camera without changing the physics, switch to a calibrated 2D diagram, and export calculated data. Built for IGCSE and A Level exploration.</p></div>`;
+  let category = "All experiments";
+  const filter = () => {
+    const q = $("#search").value.toLowerCase().trim(),
+      entries = Object.entries(SIMULATIONS).filter(
+        ([id, d]) =>
+          (category === "All experiments" || d.category === category) &&
+          `${d.title} ${d.category} ${d.summary}`.toLowerCase().includes(q),
+      );
+    $("#cards").innerHTML = entries.map(([id]) => card(id)).join("");
+    $("#result-count").textContent =
+      `${entries.length} experiment${entries.length === 1 ? "" : "s"}`;
+    $("#empty-results").hidden = entries.length > 0;
+  };
+  $("#search").oninput = filter;
+  $$("[data-category]").forEach(
+    (b) =>
+      (b.onclick = () => {
+        category = b.dataset.category;
+        $$("[data-category]").forEach((btn) => {
+          btn.classList.toggle("active", btn === b);
+          btn.setAttribute("aria-pressed", String(btn === b));
+        });
+        filter();
+      }),
+  );
+  const params = { ...ORBIT_DEFAULTS, velocity: circularSpeed(ORBIT_DEFAULTS) };
+  hero = {
+    type: "gravity",
+    ...createOrbit(params),
+    trail: [],
+    showTrail: true,
+    vectors: true,
+  };
+  const token = routeToken;
+  import("./scene3d.js")
+    .then(({ SceneView }) => {
+      if (token !== routeToken || !$("#hero-canvas")) return;
+      try {
+        heroView = new SceneView($("#hero-canvas"));
+        heroView.azimuth = -0.5;
+        heroView.polar = 0.9;
+        heroView.radius = 14;
+      } catch {
+        $("#hero-canvas").hidden = true;
+        $("#hero-fallback").hidden = false;
+      }
+    })
+    .catch(() => {
+      if (token === routeToken) {
+        $("#hero-canvas").hidden = true;
+        $("#hero-fallback").hidden = false;
+      }
+    });
+}
+function controlMarkup(d, p) {
+  if (d.options)
+    return `<div class="control"><label class="control-label" for="${d.key}-select">${d.label}</label><select class="parameter-select" id="${d.key}-select" aria-label="${d.label}">${d.options.map(([v, label]) => `<option value="${v}" ${Number(v) === p[d.key] ? "selected" : ""}>${label}</option>`).join("")}</select><p class="control-hint">${d.hint}</p></div>`;
+  const value = p[d.key] / (d.factor || 1),
+    slider = d.log ? Math.log10(value) : value;
+  return `<div class="control"><div class="control-label"><label for="${d.key}-slider">${d.label}</label><span class="value-input"><input id="${d.key}-number" type="number" aria-label="${d.label} in ${d.unit || "dimensionless units"}" value="${d.log ? value.toExponential(2) : Number(value.toFixed(5))}" min="${d.log ? 100 : d.min}" max="${d.log ? 1e23 : d.max}" step="any"><span>${d.unit}</span></span></div><input type="range" id="${d.key}-slider" aria-label="${d.label}" min="${d.min}" max="${d.max}" step="${d.step}" value="${slider}"><div class="slider-ends"><span>${d.log ? "10²" : d.min}</span><span>${d.log ? "10²³" : d.max}</span></div><p class="control-hint">${d.hint}</p></div>`;
+}
+function labPage(type, query) {
+  const d = SIMULATIONS[type];
+  let params = { ...d.defaults },
+    invalid = false;
+  for (const key of Object.keys(params))
+    if (query.has(key))
+      params[key] = query.get(key) === "" ? NaN : Number(query.get(key));
+  try {
+    d.create(params);
+  } catch {
+    params = { ...d.defaults };
+    invalid = true;
+  }
+  lab = {
+    type,
+    definition: d,
+    ...d.create(params),
+    running: !reduced(),
+    speed: 1,
+    accumulator: 0,
+    history: [],
+    trail: [],
+    showTrail: true,
+    vectors: true,
+    graph: d.graphs.some((g) => g.id === query.get("graph"))
+      ? query.get("graph")
+      : d.graphs[0].id,
+    nextSample: 0,
+    lastUI: -1,
+    ended: null,
+    graphDirty: true,
+    view: ["2d", "3d"].includes(query.get("view"))
+      ? query.get("view")
+      : stored("physics-view", "3d"),
+    notebook: stored(`physics-notebook-${type}`, []),
+  };
+  if (!Array.isArray(lab.notebook)) lab.notebook = [];
+  $("#main").innerHTML =
+    `<div class="page-width lab-page"><div class="breadcrumb"><a href="#/">The laboratory</a><span>/</span><span>${d.category}</span><span>/</span><span>${d.short}</span></div><div class="lab-title-row"><div><div class="eyebrow"><span class="subject-dot" style="background:${d.color}"></span>${d.category.toUpperCase()} <span class="pill">${d.level}</span></div><h1>${d.title}</h1><p>${d.summary}</p></div><div class="toolbar-buttons"><button class="small-button" id="share">${icon("share")} Share setup</button><button class="small-button" id="export">${icon("download")} Export data</button></div></div><div class="lab-grid"><aside class="panel controls" aria-label="Simulation parameters"><div class="controls-heading"><h2>Your experiment</h2><span>01 / SET UP</span></div>${d.controls.map((c) => controlMarkup(c, params)).join("")}<p id="control-error" class="control-error" role="alert"></p><div class="preset-block"><h3 class="panel-label">Start with a scenario</h3><div class="preset-row">${d.presets.map(([name], i) => `<button class="preset-button" data-preset="${i}" aria-pressed="false">${name}</button>`).join("")}</div></div><p class="control-footnote">A parameter change starts a fresh run.<br>All graphs use the calculated state.</p><button class="model-shortcut" id="model-shortcut">See the physics behind it ↓</button></aside><div class="workspace"><section class="stage" id="stage" aria-label="Interactive simulation studio"><div class="stage-top"><span class="running-status"><span class="status-dot"></span><span id="run-status">RUNNING</span></span><div class="stage-views" aria-label="View mode"><button data-view="3d" aria-pressed="true">${icon("cube")} 3D</button><button data-view="2d" aria-pressed="false">2D diagram</button><button id="fullscreen" aria-label="Fullscreen simulation">${icon("expand")}</button></div></div><div class="scene-container"><canvas id="scene-3d" tabindex="0" role="img" aria-label="Interactive 3D ${d.short}. Drag to rotate, scroll to zoom. Arrow keys rotate, plus and minus zoom, zero resets the camera."></canvas><canvas id="simulation" role="img" aria-label="Calibrated 2D ${d.short} diagram" hidden></canvas><div class="scene-camera-hint" id="camera-hint">DRAG TO ROTATE <span>·</span> SCROLL TO ZOOM</div><div class="scene-equation">${d.formula}</div><button class="camera-reset" id="camera-reset" aria-label="Reset 3D camera">${icon("reset")}</button></div><div class="transport"><button id="play" class="play-button">${icon("pause")} Pause</button><button id="step" class="reset-button" aria-label="Advance one frame">${icon("step")} Step</button><button id="reset" class="reset-button">${icon("reset")} Reset</button><span id="time-readout" class="time-readout"></span><label class="speed-select">Speed <select id="speed" aria-label="Simulation speed"><option value=".25">0.25×</option><option value=".5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label></div></section><p class="stage-caption" id="stage-caption">${d.caption}</p><div class="live-metrics" id="metrics"></div><section class="panel graph-panel" aria-label="Live graphs"><div class="graph-header"><div><span class="section-kicker">02 / OBSERVE</span><h2>Follow the evidence.</h2></div><div class="segmented" aria-label="Graph selection">${d.graphs.map((g) => `<button data-graph="${g.id}" aria-pressed="${g.id === lab.graph}" class="${g.id === lab.graph ? "active" : ""}">${g.label}</button>`).join("")}</div></div><div class="stage-options"><label><input id="vectors" type="checkbox" checked> Vectors / indicators</label>${["gravity", "pendulum", "projectile"].includes(type) ? '<label><input id="trail" type="checkbox" checked> Motion trail</label>' : ""}<span id="graph-mode-label"></span></div><div id="plots"></div><div class="energy-summary" id="energy-summary"></div><p class="graph-note" id="graph-note"></p></section><div class="insight-strip"><span>TRY THIS</span><p>${d.insight}</p><button id="record" class="small-button">${icon("record")} Record reading</button></div><details class="notebook panel"><summary>Your lab notebook <span id="notebook-count">0 readings</span></summary><div id="notebook-content"></div></details></div></div><section class="lesson-area" id="lesson-area"><div class="lesson-intro"><span class="section-kicker">03 / UNDERSTAND</span><h2>Make the connection.</h2></div><div class="lesson-tabs" role="tablist" aria-label="Learning resources">${[
+      ["learn", "Understand the physics"],
+      ["experiments", "Guided experiments"],
+      ["questions", "Test your understanding"],
+      ["model", "Equations & model"],
+    ]
+      .map(
+        ([key, label], i) =>
+          `<button role="tab" id="tab-${key}" data-lesson="${key}" aria-controls="lesson-panel" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}">${label}</button>`,
+      )
+      .join(
+        "",
+      )}</div><div class="lesson-content" id="lesson-panel" role="tabpanel" aria-labelledby="tab-learn" tabindex="0"></div></section><div class="next-experiments"><span>KEEP EXPLORING</span>${Object.entries(
+      SIMULATIONS,
+    )
+      .filter(([id, v]) => id !== type && v.category === d.category)
+      .slice(0, 2)
+      .map(([id, v]) => `<a href="#/${id}">${v.short} ${icon("arrow")}</a>`)
+      .join("")}<a href="#/">All experiments ${icon("arrow")}</a></div></div>`;
+  if (
+    !["spring", "gravity", "projectile", "collisions", "fields"].includes(type)
+  )
+    $("#vectors").closest("label").hidden = true;
+  bindControls();
+  if (type === "gravity") {
+    $("#stage-caption").insertAdjacentHTML(
+      "afterend",
+      '<div class="orbit-legend"><span><i style="background:#6bdccf"></i>Calculated trail</span><span><i style="background:#ffcc84"></i>v · relative velocity</span><span><i style="background:#ff9d91"></i>a · relative acceleration</span><span>r · centre-to-centre separation</span></div><section class="orbit-context" aria-label="Orbital interpretation" id="orbit-context"></section>',
+    );
+    $("#vectors").closest("label").lastChild.textContent =
+      " Velocity & acceleration";
+  }
+  sample();
+  createCharts();
+  updateReadouts();
+  renderNotebook();
+  showLesson(
+    ["learn", "experiments", "questions", "model"].includes(query.get("tab"))
+      ? query.get("tab")
+      : "learn",
+  );
+  syncPlay();
+  setView(lab.view === "2d" ? "2d" : "3d");
+  if (invalid)
+    toast("That shared setup was invalid. Safe defaults have been restored.");
+}
+function syncInputs() {
+  for (const d of lab.definition.controls) {
+    if (d.options) {
+      $(`#${d.key}-select`).value = String(lab.params[d.key]);
+      continue;
+    }
+    const v = lab.params[d.key] / (d.factor || 1);
+    $(`#${d.key}-number`).value = d.log
+      ? v.toExponential(2)
+      : Number(v.toFixed(5));
+    $(`#${d.key}-slider`).value = d.log ? Math.log10(v) : v;
+  }
+}
+function reset(params = lab.params) {
+  const model = lab.definition.create(params);
+  Object.assign(lab, model, {
+    accumulator: 0,
+    history: [],
+    trail: [],
+    nextSample: 0,
+    lastUI: -1,
+    ended: null,
+    graphDirty: true,
+    initialEnergy: undefined,
+    fieldKey: null,
+  });
+  $$("[data-preset]").forEach((b) => b.setAttribute("aria-pressed", "false"));
+  sample();
+  updateCharts();
+  updateReadouts();
+  syncPlay();
+}
+function loadPreset(index) {
+  reset(
+    lab.definition.presetFor?.(index, lab.params) ?? {
+      ...lab.definition.presets[index][1],
+    },
+  );
+  syncInputs();
+  lab.running = !reduced();
+  $$("[data-preset]").forEach((b) =>
+    b.setAttribute("aria-pressed", String(Number(b.dataset.preset) === index)),
+  );
+  $("#control-error").textContent = "";
+  syncPlay();
+}
+function bindControls() {
+  for (const d of lab.definition.controls) {
+    const commit = (raw, slider = false) => {
+      const value = d.log ? (slider ? 10 ** raw : raw) : raw * (d.factor || 1);
+      try {
+        reset({ ...lab.params, [d.key]: value });
+        $("#control-error").textContent = "";
+      } catch (error) {
+        $("#control-error").textContent = error.message;
+      }
+      syncInputs();
+    };
+    if (d.options) {
+      $(`#${d.key}-select`).onchange = (e) => commit(Number(e.target.value));
+      continue;
+    }
+    const range = $(`#${d.key}-slider`),
+      number = $(`#${d.key}-number`);
+    range.oninput = () => commit(Number(range.value), true);
+    const numeric = () => {
+      const raw = number.value === "" ? NaN : Number(number.value);
+      if (raw * (d.factor || 1) !== lab.params[d.key]) commit(raw);
+    };
+    number.onchange = numeric;
+    number.onblur = numeric;
+    number.onkeydown = (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        numeric();
+      }
+    };
+  }
+  $("#play").onclick = () => {
+    if (lab.ended) reset();
+    lab.running = !lab.running;
+    syncPlay();
+  };
+  $("#reset").onclick = () => {
+    reset();
+    toast("Run reset to its initial conditions.");
+  };
+  $("#step").onclick = () => {
+    if (lab.ended) reset();
+    lab.running = false;
+    const rate = lab.definition.rateFor?.(lab.params) ?? lab.definition.rate;
+    advance(Math.max(1, Math.round(rate / 60 / lab.definition.h)));
+    sample();
+    updateReadouts();
+    updateCharts();
+    syncPlay();
+  };
+  $("#speed").onchange = (e) => (lab.speed = Number(e.target.value));
+  $("#vectors").onchange = (e) => (lab.vectors = e.target.checked);
+  if ($("#trail"))
+    $("#trail").onchange = (e) => (lab.showTrail = e.target.checked);
+  $$("[data-preset]").forEach(
+    (b) => (b.onclick = () => loadPreset(Number(b.dataset.preset))),
+  );
+  $$("[data-view]").forEach((b) => (b.onclick = () => setView(b.dataset.view)));
+  $("#camera-reset").onclick = () => view?.home();
+  $("#fullscreen").onclick = async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await $("#stage").requestFullscreen();
+    } catch {
+      toast(
+        "Fullscreen is unavailable in this browser panel. You can still rotate and zoom.",
+      );
+    }
+  };
+  $("#model-shortcut").onclick = () => {
+    showLesson("model");
+    $("#lesson-area").scrollIntoView({
+      behavior: reduced() ? "instant" : "smooth",
+    });
+  };
+  $$("[data-graph]").forEach(
+    (b) =>
+      (b.onclick = () => {
+        lab.graph = b.dataset.graph;
+        lab.graphDirty = true;
+        $$("[data-graph]").forEach((btn) => {
+          btn.classList.toggle("active", btn === b);
+          btn.setAttribute("aria-pressed", String(btn === b));
+        });
+        createCharts();
+      }),
+  );
+  $$("[data-lesson]").forEach((b, i, buttons) => {
+    b.onclick = () => showLesson(b.dataset.lesson);
+    b.onkeydown = (e) => {
+      let target;
+      if (e.key === "ArrowRight") target = buttons[(i + 1) % buttons.length];
+      if (e.key === "ArrowLeft")
+        target = buttons[(i - 1 + buttons.length) % buttons.length];
+      if (e.key === "Home") target = buttons[0];
+      if (e.key === "End") target = buttons.at(-1);
+      if (target) {
+        e.preventDefault();
+        target.focus();
+        target.click();
+      }
+    };
+  });
+  $("#share").onclick = async () => {
+    const q = new URLSearchParams({
+      ...lab.params,
+      view: lab.view,
+      graph: lab.graph,
+    });
+    const url = `${location.href.split("#")[0]}#/${lab.type}?${q}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast(
+        "Setup copied. The link opens a fresh run with this view and these parameters.",
+      );
+    } catch {
+      window.prompt("Copy this experiment setup:", url);
+    }
+  };
+  $("#export").onclick = exportData;
+  $("#record").onclick = recordReading;
+  $("#simulation").onclick = (e) => {
+    if (lab.type !== "fields") return;
+    const r = e.currentTarget.getBoundingClientRect(),
+      sc = Math.min((r.width - 65) / 10, (r.height - 75) / 7);
+    const probeX = Math.max(
+        -4,
+        Math.min(4, (e.clientX - r.left - r.width / 2) / sc),
+      ),
+      probeY = Math.max(
+        -3,
+        Math.min(3, -(e.clientY - r.top - r.height / 2) / sc),
+      );
+    reset({
+      ...lab.params,
+      probeX: Math.round(probeX * 10) / 10,
+      probeY: Math.round(probeY * 10) / 10,
+    });
+    syncInputs();
+  };
+}
+async function setView(mode) {
+  if (!lab) return;
+  view?.dispose();
+  view = null;
+  lab.view = mode;
+  save("physics-view", mode);
+  const token = routeToken,
+    localToken = ++viewToken;
+  $("#scene-3d").hidden = mode !== "3d";
+  $("#simulation").hidden = mode === "3d";
+  $("#camera-hint").hidden = mode !== "3d";
+  $("#camera-reset").hidden = mode !== "3d";
+  $$("[data-view]").forEach((b) =>
+    b.setAttribute("aria-pressed", String(b.dataset.view === mode)),
+  );
+  if (mode === "3d") {
+    try {
+      const { SceneView } = await import("./scene3d.js");
+      if (
+        token !== routeToken ||
+        localToken !== viewToken ||
+        !lab ||
+        lab.view !== "3d"
+      )
+        return;
+      view = new SceneView($("#scene-3d"));
+      view.homeRadius = ["pendulum", "circuits", "refraction"].includes(
+        lab.type,
+      )
+        ? 11.5
+        : 14;
+      view.home();
+      view.update(lab);
+    } catch (error) {
+      if (token !== routeToken) return;
+      console.info("3D unavailable; diagram mode:", error.message);
+      toast(
+        "3D graphics are unavailable here. The complete experiment is available in 2D diagram mode.",
+      );
+      setView("2d");
+    }
+  }
+}
+function syncPlay() {
+  if (!lab) return;
+  $("#play").innerHTML =
+    icon(lab.running ? "pause" : "play") +
+    (lab.running ? " Pause" : lab.ended ? " Replay" : " Resume");
+  $("#run-status").textContent = lab.ended
+    ? `${lab.ended.toUpperCase()} · PAUSED`
+    : lab.running
+      ? "RUNNING"
+      : "PAUSED";
+}
+function sample() {
+  const row = lab.definition.sample(lab.state, lab.params);
+  if (lab.history.at(-1)?.t === row.t)
+    lab.history[lab.history.length - 1] = row;
+  else lab.history.push(row);
+  if (lab.history.length > 1200) lab.history.shift();
+  if (Number.isFinite(row.x) && Number.isFinite(row.y)) {
+    lab.trail.push({ x: row.x, y: row.y });
+    if (lab.trail.length > 1200) lab.trail.shift();
+  }
+  if (lab.initialEnergy === undefined && Number.isFinite(row.total)) {
+    lab.initialEnergy = row.total;
+    if (lab.type === "gravity") lab.energyScale = Math.abs(row.potential);
+  }
+  lab.graphDirty = true;
+}
+function selectedGraph() {
+  return lab.definition.graphs.find((g) => g.id === lab.graph);
+}
+function createCharts() {
+  charts.forEach((c) => c.chart.destroy());
+  charts = [];
+  if (!window.Chart) {
+    $("#plots").innerHTML =
+      "<p>Reload this page to restore the graph library.</p>";
+    return;
+  }
+  const g = selectedGraph(),
+    parts = g.stacked
+      ? g.keys.map((key, i) => ({
+          ...g,
+          keys: [key],
+          title: g.labels[i],
+          colorIndex: i,
+        }))
+      : [{ ...g, title: g.unit ? `${g.label} / ${g.unit}` : g.label }];
+  $("#plots").innerHTML = parts
+    .map(
+      (g, i) =>
+        `<p class="plot-label">${g.title}</p><div class="plot-wrap ${parts.length === 1 ? "tall" : ""}"><canvas id="plot-${i}" role="img" aria-label="Calculated ${g.title}"></canvas></div>`,
+    )
+    .join("");
+  $("#graph-mode-label").textContent = g.spatial
+    ? "SPATIAL / PARAMETER VIEW"
+    : "LIVE TIME HISTORY";
+  for (const [i, part] of parts.entries()) {
+    const xTitle =
+      part.spatial === "trajectory"
+        ? "Horizontal distance / m"
+        : part.spatial === "wave"
+          ? "Position / m"
+          : part.spatial === "interference"
+            ? "Screen position / mm"
+            : part.spatial === "refraction"
+              ? "Incident angle / °"
+              : part.spatial === "field"
+                ? "Position x / m"
+                : `Time / ${lab.definition.timeUnit}`;
+    const chart = new Chart($(`#plot-${i}`), {
+      type: "line",
+      data: {
+        datasets: part.keys.map((key, j) => ({
+          label:
+            {
+              v1: "Cart A",
+              v2: "Cart B",
+              vx: "Horizontal",
+              vy: "Vertical",
+              incident: "Incident",
+              reflected: "Counter-wave",
+              resultant: "Resultant",
+              kinetic: "Kinetic",
+              potential: "Potential",
+              total: "Total",
+              intensity: "Intensity",
+              envelope: "Diffraction envelope",
+            }[key] || key,
+          data: [],
+          borderColor: SERIES_COLORS[key] || COLORS[part.colorIndex ?? j % 3],
+          borderWidth: 1.9,
+          pointRadius: 0,
+          pointHitRadius: 7,
+          parsing: false,
+          tension: 0,
+          spanGaps: false,
+        })),
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        normalized: true,
+        interaction: { mode: "nearest", axis: "x", intersect: false },
+        plugins: {
+          legend: {
+            display: part.keys.length > 1,
+            labels: {
+              boxWidth: 10,
+              boxHeight: 3,
+              color: "#5a7487",
+              font: { size: 10 },
+            },
+          },
+        },
+        scales: {
+          x: {
+            type: "linear",
+            title: {
+              display: true,
+              text: xTitle,
+              color: "#6c8392",
+              font: { size: 10 },
+            },
+            ticks: { maxTicksLimit: 6, color: "#6c8392", font: { size: 10 } },
+            grid: { display: false },
+            border: { color: "#e0e9ef" },
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              maxTicksLimit: 4,
+              color: "#6c8392",
+              font: { size: 10 },
+              callback: (v) =>
+                Math.abs(v) >= 1e5 ? Number(v).toExponential(1) : v,
+            },
+            grid: { color: "#edf2f6" },
+            border: { display: false },
+          },
+        },
+      },
+    });
+    charts.push({ chart, ...part });
+  }
+  lab.graphDirty = true;
+  updateCharts();
+}
+function updateCharts() {
+  if (!lab?.graphDirty) return;
+  const d = lab.definition,
+    g = selectedGraph(),
+    s = lab.state,
+    p = lab.params,
+    tf = d.timeFactor || 1,
+    span = typeof d.window === "function" ? d.window(p) : d.window;
+  let rows =
+    g.spatial && g.spatial !== "trajectory"
+      ? spatialRows(g.spatial, s, p)
+      : lab.history;
+  for (const c of charts) {
+    c.keys.forEach((key, j) => {
+      c.chart.data.datasets[j].data = rows
+        .filter(
+          (row) => g.spatial || row.t / tf >= Math.max(0, s.t / tf - span),
+        )
+        .map((row) => ({
+          x: g.spatial
+            ? row.x * (g.spatial === "interference" ? 1000 : 1)
+            : row.t / tf,
+          y: row[key] === null ? null : row[key] * (c.factor || 1),
+        }));
+    });
+    if (!g.spatial) {
+      c.chart.options.scales.x.min = Math.max(0, s.t / tf - span);
+      c.chart.options.scales.x.max = Math.max(Math.min(span, 2), s.t / tf);
+    }
+    c.chart.update("none");
+  }
+  lab.graphDirty = false;
+}
+function metricMarkup(m) {
+  return `<div class="metric"><div class="metric-label">${esc(m.label)}</div><div class="metric-value">${esc(fmt(m.value))}<span>${esc(m.unit)}</span></div><div class="metric-note">${esc(m.note)}</div></div>`;
+}
+function updateReadouts() {
+  const d = lab.definition,
+    p = lab.params,
+    s = lab.state;
+  $("#metrics").innerHTML = d.metrics(s, p).map(metricMarkup).join("");
+  if (lab.type === "gravity") {
+    // Interpret the initial osculating conic, independent of integration drift.
+    const q = orbitInfo({ x: p.distance, y: 0, vx: 0, vy: p.velocity }, p);
+    const surface = centralRadius(p),
+      crossing = q.intersectsSurface;
+    const title = s.collided ? "Surface impact" : q.kind;
+    const explanation = s.collided
+      ? "The point satellite reached the absorbing surface. Reset or choose a new launch speed."
+      : crossing
+        ? `This path reaches the surface before completing an orbit. The ideal closest approach is ${fmt(q.periapsis / 1000, 0)} km from the centre; the surface radius is ${fmt(surface / 1000, 0)} km.`
+        : q.eccentricity < 1e-5
+          ? "Velocity is tangential. Acceleration points inward. Gravity changes the direction of motion while speed stays constant."
+          : q.specificEnergy >= 0
+            ? "The launch has enough energy to escape. Gravity still pulls inward and the satellite slows as it recedes."
+            : `Speed increases on approach and decreases on retreat. Closest approach: ${fmt((q.periapsis - surface) / 1000, 0)} km above the surface.`;
+    $("#orbit-context").classList.toggle(
+      "surface-warning",
+      crossing || s.collided,
+    );
+    $("#orbit-context").innerHTML =
+      `<div class="orbit-interpretation"><span class="section-kicker">YOUR TRAJECTORY</span><h3>${esc(title)}</h3><p>${esc(explanation)}</p></div><div class="orbit-thresholds"><div><span>Circular launch</span><strong>${fmt(circularSpeed(p) / 1000, 3)} <small>km/s</small></strong></div><div><span>Escape threshold</span><strong>${fmt(escapeSpeed(p) / 1000, 3)} <small>km/s</small></strong></div><div><span>${crossing ? "Central-body radius" : "Ideal orbital period"}</span><strong>${crossing ? fmt(surface / 1000, 0) : Number.isFinite(q.period) ? fmt(q.period / 3600) : "Unbound"} <small>${crossing ? "km" : Number.isFinite(q.period) ? "h" : ""}</small></strong></div></div>`;
+  }
+  $("#time-readout").textContent =
+    `t = ${fmt(s.t / d.timeFactor)} ${d.timeUnit}`;
+  $("#energy-summary").innerHTML = d
+    .supplementary(s, p)
+    .map(
+      (m, i) =>
+        `<div><small><span class="color-dot" style="background:${COLORS[i]}"></span>${esc(m.label)}</small>${esc(fmt(m.value))} <span>${esc(m.unit)}</span></div>`,
+    )
+    .join("");
+  const g = selectedGraph(),
+    drift =
+      Number.isFinite(lab.initialEnergy) &&
+      Math.abs(lab.initialEnergy) > 1e-15 &&
+      Number.isFinite(lab.history.at(-1)?.total)
+        ? (100 * (lab.history.at(-1).total - lab.initialEnergy)) /
+          Math.abs(lab.initialEnergy)
+        : null;
+  $("#graph-note").textContent =
+    (g.spatial
+      ? "Calculated spatial / parameter curve. "
+      : "Calculated samples only. ") +
+    (drift !== null
+      ? `Energy change from launch: ${drift.toExponential(2)}%. `
+      : "") +
+    "Export includes labelled units and initial parameters.";
+  if (lab.type === "gravity") {
+    // Normalise by launch |U|, since total launch energy vanishes at escape.
+    const current = d.sample(s, p).total;
+    const error = (100 * (current - lab.initialEnergy)) / lab.energyScale;
+    $("#graph-note").textContent = s.collided
+      ? "Surface contact ends the gravitational model; impact and deformation are not simulated. Export includes calculated samples, units and initial parameters."
+      : `Numerical energy error: ${error.toExponential(2)}% of launch |U|. This scale remains meaningful at zero-energy escape. Export includes calculated samples, units and initial parameters.`;
+  }
+  const rate = lab.definition.rateFor?.(p) ?? d.rate;
+  $("#stage-caption").textContent =
+    d.caption +
+    (d.rateFor ? ` · 1× = ${fmt(rate, 3)} simulated s / real s` : "");
+}
+function showLesson(tab) {
+  const l = LESSONS[lab.type],
+    panel = $("#lesson-panel");
+  $$("[data-lesson]").forEach((b) => {
+    const selected = b.dataset.lesson === tab;
+    b.setAttribute("aria-selected", String(selected));
+    b.tabIndex = selected ? 0 : -1;
+  });
+  panel.setAttribute("aria-labelledby", `tab-${tab}`);
+  if (tab === "learn")
+    panel.innerHTML = `<div class="learn-grid"><aside class="objectives"><h3>Your learning objectives</h3><ul>${l.objectives.map((o) => `<li>${o}</li>`).join("")}</ul></aside><div><h2>${l.description}</h2><p>${l.intro}</p><div class="principles">${l.principles.map(([title, text]) => `<div><h3>${title}</h3><p>${text}</p></div>`).join("")}</div></div></div><div class="application"><h3>Physics beyond the screen</h3><p>${l.applications}</p></div>`;
+  if (tab === "experiments") {
+    panel.innerHTML = `<h2>Predict. Experiment. Explain.</h2><p>Change one variable at a time. Pause, record a reading, and use the graphs to test your prediction.</p><div class="experiment-grid">${l.experiments.map((e, i) => `<article class="experiment"><div class="eyebrow">INVESTIGATION 0${i + 1}</div><h3>${e.title}</h3><p>${e.text}</p><p class="prediction">${e.predict}</p><details><summary>What should I observe?</summary><p>${e.result}</p></details><button class="small-button" data-experiment="${i}">Load this setup ${icon("arrow")}</button></article>`).join("")}</div>`;
+    $$("[data-experiment]").forEach(
+      (b) =>
+        (b.onclick = () => {
+          const e = l.experiments[Number(b.dataset.experiment)];
+          if (typeof e.preset === "object") {
+            reset(e.preset);
+            syncInputs();
+          } else {
+            const index = lab.definition.presets.findIndex(
+              ([name]) => name.toLowerCase() === e.preset.toLowerCase(),
+            );
+            if (index >= 0) loadPreset(index);
+          }
+          lab.running = false;
+          syncPlay();
+          toast("Investigation loaded and paused. Resume when you are ready.");
+          $("#stage").scrollIntoView({
+            behavior: reduced() ? "instant" : "smooth",
+            block: "center",
+          });
+        }),
+    );
+  }
+  if (tab === "questions")
+    panel.innerHTML = `<h2>Test your understanding.</h2><p>Try each question before revealing the worked explanation.</p>${l.questions.map(([q, a], i) => `<details class="question"><summary><span>${String(i + 1).padStart(2, "0")}</span>${q}</summary><p>${a}</p></details>`).join("")}`;
+  if (tab === "model")
+    panel.innerHTML = `<h2>The mathematics behind the motion.</h2><div class="equation-grid">${l.equations.map(([title, formula, note]) => `<article class="equation"><h3>${title}</h3><p class="formula">${formula}</p><p>${note}</p></article>`).join("")}</div><aside class="model-note"><h3>Assumptions, numerical method & 3D view</h3><p>${l.model}</p><p>3D is a camera around the same model used by the graphs. Planar systems remain planar. Grid, object sizes, glow and optical wavefronts may be illustrative; numeric readouts use the documented physical units. Drag / touch to rotate, scroll to zoom, arrow keys to rotate, + / − to zoom, and 0 to reset the camera. Use 2D diagram mode for calibrated diagrams or if WebGL is unavailable.</p><a href="${l.source[1]}" target="_blank" rel="noopener">${l.source[0]} ↗</a> · <a href="https://github.com/206713-dotcom/physics-interactive-lab#physics-and-numerical-methods" target="_blank" rel="noopener">Tested models & source ↗</a></aside>`;
+}
+function renderNotebook() {
+  const readings = lab.notebook
+    .filter((r) => r && typeof r.time === "number" && Array.isArray(r.summary))
+    .slice(-12);
+  lab.notebook = readings;
+  $("#notebook-count").textContent =
+    `${readings.length} reading${readings.length === 1 ? "" : "s"}`;
+  $("#notebook-content").innerHTML = readings.length
+    ? `<p>Saved on this device. Readings store the actual state and launch parameters.</p><div class="notebook-table"><table><thead><tr><th>Time</th><th>Recorded measurements</th></tr></thead><tbody>${readings.map((r) => `<tr><td>${esc(fmt(r.time / lab.definition.timeFactor))} ${lab.definition.timeUnit}</td><td>${r.summary.map((m) => `${esc(m.label)}: <strong>${esc(fmt(m.value))} ${esc(m.unit)}</strong>`).join(" · ")}</td></tr>`).join("")}</tbody></table></div><button id="clear-notebook" class="small-button">Clear readings</button>`
+    : "<p>No readings yet. Pause at a useful moment and select “Record reading” to compare different setups.</p>";
+  if ($("#clear-notebook"))
+    $("#clear-notebook").onclick = () => {
+      lab.notebook = [];
+      save(`physics-notebook-${lab.type}`, []);
+      renderNotebook();
+    };
+}
+function recordReading() {
+  lab.notebook.push({
+    time: lab.state.t,
+    params: { ...lab.params },
+    state: lab.definition.sample(lab.state, lab.params),
+    summary: lab.definition.metrics(lab.state, lab.params),
+  });
+  lab.notebook = lab.notebook.slice(-12);
+  const ok = save(`physics-notebook-${lab.type}`, lab.notebook);
+  renderNotebook();
+  toast(
+    ok
+      ? "Calculated reading saved to your notebook on this device."
+      : "Reading saved for this session; device storage is unavailable.",
+  );
+}
+function exportData() {
+  const g = selectedGraph();
+  let rows = lab.history,
+    axis = "time_s";
+  if (g.spatial && g.spatial !== "trajectory") {
+    rows = spatialRows(g.spatial, lab.state, lab.params);
+    axis =
+      g.spatial === "interference"
+        ? "screen_position_m"
+        : g.spatial === "refraction"
+          ? "incident_angle_deg"
+          : "position_m";
+  }
+  const units = {
+    t: "s",
+    x: "m",
+    y: "m",
+    x1: "m",
+    x2: "m",
+    v: "m_per_s",
+    v1: "m_per_s",
+    v2: "m_per_s",
+    vx: "m_per_s",
+    vy: "m_per_s",
+    a: "m_per_s2",
+    theta: "rad",
+    omega: "rad_per_s",
+    speed: "m_per_s",
+    distance: "m",
+    force: "N",
+    kinetic: lab.type === "projectile" ? "J_per_kg" : "J",
+    potential:
+      lab.type === "fields"
+        ? "V"
+        : lab.type === "projectile"
+          ? "J_per_kg"
+          : "J",
+    total: lab.type === "projectile" ? "J_per_kg" : "J",
+    momentum: "kg_m_per_s",
+    incident: "m",
+    reflected: "m",
+    resultant: "m",
+    voltage: "V",
+    current: "A",
+    charge: "C",
+    energy: "J",
+    tau: "s",
+    ex: "N_per_C",
+    ey: "N_per_C",
+    magnitude: "N_per_C",
+    critical: "deg",
+    refracted: "deg",
+    reflectance: "fraction",
+    intensity: "relative",
+    envelope: "relative",
+    spacing: "m",
+  };
+  const keys = [...new Set(rows.flatMap((r) => Object.keys(r)))].filter((k) =>
+    rows.some((r) => typeof r[k] === "number" || r[k] === null),
+  );
+  const csv = [
+    `# ${lab.type}; calculated model data; params=${JSON.stringify(lab.params)}; view=${lab.view}`,
+    keys
+      .map((k) =>
+        k === "x" && g.spatial && g.spatial !== "trajectory"
+          ? axis
+          : k === "t"
+            ? "time_s"
+            : `${k}${units[k] ? "_" + units[k] : ""}`,
+      )
+      .join(","),
+    ...rows.map((r) => keys.map((k) => r[k] ?? "").join(",")),
+  ].join("\n");
+  const url = URL.createObjectURL(
+      new Blob([csv], { type: "text/csv;charset=utf-8;" }),
+    ),
+    a = document.createElement("a");
+  a.href = url;
+  a.download = `physics-lab-${lab.type}-${lab.graph}.csv`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast("Calculated data exported with units and initial parameters.");
+}
+function advance(count) {
+  for (let i = 0; i < count; i++) {
+    lab.state = lab.definition.step(lab.state, lab.params, lab.definition.h);
+    const interval =
+      typeof lab.definition.sampleEvery === "function"
+        ? lab.definition.sampleEvery(lab.params)
+        : lab.definition.sampleEvery;
+    if (lab.state.t >= lab.nextSample) {
+      sample();
+      lab.nextSample = lab.state.t + interval;
+    }
+    const end = lab.definition.ended?.(lab.state, lab.params);
+    if (end) {
+      lab.ended = end;
+      lab.running = false;
+      sample();
+      syncPlay();
+      break;
+    }
+  }
+}
+function route() {
+  routeToken++;
+  viewToken++;
+  view?.dispose();
+  heroView?.dispose();
+  view = null;
+  heroView = null;
+  hero = null;
+  charts.forEach((c) => c.chart.destroy());
+  charts = [];
+  lab = null;
+  const [path, query = ""] = location.hash.slice(1).split("?"),
+    id = path?.replace(/^\//, ""),
+    type = SIMULATIONS[id] ? id : null;
+  document.title = type
+    ? `${SIMULATIONS[type].title} · Physics Interactive Lab`
+    : "Physics Interactive Lab · Explore in 3D";
+  $("#lab-select").value = type || "";
+  $$("[data-nav]").forEach((a) => {
+    a.classList.toggle("active", !type);
+    if (!type) a.setAttribute("aria-current", "page");
+    else a.removeAttribute("aria-current");
+  });
+  if (type) labPage(type, new URLSearchParams(query));
+  else home();
+  window.scrollTo(0, 0);
+  lastFrame = 0;
+  if (location.hash === "#simulations")
+    requestAnimationFrame(() =>
+      $("#simulations")?.scrollIntoView({
+        behavior: reduced() ? "instant" : "smooth",
+      }),
+    );
+}
+function frame(now) {
+  const dt = lastFrame ? Math.min(0.1, (now - lastFrame) / 1000) : 0;
+  lastFrame = now;
+  if (hero) {
+    if (!reduced() && !document.hidden) {
+      for (let i = 0; i < Math.round(dt * 1800); i++)
+        hero.state = stepOrbit(hero.state, hero.params, 2);
+      hero.trail.push({ x: hero.state.x, y: hero.state.y });
+      if (hero.trail.length > 600) hero.trail.shift();
+    }
+    heroView?.update(hero);
+  }
+  if (lab) {
+    if (lab.running && !document.hidden) {
+      const rate = lab.definition.rateFor?.(lab.params) ?? lab.definition.rate;
+      lab.accumulator += dt * lab.speed * rate;
+      const count = Math.min(
+        1000,
+        Math.floor(lab.accumulator / lab.definition.h),
+      );
+      if (count > 0) {
+        advance(count);
+        lab.accumulator -= count * lab.definition.h;
+      }
+    }
+    if (lab.view === "3d" && view) view.update(lab);
+    else if (lab.view === "2d") draw2D($("#simulation"), lab);
+    if (now - lab.lastUI > 125) {
+      updateReadouts();
+      if (selectedGraph().spatial === "wave") lab.graphDirty = true;
+      updateCharts();
+      lab.lastUI = now;
+    }
+  }
+  requestAnimationFrame(frame);
+}
+$("#lab-select").innerHTML =
+  '<option value="">Jump to an experiment</option>' +
+  CATEGORIES.slice(1)
+    .map(
+      (category) =>
+        `<optgroup label="${category}">${Object.entries(SIMULATIONS)
+          .filter(([id, d]) => d.category === category)
+          .map(([id, d]) => `<option value="${id}">${d.short}</option>`)
+          .join("")}</optgroup>`,
+    )
+    .join("");
+$("#lab-select").onchange = (e) => {
+  location.hash = e.target.value ? `/${e.target.value}` : "/";
+};
+$(".skip-link").onclick = (e) => {
+  e.preventDefault();
+  $("#main").focus();
+  $("#main").scrollIntoView();
+};
+document.addEventListener("keydown", (e) => {
+  if (
+    e.code === "Space" &&
+    lab &&
+    !e.target.closest("input,select,textarea,button,a,summary")
+  ) {
+    e.preventDefault();
+    $("#play").click();
+  }
+});
+document.addEventListener("visibilitychange", () => {
+  lastFrame = 0;
+});
+window.addEventListener("hashchange", route);
+route();
+requestAnimationFrame(frame);

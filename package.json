@@ -1,0 +1,13 @@
+{
+  "name": "physics-interactive-lab",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A browser-based physics laboratory for IGCSE and A Level exploration.",
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node scripts/check.mjs"
+  },
+  "engines": { "node": ">=22" }
+}

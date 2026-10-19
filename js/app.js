@@ -144,6 +144,11 @@ function createCharts() {
   $('#plots').innerHTML = definitions.map((d,i) => `<p class="plot-label">${d.label}</p><div class="plot-wrap ${definitions.length === 1 ? 'tall' : ''}"><canvas id="plot-${i}" role="img" aria-label="Live ${d.label} against simulated time"></canvas></div>`).join('');
   definitions.forEach((d,i) => {
     const chart = new Chart($(`#plot-${i}`),{type:'line',data:{datasets:d.keys.map((key,j) => ({label:d.names?.[j] || d.label,data:[],borderColor:colors[(definitions.length > 1 ? i : j)%3],borderWidth:1.7,pointRadius:0,pointHitRadius:8,tension:0,parsing:false}))},options:{ responsive:true,maintainAspectRatio:false,animation:false,normalized:true,interaction:{mode:'nearest',axis:'x',intersect:false},plugins:{legend:{display:energy,labels:{boxWidth:9,boxHeight:3,font:{size:10},color:'#536a7b'}},tooltip:{callbacks:{title:items=>`t = ${fmt(items[0].parsed.x)} ${spring ? 's' : 'h'}`}}},scales:{x:{type:'linear',title:{display:true,text:`Time / ${spring ? 's' : 'h'}`,font:{size:9},color:'#68808e'},ticks:{maxTicksLimit:6,font:{size:9},color:'#68808e'},grid:{display:false},border:{color:'#dce6eb'}},y:{ticks:{maxTicksLimit:4,font:{size:9},color:'#68808e'},grid:{color:'#edf2f5'},border:{display:false}}}}});
+    // Include zero so round-off in a circular orbit is never magnified into a
+    // visually large change in speed or separation. Keep large SI energies legible.
+    chart.options.scales.y.beginAtZero = true;
+    chart.options.scales.y.ticks.callback = value => Math.abs(value) >= 1e6 ? Number(value).toExponential(1) : value;
+    chart.update('none');
     charts.push({ chart, ...d });
   });
 }

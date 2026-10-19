@@ -269,6 +269,7 @@ function labPage(type, query) {
   )
     $("#vectors").closest("label").hidden = true;
   bindControls();
+  $(".lab-page").dataset.model = type;
   if (type === "gravity") {
     $("#stage-caption").insertAdjacentHTML(
       "afterend",
@@ -276,6 +277,7 @@ function labPage(type, query) {
     );
     $("#vectors").closest("label").lastChild.textContent =
       " Velocity & acceleration";
+    arrangeOrbitWorkbench();
   }
   sample();
   createCharts();
@@ -290,6 +292,52 @@ function labPage(type, query) {
   setView(lab.view === "2d" ? "2d" : "3d");
   if (invalid)
     toast("That shared setup was invalid. Safe defaults have been restored.");
+}
+/** Keep the existing controls and calculations; regroup their DOM for reading.
+ * The scene and live measurements form the experiment, with interpretation and
+ * graphs together below it. Moving nodes preserves their bound event handlers. */
+function arrangeOrbitWorkbench() {
+  $(".lab-title-row h1").textContent = "Orbital mechanics";
+  $(".lab-title-row p").textContent =
+    "Explore how gravity shapes a journey. Change the launch. Follow the evidence.";
+  $(".controls-heading h2").textContent = "Set up your orbit";
+  $(".controls-heading span").textContent = "CHANGE ONE VARIABLE AT A TIME";
+  $(".graph-header h2").textContent = "Measurements over time";
+  $("#camera-hint").innerHTML = "Drag to rotate <span>·</span> Scroll to zoom";
+  $("#camera-reset").innerHTML = `${icon("reset")}<span>Reset view</span>`;
+  $(".controls-heading").after($(".preset-block"));
+  const workspace = $(".workspace");
+  const display = document.createElement("div");
+  display.className = "orbit-display-bar";
+  const toggles = document.createElement("div");
+  toggles.className = "orbit-display-toggles";
+  $("#vectors").closest("label").lastChild.textContent = "Vectors";
+  $("#trail").closest("label").lastChild.textContent = "Trail";
+  toggles.append($("#vectors").closest("label"), $("#trail").closest("label"));
+  // The meaning of r is explained with the view scale notes instead of a fourth
+  // competing legend item. Each vector keeps its own colour and label.
+  $(".orbit-legend span:last-child").remove();
+  display.append($(".orbit-legend"), toggles);
+  $("#stage").after(display);
+  display.after($("#metrics"));
+  const notes = document.createElement("details");
+  notes.className = "view-notes";
+  notes.innerHTML =
+    "<summary>View scale & model notes</summary><p>The planet surface and clouds are illustrative; atmospheric drag is not included. The orbit stays in one plane as you rotate the camera. r is the centre-to-centre separation, not the altitude above the surface.</p>";
+  notes.append($("#stage-caption"));
+  workspace.append(notes);
+  const analysis = document.createElement("section");
+  analysis.className = "orbit-analysis";
+  analysis.setAttribute(
+    "aria-label",
+    "Interpret the orbit and inspect its graphs",
+  );
+  analysis.append($(".graph-panel"), $("#orbit-context"));
+  $(".lab-grid").after(analysis);
+  const notebookRow = document.createElement("div");
+  notebookRow.className = "orbit-notebook-row";
+  notebookRow.append($(".insight-strip"), $(".notebook"));
+  analysis.after(notebookRow);
 }
 function syncInputs() {
   for (const d of lab.definition.controls) {
@@ -491,6 +539,7 @@ async function setView(mode) {
   $("#simulation").hidden = mode === "3d";
   $("#camera-hint").hidden = mode !== "3d";
   $("#camera-reset").hidden = mode !== "3d";
+  $(".scene-equation").hidden = mode !== "3d";
   $$("[data-view]").forEach((b) =>
     b.setAttribute("aria-pressed", String(b.dataset.view === mode)),
   );
@@ -505,11 +554,13 @@ async function setView(mode) {
       )
         return;
       view = new SceneView($("#scene-3d"));
-      view.homeRadius = ["pendulum", "circuits", "refraction"].includes(
-        lab.type,
-      )
-        ? 11.5
-        : 14;
+      view.homeRadius =
+        lab.type === "gravity"
+          ? 10.8
+          : ["pendulum", "circuits", "refraction"].includes(lab.type)
+            ? 11.5
+            : 14;
+      if (lab.type === "gravity") view.homePolar = 0.82;
       view.home();
       view.update(lab);
     } catch (error) {
@@ -612,7 +663,7 @@ function createCharts() {
             }[key] || key,
           data: [],
           borderColor: SERIES_COLORS[key] || COLORS[part.colorIndex ?? j % 3],
-          borderWidth: 1.9,
+          borderWidth: 2.5,
           pointRadius: 0,
           pointHitRadius: 7,
           parsing: false,
@@ -633,7 +684,7 @@ function createCharts() {
               boxWidth: 10,
               boxHeight: 3,
               color: "#5a7487",
-              font: { size: 10 },
+              font: { size: 14 },
             },
           },
         },
@@ -644,9 +695,9 @@ function createCharts() {
               display: true,
               text: xTitle,
               color: "#6c8392",
-              font: { size: 10 },
+              font: { size: 14 },
             },
-            ticks: { maxTicksLimit: 6, color: "#6c8392", font: { size: 10 } },
+            ticks: { maxTicksLimit: 6, color: "#526b7c", font: { size: 13 } },
             grid: { display: false },
             border: { color: "#e0e9ef" },
           },
@@ -655,7 +706,7 @@ function createCharts() {
             ticks: {
               maxTicksLimit: 4,
               color: "#6c8392",
-              font: { size: 10 },
+              font: { size: 13 },
               callback: (v) =>
                 Math.abs(v) >= 1e5 ? Number(v).toExponential(1) : v,
             },

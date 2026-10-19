@@ -42,6 +42,7 @@ Open <http://localhost:4173/physics-interactive-lab/>. No install or build step,
 - **Playback:** pause/resume, reset, single-step, 0.25×–4× speed and fullscreen. Space toggles playback when focus is not in a form control.
 - **Parameters:** sliders and editable numbers use explicit units. Enter or blur commits a numeric edit. Invalid inputs show an explanation and restore the valid value. Parameters and presets start a fresh run.
 - **Graphs:** choose time histories or explicitly labelled spatial/parameter curves. Zero is included to avoid visually magnifying tiny round-off changes in a circular orbit. Wave components use the same colours in the scene and graph.
+- **Readable workspace:** main copy uses 16–17 px text, parameter labels 15 px, editable values 18 px, and larger measurement cards. Graph labels are enlarged too. On the gravitation page, the scene and live measurements sit together; graphs and trajectory interpretation share the next row. Tablet and phone layouts put the scene first and keep measurement values intact.
 - **Notebook:** record actual readings to compare different setups. Up to 12 readings per experiment are kept in this device's browser storage, with their numerical state and initial parameters. Nothing is uploaded. Clear readings from the notebook when needed.
 - **CSV:** export up to 1,200 recent calculated time samples, or the selected calculated spatial/parameter curve. The first line gives the parameters, and headers label the units. Missing values near an excluded point charge or beyond a critical angle stay blank. No fabricated detections or experimental measurements are added.
 - **Share:** copy a link that contains the current initial parameters, graph and camera mode. It opens a fresh run; it does not include the notebook or elapsed state.
@@ -91,6 +92,8 @@ T = 2π√(a³/κ)  (bound trajectories)
 ```
 
 The energy diagnostic reports `(E(t) − E(0))/|U(0)|`, so a zero-energy escape does not produce a meaningless division by zero. Orbital-element references: [Bryan Weber's derivation](https://orbital-mechanics.space/classical-orbital-elements/orbital-elements-and-the-state-vector.html) and [NASA/JPL eccentricity glossary](https://ssd.jpl.nasa.gov/glossary/eccentricity.html).
+
+The 3D planet uses a locally generated, seamless surface illustration with fictional continents, polar ice and stationary cloud patterns. It is not geographic data. Lighting, star positions and atmospheric glow are visual references and do not add forces or rotation to the physical model. The default camera frames the orbit more closely and adapts to narrow screens; the same controls still let students rotate, zoom and reset the view.
 
 ### Nonlinear pendulum
 
@@ -227,6 +230,7 @@ All runtime assets are relative, including Three.js's core import, so the reposi
 index.html                   Semantic shell, experiment selector and local assets
 styles.css                   Base layout, controls and lesson styles
 studio.css                   Responsive v2 catalogue and 3D studio design
+workbench.css                Readable typography and focused gravitation layout
 js/app.js                    Small application bootstrap
 js/studio-app.js             Routes, playback, controls, Chart.js, notebook, export
 js/simulations.js            Declarative catalogue and graph/parameter configuration

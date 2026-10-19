@@ -133,7 +133,7 @@ export function drawOrbit(canvas, lab) {
   for (const pt of lab.trail)
     extent = Math.max(extent, Math.abs(pt.x) * 1.18, Math.abs(pt.y) * 1.18);
   extent = Math.max(extent, Math.abs(s.x) * 1.18, Math.abs(s.y) * 1.18);
-  const scale = Math.min(w * 0.44, h * 0.36) / extent,
+  const scale = Math.min(w * 0.44, h * 0.43) / extent,
     cx = w / 2,
     cy = h * 0.51;
   const screen = (pt) => [cx + pt.x * scale, cy - pt.y * scale];
@@ -232,8 +232,8 @@ export function drawOrbit(canvas, lab) {
   c.arc(sx, sy, 5, 0, TAU);
   c.fill();
   c.shadowBlur = 0;
-  text(c, "M", cx, cy + 4, "#d6f3fa", 11, "center");
-  text(c, "m", sx + 11, sy + 4, "#b6eae4", 11);
+  text(c, "M", cx, cy + 5, "#d6f3fa", 16, "center");
+  text(c, "m", sx + 12, sy + 5, "#b6eae4", 16);
   const scaleMetres = 10 ** Math.floor(Math.log10(70 / scale)),
     scalePixels = scaleMetres * scale;
   line(c, w - 25 - scalePixels, h - 28, w - 25, h - 28, "#b7cdd9", 2);
@@ -243,7 +243,7 @@ export function drawOrbit(canvas, lab) {
     w - 25,
     h - 37,
     "#b7cdd9",
-    9,
+    13,
     "right",
   );
 }

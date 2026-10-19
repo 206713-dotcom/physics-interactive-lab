@@ -108,6 +108,73 @@ function label(value, color = "#a9c8d9") {
   return sprite;
 }
 
+let illustratedSurface;
+/** A deterministic, seamless, Earth-like illustration. These continents and
+ * clouds are decorative geometry/colour, never geographic or atmospheric data.
+ * Cache pixels, but make a fresh GPU texture for each disposable scene. */
+function planetSurface() {
+  if (!illustratedSurface) {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1024;
+    canvas.height = 512;
+    const context = canvas.getContext("2d"),
+      pixels = context.createImageData(canvas.width, canvas.height);
+    const mix = (a, b, t) => a + (b - a) * Math.max(0, Math.min(1, t));
+    for (let row = 0; row < canvas.height; row++) {
+      const latitude = (0.5 - row / (canvas.height - 1)) * Math.PI;
+      const y = Math.sin(latitude),
+        ring = Math.cos(latitude);
+      for (let column = 0; column < canvas.width; column++) {
+        const longitude = (column / canvas.width) * Math.PI * 2;
+        const x = ring * Math.cos(longitude),
+          z = ring * Math.sin(longitude);
+        const terrain =
+          0.82 *
+            Math.sin(3.4 * x + 1.7 * Math.sin(2.4 * y)) *
+            Math.cos(3.8 * z - 0.9 * y) +
+          0.4 * Math.sin(7.5 * x + 3.1 * z) * Math.cos(6.2 * y - 2.8 * z) +
+          0.18 * Math.sin(17 * x + 8 * z) * Math.cos(14 * y + 3 * x) +
+          0.07 * Math.sin(41 * z - 22 * x) * Math.cos(36 * y + 11 * z);
+        const land = terrain > 0.17,
+          height = Math.max(0, terrain - 0.17);
+        let color = land
+          ? [mix(37, 133, height), mix(111, 146, height), mix(100, 116, height)]
+          : [
+              mix(6, 22, (terrain + 0.5) * 0.8),
+              mix(37, 99, (terrain + 0.5) * 0.8),
+              mix(69, 121, (terrain + 0.5) * 0.8),
+            ];
+        // Pale coast, polar ice and thin stationary cloud patterns add depth.
+        if (Math.abs(terrain - 0.17) < 0.025)
+          color = color.map((c, i) => mix(c, [72, 151, 143][i], 0.55));
+        const ice = Math.max(0, (Math.abs(y) - 0.935) * 17);
+        const cloud =
+          Math.max(
+            0,
+            Math.sin(12 * x + 7 * z + 2 * Math.sin(8 * y)) *
+              Math.cos(11 * y - 5 * z) +
+              0.3 * Math.sin(28 * z + 14 * x) * Math.cos(27 * y) -
+              0.48,
+          ) * 0.32;
+        const index = (row * canvas.width + column) * 4;
+        for (let channel = 0; channel < 3; channel++)
+          pixels.data[index + channel] = mix(
+            mix(color[channel], [218, 235, 233][channel], ice),
+            [224, 239, 242][channel],
+            cloud,
+          );
+        pixels.data[index + 3] = 255;
+      }
+    }
+    context.putImageData(pixels, 0, 0);
+    illustratedSurface = canvas;
+  }
+  const texture = new T.CanvasTexture(illustratedSurface);
+  texture.colorSpace = T.SRGBColorSpace;
+  texture.anisotropy = 4;
+  return texture;
+}
+
 export class SceneView {
   constructor(canvas) {
     this.canvas = canvas;
@@ -130,7 +197,8 @@ export class SceneView {
     this.azimuth = -0.38;
     this.polar = 1.05;
     this.radius = 15;
-    this.scene.add(new T.HemisphereLight(0xc6edff, 0x0d2438, 2.0));
+    this.ambient = new T.HemisphereLight(0xc6edff, 0x0d2438, 2.0);
+    this.scene.add(this.ambient);
     const key = new T.DirectionalLight(0xe2f4ff, 3.2);
     key.position.set(-4, 8, 5);
     key.castShadow = true;
@@ -165,11 +233,12 @@ export class SceneView {
     this.scene.add(grid);
     this.grid = grid;
     const points = [];
-    for (let i = 0; i < 300; i++) {
-      const r = 25 + (i % 13),
+    for (let i = 0; i < 650; i++) {
+      const r = 27 + (i % 13),
         a = i * 2.39996,
-        y = 3 + (Math.sin(i * 7.13) + 1) * 15;
-      points.push(r * Math.cos(a), y, r * Math.sin(a));
+        y = 1 - (2 * (i + 0.5)) / 650;
+      const ring = Math.sqrt(1 - y * y);
+      points.push(r * ring * Math.cos(a), 1 + r * y, r * ring * Math.sin(a));
     }
     const g = new T.BufferGeometry();
     g.setAttribute("position", new T.Float32BufferAttribute(points, 3));
@@ -178,9 +247,9 @@ export class SceneView {
         g,
         new T.PointsMaterial({
           color: 0x83afc3,
-          size: 0.045,
+          size: 0.055,
           transparent: true,
-          opacity: 0.55,
+          opacity: 0.7,
         }),
       ),
     );
@@ -244,7 +313,7 @@ export class SceneView {
   }
   home() {
     this.azimuth = -0.38;
-    this.polar = 1.05;
+    this.polar = this.homePolar ?? 1.05;
     this.radius = this.homeRadius || 15;
   }
   clear() {
@@ -264,6 +333,7 @@ export class SceneView {
     this.clear();
     this.type = type;
     this.key = JSON.stringify(p);
+    this.ambient.intensity = type === "gravity" ? 0.65 : 2;
     const r = this.root,
       o = this.objects;
     this.floor.position.y =
@@ -282,10 +352,14 @@ export class SceneView {
     };
     if (type === "gravity") {
       const planet = add("planet", sphere(1, 0x398ca8), [0, 1, 0]);
+      planet.geometry.dispose();
+      planet.geometry = new T.SphereGeometry(1, 64, 48);
+      planet.material.dispose();
       planet.material = new T.MeshStandardMaterial({
-        color: 0x246e91,
-        metalness: 0.08,
-        roughness: 0.76,
+        map: planetSurface(),
+        color: 0xffffff,
+        metalness: 0.05,
+        roughness: 0.78,
       });
       // Procedural longitude/latitude lines are a coordinate texture, not surface data.
       for (let j = -2; j <= 2; j++) {
@@ -295,7 +369,7 @@ export class SceneView {
           new T.MeshBasicMaterial({
             color: 0x78e0df,
             transparent: true,
-            opacity: 0.35,
+            opacity: 0.1,
           }),
         );
         ring.rotation.x = Math.PI / 2;
@@ -308,7 +382,7 @@ export class SceneView {
           new T.MeshBasicMaterial({
             color: 0x7ac6df,
             transparent: true,
-            opacity: 0.25,
+            opacity: 0.08,
           }),
         );
         ring.rotation.y = (j * Math.PI) / 6;
@@ -330,6 +404,7 @@ export class SceneView {
         blending: T.AdditiveBlending,
       });
       const satellite = add("satellite", new T.Group());
+      satellite.scale.setScalar(1.2);
       const body = box(0.18, 0.2, 0.24, 0xe8c889);
       satellite.add(body);
       o.satelliteBody = body;
@@ -346,9 +421,9 @@ export class SceneView {
       const antenna = box(0.018, 0.24, 0.018, 0xe9f1f3);
       antenna.position.y = 0.2;
       satellite.add(antenna);
-      add("radiusLabel", label("r", "#b9d4e3")).scale.set(2.8, 0.75, 1);
-      add("velocityLabel", label("v", "#ffcc84")).scale.set(2.8, 0.75, 1);
-      add("accelerationLabel", label("a", "#ff9d91")).scale.set(2.8, 0.75, 1);
+      add("radiusLabel", label("r", "#d4e6ef")).scale.set(3.8, 1, 1);
+      add("velocityLabel", label("v", "#ffcc84")).scale.set(3.8, 1, 1);
+      add("accelerationLabel", label("a", "#ff9d91")).scale.set(3.8, 1, 1);
       add(
         "trail",
         beam(
@@ -367,8 +442,8 @@ export class SceneView {
             [0, 0, 0],
             [0, 0, 0],
           ],
-          0x3b728a,
-          0.5,
+          0x9cbacb,
+          0.65,
         ),
       );
       o.velocity = new T.ArrowHelper(
@@ -1023,12 +1098,17 @@ export class SceneView {
       this.w = w;
       this.h = h;
     }
+    // Preserve room for the orbit on narrow screens; manual zoom remains a
+    // camera-only control, and never changes distance or any physical state.
+    const cameraRadius =
+      this.radius *
+      (type === "gravity" ? Math.max(1, 1.35 / this.camera.aspect) : 1);
     this.camera.position.set(
       this.target.x +
-        this.radius * Math.sin(this.polar) * Math.sin(this.azimuth),
-      this.target.y + this.radius * Math.cos(this.polar),
+        cameraRadius * Math.sin(this.polar) * Math.sin(this.azimuth),
+      this.target.y + cameraRadius * Math.cos(this.polar),
       this.target.z +
-        this.radius * Math.sin(this.polar) * Math.cos(this.azimuth),
+        cameraRadius * Math.sin(this.polar) * Math.cos(this.azimuth),
     );
     this.camera.lookAt(this.target);
     this.renderer.render(this.scene, this.camera);

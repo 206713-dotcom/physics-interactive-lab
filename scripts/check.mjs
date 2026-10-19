@@ -25,6 +25,7 @@ for (const file of [
   "js/physics-extra.js",
   "js/content-extra.js",
   "studio.css",
+  "workbench.css",
   "vendor/three.module.min.js",
   "vendor/three.core.min.js",
   "vendor/Three.LICENSE.txt",

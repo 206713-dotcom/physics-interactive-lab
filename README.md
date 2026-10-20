@@ -39,7 +39,8 @@ Open <http://localhost:4173/physics-interactive-lab/>. No install or build step,
 
 - **3D:** drag / touch to rotate and scroll to zoom. With the canvas focused, arrow keys rotate, `+` / `−` zoom, and `0` resets the camera. A reset-camera button is also provided.
 - **2D diagram:** switch at any time without restarting the physics. Diagram mode also serves browsers without working WebGL2.
-- **Playback:** pause/resume, reset, single-step, 0.25×–4× speed and fullscreen. Space toggles playback when focus is not in a form control.
+- **Playback:** pause/resume, reset, single-step, 0.25×–4× speed and an expanded workspace. Space toggles playback when focus is not in a form control.
+- **Expanded calculations:** choose **Expand** on the animation or **Live calculations** beside the page title. Every model keeps its animation, controls, readings and graphs, with a live calculation inspector showing symbols, current values, equations, substitutions, results and units. The original canvas and controls move into this view, so expansion and exit preserve the run. Desktop uses three panes; tablets have Variables/Calculations inspector buttons, and phones have jump buttons to both sections. Press **Esc** or **Exit expanded view** to return. This works in embedded browsers without relying on their Fullscreen API.
 - **Parameters:** sliders and editable numbers use explicit units. Enter or blur commits a numeric edit. Invalid inputs show an explanation and restore the valid value. Parameters and presets start a fresh run.
 - **Graphs:** choose time histories or explicitly labelled spatial/parameter curves. Zero is included to avoid visually magnifying tiny round-off changes in a circular orbit. Wave components use the same colours in the scene and graph.
 - **Readable workspace:** main copy uses 16–17 px text, parameter labels 15 px, editable values 18 px, and larger measurement cards. Graph labels are enlarged too. On the gravitation page, the scene and live measurements sit together; graphs and trajectory interpretation share the next row. Tablet and phone layouts put the scene first and keep measurement values intact.
@@ -192,7 +193,7 @@ npm test
 npm run check
 ```
 
-There are **50 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
+There are **62 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
 
 - Default spring position against the analytic solution over 30 s, with maximum error below 10⁻⁶ m; default undamped energy drift below 10⁻⁷ over 120 s.
 - Worst supported spring frequency with energy drift below 0.04% over 120 s; damping and critical/overdamped behaviour.
@@ -207,6 +208,7 @@ There are **50 tests** using Node's built-in runner. They exercise the same func
 - RC one-time-constant fractions, current/charge derivative and stored energy over supported corners.
 - Field/potential scaling, dipole and like-charge cancellation, singularity handling and E = −∇V.
 - All ten catalogue entries, 30 valid presets, 30 investigations and 50 questions; finite dynamic parameter corners and spatial datasets; invalid inputs and converted endpoints.
+- Worked calculations for every model: current-state substitutions, SI units, damping and drag signs, approximate period/fringe labels, collision predictions, refraction exclusions, RC discharge current, point-charge exclusions, zero charges and tiny-value formatting. Calculation sheets do not mutate or advance the simulation.
 
 These are bounded regression checks for the stated scenarios, not claims of exact or indefinite numerical conservation. `npm run check` verifies assets, every relative JavaScript module import, vendored libraries and GitHub Pages subdirectory compatibility. GitHub Actions runs both commands on pushes and pull requests.
 
@@ -231,8 +233,11 @@ index.html                   Semantic shell, experiment selector and local asset
 styles.css                   Base layout, controls and lesson styles
 studio.css                   Responsive v2 catalogue and 3D studio design
 workbench.css                Readable typography and focused gravitation layout
+expanded.css                 Expanded model, variable and calculation panes
 js/app.js                    Small application bootstrap
 js/studio-app.js             Routes, playback, controls, Chart.js, notebook, export
+js/expanded-view.js          Accessible expanded workspace and DOM restoration
+js/calculations.js           Pure worked calculations from the current SI state
 js/simulations.js            Declarative catalogue and graph/parameter configuration
 js/physics.js                Spring and orbital models, shared validation
 js/physics-extra.js          Eight additional pure physics models
@@ -244,6 +249,7 @@ js/content-extra.js          Eight additional lesson packages
 tests/physics.test.mjs        Original 16 physics regression tests
 tests/expanded.test.mjs       29 expansion, catalogue and validation tests
 tests/orbit-refinement.test.mjs Five focused orbital elements/scenario regressions
+tests/calculations.test.mjs   Twelve calculation and edge-case regression tests
 scripts/serve.mjs            Dependency-free local static server
 scripts/check.mjs            Required assets and relative-import checks
 vendor/                      Pinned Chart.js and Three.js modules and licences

@@ -3,6 +3,7 @@ import { SIMULATIONS, CATEGORIES, spatialRows } from "./simulations.js";
 import { LESSONS as ORIGINAL_LESSONS } from "./content.js";
 import { EXTRA_LESSONS } from "./content-extra.js";
 import { draw2D } from "./render2d.js";
+import { ExpandedView } from "./expanded-view.js";
 import {
   createOrbit,
   stepOrbit,
@@ -52,6 +53,7 @@ const icons = {
 const icon = (n) =>
   `<svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[n]}</svg>`;
 let lab = null,
+  expandedView = null,
   hero = null,
   view = null,
   heroView = null,
@@ -445,16 +447,52 @@ function bindControls() {
   );
   $$("[data-view]").forEach((b) => (b.onclick = () => setView(b.dataset.view)));
   $("#camera-reset").onclick = () => view?.home();
-  $("#fullscreen").onclick = async () => {
-    try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else await $("#stage").requestFullscreen();
-    } catch {
-      toast(
-        "Fullscreen is unavailable in this browser panel. You can still rotate and zoom.",
-      );
+  const expandButton = $("#fullscreen");
+  expandButton.innerHTML = `${icon("expand")}<span class="expand-label">Expand</span>`;
+  expandButton.setAttribute("aria-label", "Expand simulation and calculations");
+  expandButton.setAttribute("aria-expanded", "false");
+  expandButton.title = "Expand the model, variables and live calculations";
+  expandButton.onclick = () => {
+    if (expandedView) {
+      expandedView.close();
+      return;
     }
+    expandButton.setAttribute("aria-expanded", "true");
+    expandButton.title = "Return to normal view";
+    expandButton.setAttribute("aria-label", "Close expanded view");
+    expandedView = new ExpandedView({
+      title: lab.definition.short,
+      controls: $(".controls"),
+      workspace: $(".workspace"),
+      extraGraph: lab.type === "gravity" ? $(".graph-panel") : null,
+      getSnapshot: () => ({
+        type: lab.type,
+        state: lab.state,
+        params: lab.params,
+      }),
+      onClose: () => {
+        expandedView = null;
+        expandButton.title =
+          "Expand the model, variables and live calculations";
+        expandButton.setAttribute("aria-expanded", "false");
+        expandButton.setAttribute(
+          "aria-label",
+          "Expand simulation and calculations",
+        );
+      },
+      onLayout: () =>
+        requestAnimationFrame(() =>
+          charts.forEach(({ chart }) => chart.resize()),
+        ),
+    });
   };
+  const calculationLaunch = document.createElement("button");
+  calculationLaunch.className = "small-button calculation-launch";
+  calculationLaunch.innerHTML = `${icon("expand")} Live calculations`;
+  calculationLaunch.title =
+    "Open the model, variables and worked calculations together";
+  calculationLaunch.onclick = () => expandButton.click();
+  $(".toolbar-buttons").prepend(calculationLaunch);
   $("#model-shortcut").onclick = () => {
     showLesson("model");
     $("#lesson-area").scrollIntoView({
@@ -821,6 +859,7 @@ function updateReadouts() {
   $("#stage-caption").textContent =
     d.caption +
     (d.rateFor ? ` · 1× = ${fmt(rate, 3)} simulated s / real s` : "");
+  expandedView?.refresh();
 }
 function showLesson(tab) {
   const l = LESSONS[lab.type],
@@ -1001,6 +1040,7 @@ function advance(count) {
   }
 }
 function route() {
+  expandedView?.close();
   routeToken++;
   viewToken++;
   view?.dispose();

@@ -1,10 +1,10 @@
 # Physics Interactive Lab — 3D Studio
 
-**Ten experiments. Three dimensions. A clearer way to understand physics.**
+**Thirteen experiments. Three dimensions. A clearer way to understand physics.**
 
 [Open the live laboratory](https://206713-dotcom.github.io/physics-interactive-lab/) · [Browse the source](https://github.com/206713-dotcom/physics-interactive-lab) · [Automated checks](https://github.com/206713-dotcom/physics-interactive-lab/actions)
 
-A browser-only laboratory for IGCSE and A Level exploration. Rotate a real WebGL scene, compare a calibrated diagram, change parameters, and follow the calculated graphs. Each experiment includes **three guided investigations, five worked questions, learning objectives, equations, assumptions and applications**: 30 investigations and 50 questions in total.
+A browser-only laboratory for IGCSE, A Level and extension exploration. Rotate a real WebGL scene, compare a calibrated diagram, change parameters, and follow the calculated graphs. Each experiment includes **three guided investigations, five worked questions, learning objectives, equations, assumptions and applications**: 39 investigations and 65 questions in total.
 
 This is an independent student prototype and a proposed contribution to [FocusPhysics](https://focusphysics.com), not an official or endorsed FocusPhysics integration.
 
@@ -12,6 +12,9 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 | Experiment         | Explore                                                                               | Model                                             |
 | ------------------ | ------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| Binary stars       | Mass ratio, barycentre, circular/elliptical/escape motion, both stellar velocities    | Freely moving Newtonian pair, adaptive Verlet     |
+| Three-body stars   | Equal-mass figure eight, equilateral triangle, hierarchical triple, perturbations     | Full pairwise gravity, adaptive Verlet            |
+| Double pendulum    | Coupled rods, chaotic releases, nearby twin trajectory, energy and separation         | Coupled nonlinear equations with RK4              |
 | Mass & spring      | Mass, stiffness, displacement, damping, displacement/velocity/acceleration and energy | Linear spring with RK4                            |
 | Orbital mechanics  | Both masses, separation, launch velocity, circular/elliptical/escape paths            | Relative two-body velocity Verlet                 |
 | Nonlinear pendulum | Length, release angle, gravity, damping, bob mass                                     | Full sine equation with RK4                       |
@@ -55,6 +58,40 @@ Reduced-motion preference starts experiments paused and keeps the home orbit pre
 ## Physics and numerical methods
 
 Models calculate in SI units. Interface conversions such as km, nm, µC, µF, mA and millimetres are labelled; angles in degrees are explicitly identified. Exported angles are labelled radians or degrees as appropriate. The physics modules are shared by the browser and tests.
+
+### Binary and three-body stars
+
+```text
+aᵢ = G Σⱼ≠ᵢ mⱼ(rⱼ − rᵢ)/|rⱼ − rᵢ|³
+K = Σ ½mᵢ|vᵢ|², U = −Σᵢ<ⱼ Gmᵢmⱼ/rᵢⱼ
+R = Σ mᵢrᵢ / Σ mᵢ, P = Σ mᵢvᵢ
+Lz = Σ mᵢ(xᵢvᵧᵢ − yᵢvₓᵢ)
+Two-body circular reference: T₀ = 2π√[d³/G(m₁ + m₂)]
+```
+
+Both/all three masses move in an initially stationary barycentric frame. No central mass is pinned, and no per-frame recentering is applied. Adopted units are `M☉ = 1.98847×10³⁰ kg` (approximate solar mass), exact AU `149597870700 m`, and Julian year `31557600 s`. Binary stars support 0.2–3 M☉ each, separation 0.5–4 AU and tangential launch multiplier 0.55–1.50. The speed multiplier is relative to the two-body circular speed; √2 is the escape threshold.
+
+Three-body masses support 0.2–3 M☉ each, length scale 0.5–3 AU, launch multiplier 0.70–1.30 and a 0–5% +x kick to star C. The kick is measured against `√(GM_A/scale)` before converting velocities into the barycentric frame. Its three layouts are the equal-mass figure-eight reference, an equilateral Lagrange initial configuration, and an inner binary with an outer star initially five length scales away. The figure-eight coordinates and velocities come from [Richard Montgomery's UCSC reference, credited there to Carles Simó](https://people.ucsc.edu/~rmont/NbdyB.html). They are scaled into SI, not enforced as an animation path. Unequal masses or changed velocities generally break that specific choreography. The equilateral equal-mass configuration is unstable to perturbations; the hierarchical launch uses approximate initial circular speeds, followed by full three-body integration.
+
+Velocity Verlet uses an outer step of `0.002τ`, where `τ = √(d³/G(M₁+M₂))` for a binary and `τ = √(d³/GM_A)` for a triple. Each outer step subdivides to at most `0.001√(rᵢⱼ³/G(mᵢ+mⱼ))` for every pair. No gravitational softening is used. A drift-segment check pauses **before** any pair crosses `0.01d`; this is a numerical encounter guard, not a physical stellar radius or merger. An explicit substep-budget limit also pauses unresolved work, and the display stops when a star reaches 100 initial length scales from the barycentre. Numerical energy error is `(E − E₀)/|U₀|`; it remains defined for zero-total-energy escape.
+
+At 1×, one wall second represents `0.6τ` simulated seconds, stated beneath the scene. Auto-fit changes only the common linear distance scale. Star surfaces, colours, apparent radii, corona glow and surface-flow patterns are illustrative, not stellar-structure, radiation or temperature calculations. Velocity arrows use separate capped display lengths, `min(1.8, 0.7v/(d/τ))` scene units in 3D, and cannot be compared with distances by length. Coloured trails are sampled integrated positions, retaining at most 1,200 samples. To preserve star identity where tracks overlap, the figure-eight view shows the most recent 2τ per star and the triangular view 1.1τ per star; binary and hierarchical views use the retained history. Both 2D and 3D use these same trail windows. System-energy charts use 10³⁹ J and separation charts use AU; CSV retains unscaled SI values for all bodies, invariant diagnostics and pair separations.
+
+### Double pendulum and its comparison twin
+
+```text
+Δ = θ₁ − θ₂, ωᵢ = dθᵢ/dt, αᵢ = dωᵢ/dt
+(m₁+m₂)L₁α₁ + m₂L₂ cosΔ α₂ = −(m₁+m₂)g sinθ₁ − m₂L₂ω₂² sinΔ
+L₁ cosΔ α₁ + L₂α₂ = L₁ω₁² sinΔ − g sinθ₂
+K = ½(m₁+m₂)L₁²ω₁² + ½m₂L₂²ω₂² + m₂L₁L₂ω₁ω₂ cosΔ
+U = (m₁+m₂)gL₁(1−cosθ₁) + m₂gL₂(1−cosθ₂)
+```
+
+Two point bobs, massless rigid rods, fixed frictionless pivot, uniform gravity and no driving or damping. Both angles are measured from downward vertical. Supports rod lengths 0.5–2 m, bob masses 0.5–3 kg, release angles −170°–170°, gravity 1–15 m/s² and twin lower-angle difference 0°–1°. Both start at rest; the twin differs only in its lower initial angle, so their initial energies can differ slightly.
+
+The coupled 2×2 equations are solved inside RK4. Each run uses `h = 1/(480N) s`, with `N = max(1, ceil(√[((m₁+m₂)/m₁)g/min(L₁,L₂)] / (5 s⁻¹)))`; faster settings get smaller steps. The default is 1/480 s. Readouts and graphs follow the same two integrated states. The violet twin is visually offset by 0.045 scene units to avoid overlap; both physical systems remain planar. Its on-screen rods, masses and frame are illustrative. The separation graph measures actual lower-tip distance in metres and is **not** a measured Lyapunov exponent. The phase portrait plots lower angular velocity against its unwrapped angle, avoiding jumps at ±π; exports still include time and all SI state values. Main-run energy error is normalised by `(m₁+m₂)gL₁ + m₂gL₂`, avoiding division by zero at rest. Long-term chaotic phases depend on initial precision and numerical error.
+
+Derivation: [myPhysicsLab double pendulum](https://www.myphysicslab.com/pendulum/double-pendulum-en.html). The equations are implemented independently; no external simulation engine is embedded.
 
 ### Mass–spring system
 
@@ -185,7 +222,7 @@ Fixed ideal point charges and a passive probe. Points within 0.16 m of a non-zer
 
 ### Shared display and clock rules
 
-The camera never changes the numerical state or graph data. Most systems are intentionally planar even when viewed in 3D. Object size, grid spacing, glow and arrows may be illustrative; calibrated quantities are explicitly labelled. Fixed substeps are independent of animation speed. A long frame is capped at 0.1 real seconds to avoid an unstable catch-up step; on a slow device, simulated time can therefore advance less than wall time. Unit-converted slider endpoints tolerate a few floating-point rounding units, while genuinely invalid values remain rejected.
+The camera never changes the numerical state or graph data. Most systems are intentionally planar even when viewed in 3D. Object size, grid spacing, glow and arrows may be illustrative; calibrated quantities are explicitly labelled. Integration steps are independent of animation speed. A long frame is capped at 0.1 real seconds to avoid an unstable catch-up step; on a slow device, simulated time can therefore advance less than wall time. Unit-converted slider endpoints tolerate a few floating-point rounding units, while genuinely invalid values remain rejected.
 
 ## Accuracy and testing
 
@@ -194,7 +231,7 @@ npm test
 npm run check
 ```
 
-There are **68 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
+There are **85 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
 
 - Default spring position against the analytic solution over 30 s, with maximum error below 10⁻⁶ m; default undamped energy drift below 10⁻⁷ over 120 s.
 - Worst supported spring frequency with energy drift below 0.04% over 120 s; damping and critical/overdamped behaviour.
@@ -208,13 +245,16 @@ There are **68 tests** using Node's built-in runner. They exercise the same func
 - Snell's law, Fresnel reflection, critical angle, TIR and equal-index media.
 - RC one-time-constant fractions, current/charge derivative and stored energy over supported corners.
 - Field/potential scaling, dipole and like-charge cancellation, singularity handling and E = −∇V.
-- All ten catalogue entries, 30 valid presets, 30 investigations and 50 questions; finite dynamic parameter corners and spatial datasets; invalid inputs and converted endpoints.
+- All thirteen catalogue entries, 39 valid presets, 39 investigations and 65 questions; finite dynamic parameter corners and spatial datasets; invalid inputs and converted endpoints.
 - Worked calculations for every model: current-state substitutions, SI units, damping and drag signs, approximate period/fringe labels, collision predictions, refraction exclusions, RC discharge current, point-charge exclusions, zero charges and tiny-value formatting. Calculation sheets do not mutate or advance the simulation.
-- Embeds for all ten models, valid parameter round-trips, repository and self-hosted subdirectory paths, clean share links, invalid-model/protocol rejection, escaped iframe attributes and readable scientific notation with safe HTML escaping.
+- Embeds for all thirteen models, valid parameter round-trips, repository and self-hosted subdirectory paths, clean share links, invalid-model/protocol rejection, escaped iframe attributes and readable scientific notation with safe HTML escaping.
+- Binary virial/barycentre/force relations, ten-period circular radius and energy, Kepler return, elliptical angular momentum, escape and physical scaling.
+- Pairwise stellar momentum balance and inverse-square scaling, approximate figure-eight return, equilateral rotation, perturbed-triple centre of mass, supported stellar corners and close-encounter guards.
+- Independent explicit double-pendulum accelerations, zero instantaneous energy derivative, separate main/twin energy conservation over 60 s, exact-match twins, sensitive dependence, fourth-order convergence and extreme supported settings over 10 s.
 
 These are bounded regression checks for the stated scenarios, not claims of exact or indefinite numerical conservation. `npm run check` verifies assets, every relative JavaScript module import, vendored libraries and GitHub Pages subdirectory compatibility. GitHub Actions runs both commands on pushes and pull requests.
 
-Browser verification covers all ten 3D scenes and all ten 2D views, camera controls, graph selection, pause/reset/step, presets, editable inputs, notebook, lesson resources, CSV/share actions and responsive layouts. WebGL failure has an explicit diagram fallback rather than an empty experiment.
+Browser verification covers the thirteen studios and their 2D diagrams, camera controls, graph selection, pause/reset/step, presets, editable inputs, notebook, lesson resources, CSV/share actions and responsive layouts. Repeated 2D/3D switching creates a fresh canvas after releasing the previous WebGL context. WebGL failure has an explicit diagram fallback rather than an empty experiment.
 
 ## GitHub Pages deployment
 
@@ -235,6 +275,7 @@ index.html                   Semantic shell, experiment selector and local asset
 styles.css                   Base layout, controls and lesson styles
 studio.css                   Responsive v2 catalogue and 3D studio design
 workbench.css                Readable typography and focused gravitation layout
+frontiers.css                Stellar and nonlinear-dynamics workspace details
 expanded.css                 Expanded model, variable and calculation panes
 js/app.js                    Small application bootstrap
 js/studio-app.js             Routes, playback, controls, Chart.js, notebook, export
@@ -249,6 +290,12 @@ INTEGRATION.md               FocusPhysics embedding and self-hosting instruction
 js/simulations.js            Declarative catalogue and graph/parameter configuration
 js/physics.js                Spring and orbital models, shared validation
 js/physics-extra.js          Eight additional pure physics models
+js/physics-advanced.js       SI N-body and coupled double-pendulum models
+js/advanced-simulations.js   Three extension studio definitions and units
+js/calculations-advanced.js  Live stellar and double-pendulum working
+js/content-advanced.js       Nine investigations and fifteen worked questions
+js/scene-advanced.js         Stellar shaders, sampled trails and pendulum rig
+js/render-advanced.js        Calibrated extension-lab 2D diagrams
 js/canvas.js                 Original calibrated spring/orbit diagram renderers
 js/render2d.js               Additional diagram renderers
 js/scene3d.js                Three.js scenes, camera controls and GPU lifecycle
@@ -259,6 +306,7 @@ tests/expanded.test.mjs       29 expansion, catalogue and validation tests
 tests/orbit-refinement.test.mjs Five focused orbital elements/scenario regressions
 tests/calculations.test.mjs   Twelve calculation and edge-case regression tests
 tests/integration.test.mjs    Six URL, embed and maths-formatting regression tests
+tests/advanced.test.mjs       Seventeen stellar and nonlinear regression tests
 scripts/serve.mjs            Dependency-free local static server
 scripts/check.mjs            Required assets and relative-import checks
 vendor/                      Pinned Chart.js and Three.js modules and licences
@@ -269,6 +317,6 @@ To add an experiment, implement a pure model, register its parameters, presets, 
 
 ## References and licences
 
-Each lesson links to the relevant [OpenStax University Physics](https://openstax.org/subjects/science) chapter. Further references: [NIST gravitational constant](https://physics.nist.gov/cgi-bin/cuu/Value?bg), [Chart.js](https://www.chartjs.org/docs/latest/), [Three.js](https://threejs.org/docs/).
+Each lesson links to a supporting reference or original derivation. Standard topics use [OpenStax University Physics](https://openstax.org/subjects/science); the advanced references are linked above. Further references: [NIST gravitational constant](https://physics.nist.gov/cgi-bin/cuu/Value?bg), [Chart.js](https://www.chartjs.org/docs/latest/), [Three.js](https://threejs.org/docs/).
 
 Original source is MIT licensed; see [LICENSE](LICENSE). Chart.js and Three.js retain their separate MIT licences in `vendor/Chart.LICENSE.md` and `vendor/Three.LICENSE.txt`.

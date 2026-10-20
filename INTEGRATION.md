@@ -31,7 +31,7 @@ For orbital mechanics, a minimal embed is:
 </p>
 ```
 
-For the spring, change `#/gravity` to `#/spring`. Other routes are `pendulum`, `projectile`, `collisions`, `waves`, `interference`, `refraction`, `circuits` and `fields`.
+For the spring, change `#/gravity` to `#/spring`. Other routes are `binary`, `threebody`, `doublependulum`, `pendulum`, `projectile`, `collisions`, `waves`, `interference`, `refraction`, `circuits` and `fields`. All thirteen models work in the embed generator.
 
 The embed loads **paused** with the model, parameters, current values and worked calculations. It omits the main site's header and footer. **Lessons & notes** reveals the existing learning resources inside the frame; **Open full lab** opens the full lesson in another tab. Expanding a model fills its iframe, rather than covering the host website. The simulation never reads or modifies its parent page and uses no cross-frame messages.
 
@@ -56,7 +56,7 @@ The host page's Content Security Policy, if present, must permit frames from `ht
 
 ```text
 index.html
-styles.css, studio.css, workbench.css, expanded.css
+styles.css, studio.css, workbench.css, frontiers.css, expanded.css
 js/          (entire folder)
 assets/      (entire folder)
 vendor/      (entire folder, including licences)
@@ -79,4 +79,4 @@ This is an **example installation path**, not an existing FocusPhysics page. Inc
 4. Try 3D and 2D, graph selection, Lessons & notes and the full-tab link.
 5. Check the embed does not obscure the surrounding lesson. Verify CSV export and notebook storage if the school needs them.
 
-The repository's `npm test` and `npm run check` validate the numerical models, generated URLs, HTML escaping and local assets. The embed generator provides a real iframe preview for integration testing. The final host-page check requires Mr Rowland's website editor access.
+The repository's `npm test` and `npm run check` validate the numerical models, generated URLs, HTML escaping and local assets. Star and double-pendulum extension labs include energy diagnostics, numerical guards or parameter-dependent step sizes, and full assumptions in their lesson resources. The embed generator provides a real iframe preview for integration testing. The final host-page check requires Mr Rowland's website editor access.

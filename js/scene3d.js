@@ -1,6 +1,8 @@
 /** Real WebGL scenes. Geometry follows the same state as graphs and the 2D view.
  * No physics is integrated here. Pointer/keyboard camera controls are visual only. */
 import * as T from "../vendor/three.module.min.js";
+import { createAdvancedScene } from "./scene-advanced.js";
+import { ADVANCED_IDS } from "./physics-advanced.js";
 import { centralRadius, orbitAcceleration } from "./physics.js";
 import {
   waveAt,
@@ -312,11 +314,12 @@ export class SceneView {
     c.addEventListener("pointercancel", this.handlers.pointerup);
   }
   home() {
-    this.azimuth = -0.38;
+    this.azimuth = this.homeAzimuth ?? -0.38;
     this.polar = this.homePolar ?? 1.05;
     this.radius = this.homeRadius || 15;
   }
   clear() {
+    this.advanced = null;
     this.root.traverse((o) => {
       o.geometry?.dispose();
       if (o.material) {
@@ -350,6 +353,11 @@ export class SceneView {
       r.add(mesh);
       return mesh;
     };
+    if (ADVANCED_IDS.includes(type)) {
+      this.ambient.intensity = type === "doublependulum" ? 1.4 : 0.35;
+      this.advanced = createAdvancedScene(type, p, this);
+      return;
+    }
     if (type === "gravity") {
       const planet = add("planet", sphere(1, 0x398ca8), [0, 1, 0]);
       planet.geometry.dispose();
@@ -859,7 +867,8 @@ export class SceneView {
     if (this.type !== type || this.key !== JSON.stringify(p))
       this.build(type, p);
     const o = this.objects;
-    if (type === "gravity") {
+    if (this.advanced) this.advanced.update(lab);
+    else if (type === "gravity") {
       let extent = p.distance * 1.35;
       for (const q of lab.trail || [])
         extent = Math.max(extent, Math.abs(q.x) * 1.18, Math.abs(q.y) * 1.18);
@@ -1102,7 +1111,9 @@ export class SceneView {
     // camera-only control, and never changes distance or any physical state.
     const cameraRadius =
       this.radius *
-      (type === "gravity" ? Math.max(1, 1.35 / this.camera.aspect) : 1);
+      (["gravity", ...ADVANCED_IDS].includes(type)
+        ? Math.max(1, 1.35 / this.camera.aspect)
+        : 1);
     this.camera.position.set(
       this.target.x +
         cameraRadius * Math.sin(this.polar) * Math.sin(this.azimuth),

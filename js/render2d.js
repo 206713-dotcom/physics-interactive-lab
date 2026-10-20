@@ -1,7 +1,13 @@
 /** Orthographic diagram mode and an automatic fallback for browsers without WebGL. */
 import { drawSpring, drawOrbit } from "./canvas.js";
 import * as E from "./physics-extra.js";
+import { ADVANCED_IDS } from "./physics-advanced.js";
+import { drawAdvanced } from "./render-advanced.js";
 export function draw2D(canvas, lab) {
+  if (ADVANCED_IDS.includes(lab.type)) {
+    drawAdvanced(canvas, lab);
+    return;
+  }
   if (lab.type === "spring") {
     drawSpring(canvas, lab);
     return;

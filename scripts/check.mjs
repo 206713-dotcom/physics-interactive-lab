@@ -26,6 +26,13 @@ for (const file of [
   "js/math-display.js",
   "js/integration.js",
   "js/embed-builder.js",
+  "js/physics-advanced.js",
+  "js/advanced-simulations.js",
+  "js/content-advanced.js",
+  "js/calculations-advanced.js",
+  "js/scene-advanced.js",
+  "js/render-advanced.js",
+  "frontiers.css",
   "integration.html",
   "integration.css",
   "INTEGRATION.md",
@@ -57,5 +64,5 @@ for (const directory of ["js", "vendor"]) {
   }
 }
 console.log(
-  "Static assets, local module imports, ten-lab source files, Chart.js and Three.js verified.",
+  "Static assets, local module imports, thirteen-lab source files, Chart.js and Three.js verified.",
 );

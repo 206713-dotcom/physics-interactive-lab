@@ -1,6 +1,7 @@
 /** Declarative simulation catalogue. Add a model here without duplicating the UI. */
 import * as P from "./physics.js";
 import * as E from "./physics-extra.js";
+import { ADVANCED_SIMULATIONS } from "./advanced-simulations.js";
 const control = (key, label, unit, min, max, step, hint, factor = 1) => ({
   key,
   label,
@@ -40,6 +41,7 @@ const baseExtra = (id) => ({
 const range = (n, min, max, fn) =>
   Array.from({ length: n }, (_, i) => fn(min + ((max - min) * i) / (n - 1)));
 export const SIMULATIONS = {
+  ...ADVANCED_SIMULATIONS,
   spring: {
     title: "Simple harmonic motion",
     short: "Mass & spring",
@@ -1106,6 +1108,7 @@ export const SIMULATIONS = {
 };
 export const CATEGORIES = [
   "All experiments",
+  "Astrophysics",
   "Mechanics",
   "Oscillations",
   "Waves",

@@ -4,6 +4,7 @@ import * as E from "../js/physics-extra.js";
 import { SIMULATIONS, spatialRows } from "../js/simulations.js";
 import { LESSONS } from "../js/content.js";
 import { EXTRA_LESSONS } from "../js/content-extra.js";
+import { ADVANCED_LESSONS } from "../js/content-advanced.js";
 const near = (a, b, t = 1e-9) =>
   assert.ok(Math.abs(a - b) <= t, `${a} differs from ${b} by more than ${t}`);
 function run(type, p, duration, h = 1 / 240) {
@@ -13,11 +14,11 @@ function run(type, p, duration, h = 1 / 240) {
   return s;
 }
 
-test("all ten laboratories have valid defaults, three presets and complete lesson resources", () => {
-  assert.equal(Object.keys(SIMULATIONS).length, 10);
+test("all thirteen laboratories have valid defaults, three presets and complete lesson resources", () => {
+  assert.equal(Object.keys(SIMULATIONS).length, 13);
   for (const [id, d] of Object.entries(SIMULATIONS)) {
     const model = d.create(d.defaults),
-      l = { ...LESSONS, ...EXTRA_LESSONS }[id];
+      l = { ...LESSONS, ...EXTRA_LESSONS, ...ADVANCED_LESSONS }[id];
     assert.ok(model.state);
     assert.equal(d.presets.length, 3);
     assert.equal(l.experiments.length, 3);

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#10283e" />
+    <title>Embed a simulation · Physics Interactive Lab</title>
+    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./integration.css" />
+    <script type="module" src="./js/embed-builder.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header>
+      <a class="brand" href="./"
+        ><img src="./assets/favicon.svg" alt="" width="38" height="38" /><span
+          >PHYSICS<small>INTERACTIVE LAB</small></span
+        ></a
+      ><a href="./#/gravity">Back to the laboratory ↗</a>
+    </header>
+    <main id="main">
+      <section class="intro">
+        <span class="eyebrow">FOR TEACHERS & WEBSITE EDITORS</span>
+        <h1>Bring the lab<br />into your lesson.</h1>
+        <p>
+          Choose a simulation, copy the embed, and place it beside your existing
+          resources. The model, controls and live calculations stay together.
+        </p>
+        <div class="intro-tags">
+          <span>Browser only</span><span>No account needed</span
+          ><span>3D + 2D diagrams</span>
+        </div>
+      </section>
+      <section class="builder" aria-label="Simulation embed generator">
+        <div class="settings">
+          <span class="eyebrow">01 / CHOOSE</span>
+          <h2>Your simulation</h2>
+          <label for="embed-model">Experiment</label
+          ><select id="embed-model"></select
+          ><label for="embed-view">Initial view</label
+          ><select id="embed-view">
+            <option value="3d">3D interactive model</option>
+            <option value="2d">2D calibrated diagram</option>
+          </select>
+          <p id="setup-note"></p>
+          <a id="standalone" class="text-link" target="_blank" rel="noopener"
+            >Try the embed in a full tab ↗</a
+          >
+        </div>
+        <div class="code">
+          <span class="eyebrow">02 / ADD TO YOUR PAGE</span>
+          <h2>Copy. Paste. Explore.</h2>
+          <p>
+            The site editor can paste this into an HTML or embed block. It
+            leaves the rest of the lesson page in place.
+          </p>
+          <label class="sr-only" for="embed-code">HTML embed code</label
+          ><textarea id="embed-code" readonly spellcheck="false"></textarea>
+          <div class="copy-actions">
+            <button id="copy-code">Copy embed code</button
+            ><button id="copy-link" class="secondary">Copy embed URL</button
+            ><span id="copy-status" role="status"></span>
+          </div>
+        </div>
+      </section>
+      <section
+        class="preview-section"
+        aria-label="Live embedded simulation preview"
+      >
+        <div class="preview-heading">
+          <div>
+            <span class="eyebrow">03 / CHECK THE EXPERIENCE</span>
+            <h2>Exactly how it embeds.</h2>
+          </div>
+          <a id="open-lab" target="_blank" rel="noopener"
+            >Open full lesson & questions ↗</a
+          >
+        </div>
+        <p>
+          The preview starts paused. Press Resume to run it, or choose
+          Parameters to adjust the setup. At narrower widths, the inspector uses
+          tabs.
+        </p>
+        <div class="preview-frame">
+          <iframe
+            id="embed-preview"
+            title="Interactive physics simulation preview"
+            width="100%"
+            height="860"
+            loading="lazy"
+            referrerpolicy="strict-origin-when-cross-origin"
+          ></iframe>
+        </div>
+      </section>
+      <section class="handover">
+        <div>
+          <span class="eyebrow">FOR MR ROWLAND</span>
+          <h2>Two ways to add it<br />to FocusPhysics.</h2>
+        </div>
+        <div>
+          <h3>Embed from GitHub Pages</h3>
+          <p>
+            Add the code above to a lesson page on focusphysics.com. The
+            simulation runs from this project’s GitHub Pages site; updates to
+            the project appear in the embed. A wide lesson section works best.
+          </p>
+          <h3>Host a copy on FocusPhysics</h3>
+          <p>
+            Copy the source files into a static folder on the site, preserving
+            their directory structure, then link or embed that folder. This
+            gives the site owner control over the version and updates.
+          </p>
+          <p>
+            Mr Rowland or the website administrator needs to add the code. This
+            page does not change FocusPhysics.
+          </p>
+          <a
+            href="https://github.com/206713-dotcom/physics-interactive-lab/blob/main/INTEGRATION.md"
+            target="_blank"
+            rel="noopener"
+            >Read the integration instructions ↗</a
+          >
+        </div>
+      </section>
+    </main>
+    <footer>
+      <span
+        >Independent student project · Proposed contribution to
+        FocusPhysics</span
+      ><a
+        href="https://github.com/206713-dotcom/physics-interactive-lab"
+        target="_blank"
+        rel="noopener"
+        >Source & numerical tests ↗</a
+      >
+    </footer>
+    <noscript
+      >Enable JavaScript to generate a customised embed. Manual instructions are
+      in INTEGRATION.md in the repository.</noscript
+    >
+  </body>
+</html>

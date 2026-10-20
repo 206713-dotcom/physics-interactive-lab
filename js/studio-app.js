@@ -4,6 +4,7 @@ import { LESSONS as ORIGINAL_LESSONS } from "./content.js";
 import { EXTRA_LESSONS } from "./content-extra.js";
 import { draw2D } from "./render2d.js";
 import { ExpandedView } from "./expanded-view.js";
+import { experimentLink } from "./integration.js";
 import {
   createOrbit,
   stepOrbit,
@@ -17,6 +18,7 @@ const LESSONS = { ...ORIGINAL_LESSONS, ...EXTRA_LESSONS };
 const $ = (s, r = document) => r.querySelector(s),
   $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+const embedded = new URLSearchParams(location.search).get("embed") === "1";
 const esc = (s) =>
   String(s).replace(
     /[&<>"']/g,
@@ -226,7 +228,7 @@ function labPage(type, query) {
     type,
     definition: d,
     ...d.create(params),
-    running: !reduced(),
+    running: !embedded && !reduced(),
     speed: 1,
     accumulator: 0,
     history: [],
@@ -294,6 +296,7 @@ function labPage(type, query) {
   setView(lab.view === "2d" ? "2d" : "3d");
   if (invalid)
     toast("That shared setup was invalid. Safe defaults have been restored.");
+  if (embedded) $("#fullscreen").click();
 }
 /** Keep the existing controls and calculations; regroup their DOM for reading.
  * The scene and live measurements form the experiment, with interpretation and
@@ -469,7 +472,12 @@ function bindControls() {
         type: lab.type,
         state: lab.state,
         params: lab.params,
+        running: lab.running,
+        ended: lab.ended,
       }),
+      onPlayback: () => $("#play").click(),
+      embedded,
+      fullURL: () => setupLink(),
       onClose: () => {
         expandedView = null;
         expandButton.title =
@@ -493,6 +501,16 @@ function bindControls() {
     "Open the model, variables and worked calculations together";
   calculationLaunch.onclick = () => expandButton.click();
   $(".toolbar-buttons").prepend(calculationLaunch);
+  const embedLink = document.createElement("a");
+  embedLink.className = "small-button";
+  embedLink.textContent = "</> Embed";
+  embedLink.href = "./integration.html";
+  embedLink.onclick = () => {
+    const target = new URL("./integration.html", location.href);
+    target.hash = new URL(setupLink()).hash;
+    embedLink.href = target.href;
+  };
+  $(".toolbar-buttons").append(embedLink);
   $("#model-shortcut").onclick = () => {
     showLesson("model");
     $("#lesson-area").scrollIntoView({
@@ -528,12 +546,7 @@ function bindControls() {
     };
   });
   $("#share").onclick = async () => {
-    const q = new URLSearchParams({
-      ...lab.params,
-      view: lab.view,
-      graph: lab.graph,
-    });
-    const url = `${location.href.split("#")[0]}#/${lab.type}?${q}`;
+    const url = setupLink();
     try {
       await navigator.clipboard.writeText(url);
       toast(
@@ -564,6 +577,16 @@ function bindControls() {
     });
     syncInputs();
   };
+}
+function setupLink(embed = false) {
+  return experimentLink({
+    baseURL: location.href,
+    model: lab.type,
+    params: lab.params,
+    view: lab.view,
+    graph: lab.graph,
+    embed,
+  });
 }
 async function setView(mode) {
   if (!lab) return;
@@ -621,6 +644,7 @@ function syncPlay() {
     : lab.running
       ? "RUNNING"
       : "PAUSED";
+  expandedView?.refresh();
 }
 function sample() {
   const row = lab.definition.sample(lab.state, lab.params);
@@ -860,6 +884,7 @@ function updateReadouts() {
     d.caption +
     (d.rateFor ? ` · 1× = ${fmt(rate, 3)} simulated s / real s` : "");
   expandedView?.refresh();
+  if (embedded) $("#embed-open").href = setupLink();
 }
 function showLesson(tab) {
   const l = LESSONS[lab.type],
@@ -1053,7 +1078,7 @@ function route() {
   lab = null;
   const [path, query = ""] = location.hash.slice(1).split("?"),
     id = path?.replace(/^\//, ""),
-    type = SIMULATIONS[id] ? id : null;
+    type = Object.hasOwn(SIMULATIONS, id) ? id : embedded ? "gravity" : null;
   document.title = type
     ? `${SIMULATIONS[type].title} · Physics Interactive Lab`
     : "Physics Interactive Lab · Explore in 3D";
@@ -1143,5 +1168,14 @@ document.addEventListener("visibilitychange", () => {
   lastFrame = 0;
 });
 window.addEventListener("hashchange", route);
+if (embedded) {
+  document.body.classList.add("is-embedded");
+  const bar = document.createElement("div");
+  bar.id = "embed-bar";
+  bar.innerHTML =
+    '<span>PHYSICS INTERACTIVE LAB</span><button type="button" id="embed-expand">Model & calculations</button><a id="embed-open" target="_blank" rel="noopener">Open full lab ↗</a>';
+  $("#main").before(bar);
+  $("#embed-expand").onclick = () => $("#fullscreen")?.click();
+}
 route();
 requestAnimationFrame(frame);

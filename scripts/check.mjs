@@ -1,13 +1,15 @@
 import { readFile, access, readdir } from "node:fs/promises";
 import path from "node:path";
 import assert from "node:assert/strict";
-const html = await readFile("index.html", "utf8");
-for (const match of html.matchAll(/(?:src|href)="(\.\/[^"?#]+)"/g))
-  await access(match[1]);
-assert.ok(
-  !/(?:src|href)="\/(?!\/)/.test(html),
-  "Asset paths must work below a GitHub Pages subdirectory.",
-);
+for (const document of ["index.html", "integration.html"]) {
+  const html = await readFile(document, "utf8");
+  for (const match of html.matchAll(/(?:src|href)="(\.\/[^"?#]+)"/g))
+    await access(match[1]);
+  assert.ok(
+    !/(?:src|href)="\/(?!\/)/.test(html),
+    "Asset paths must work below a GitHub Pages subdirectory.",
+  );
+}
 const bundle = await readFile("vendor/chart.umd.js", "utf8");
 assert.ok(
   bundle.includes("Chart.js v4.5.1"),
@@ -21,6 +23,12 @@ for (const file of [
   "js/studio-app.js",
   "js/calculations.js",
   "js/expanded-view.js",
+  "js/math-display.js",
+  "js/integration.js",
+  "js/embed-builder.js",
+  "integration.html",
+  "integration.css",
+  "INTEGRATION.md",
   "js/simulations.js",
   "js/scene3d.js",
   "js/render2d.js",

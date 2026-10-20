@@ -40,13 +40,14 @@ Open <http://localhost:4173/physics-interactive-lab/>. No install or build step,
 - **3D:** drag / touch to rotate and scroll to zoom. With the canvas focused, arrow keys rotate, `+` / `−` zoom, and `0` resets the camera. A reset-camera button is also provided.
 - **2D diagram:** switch at any time without restarting the physics. Diagram mode also serves browsers without working WebGL2.
 - **Playback:** pause/resume, reset, single-step, 0.25×–4× speed and an expanded workspace. Space toggles playback when focus is not in a form control.
-- **Expanded calculations:** choose **Expand** on the animation or **Live calculations** beside the page title. Every model keeps its animation, controls, readings and graphs, with a live calculation inspector showing symbols, current values, equations, substitutions, results and units. The original canvas and controls move into this view, so expansion and exit preserve the run. Desktop uses three panes; tablets have Variables/Calculations inspector buttons, and phones have jump buttons to both sections. Press **Esc** or **Exit expanded view** to return. This works in embedded browsers without relying on their Fullscreen API.
+- **Expanded calculations:** choose **Expand** on the animation or **Live calculations** beside the page title. Select a calculation to keep its equation, substitution and highlighted result together; all other results and current variable values remain available below. Scientific notation uses readable powers of ten. **Copy this working** captures that calculation and its values at the instant clicked. The original canvas and controls move into this view, so expansion and exit preserve the run. Desktop uses three panes; tablets have Parameters/Calculations inspector buttons, and phones have jump buttons. A header playback button stays accessible while scrolling. Press **Esc** or **Exit expanded view** to return.
 - **Parameters:** sliders and editable numbers use explicit units. Enter or blur commits a numeric edit. Invalid inputs show an explanation and restore the valid value. Parameters and presets start a fresh run.
 - **Graphs:** choose time histories or explicitly labelled spatial/parameter curves. Zero is included to avoid visually magnifying tiny round-off changes in a circular orbit. Wave components use the same colours in the scene and graph.
 - **Readable workspace:** main copy uses 16–17 px text, parameter labels 15 px, editable values 18 px, and larger measurement cards. Graph labels are enlarged too. On the gravitation page, the scene and live measurements sit together; graphs and trajectory interpretation share the next row. Tablet and phone layouts put the scene first and keep measurement values intact.
 - **Notebook:** record actual readings to compare different setups. Up to 12 readings per experiment are kept in this device's browser storage, with their numerical state and initial parameters. Nothing is uploaded. Clear readings from the notebook when needed.
 - **CSV:** export up to 1,200 recent calculated time samples, or the selected calculated spatial/parameter curve. The first line gives the parameters, and headers label the units. Missing values near an excluded point charge or beyond a critical angle stay blank. No fabricated detections or experimental measurements are added.
 - **Share:** copy a link that contains the current initial parameters, graph and camera mode. It opens a fresh run; it does not include the notebook or elapsed state.
+- **Embed:** open the [embed generator](https://206713-dotcom.github.io/physics-interactive-lab/integration.html), or choose **Embed** from an experiment to preserve its initial setup. The working iframe preview and copyable HTML make it ready for an existing lesson page. `?embed=1#/gravity` opens a paused, compact model with calculations; **Lessons & notes** reveals its learning resources. See [INTEGRATION.md](INTEGRATION.md) for FocusPhysics handover, host-page checks and self-hosting. No changes to FocusPhysics itself are made by this repository.
 - **Library:** search by topic or filter by subject. The experiment selector makes it easy to move between studios.
 
 Reduced-motion preference starts experiments paused and keeps the home orbit preview still. Background tabs do not accumulate simulation time. Very small numerical readouts may display `≈ 0`; CSV exports retain their full numerical values.
@@ -193,7 +194,7 @@ npm test
 npm run check
 ```
 
-There are **62 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
+There are **68 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
 
 - Default spring position against the analytic solution over 30 s, with maximum error below 10⁻⁶ m; default undamped energy drift below 10⁻⁷ over 120 s.
 - Worst supported spring frequency with energy drift below 0.04% over 120 s; damping and critical/overdamped behaviour.
@@ -209,6 +210,7 @@ There are **62 tests** using Node's built-in runner. They exercise the same func
 - Field/potential scaling, dipole and like-charge cancellation, singularity handling and E = −∇V.
 - All ten catalogue entries, 30 valid presets, 30 investigations and 50 questions; finite dynamic parameter corners and spatial datasets; invalid inputs and converted endpoints.
 - Worked calculations for every model: current-state substitutions, SI units, damping and drag signs, approximate period/fringe labels, collision predictions, refraction exclusions, RC discharge current, point-charge exclusions, zero charges and tiny-value formatting. Calculation sheets do not mutate or advance the simulation.
+- Embeds for all ten models, valid parameter round-trips, repository and self-hosted subdirectory paths, clean share links, invalid-model/protocol rejection, escaped iframe attributes and readable scientific notation with safe HTML escaping.
 
 These are bounded regression checks for the stated scenarios, not claims of exact or indefinite numerical conservation. `npm run check` verifies assets, every relative JavaScript module import, vendored libraries and GitHub Pages subdirectory compatibility. GitHub Actions runs both commands on pushes and pull requests.
 
@@ -238,6 +240,12 @@ js/app.js                    Small application bootstrap
 js/studio-app.js             Routes, playback, controls, Chart.js, notebook, export
 js/expanded-view.js          Accessible expanded workspace and DOM restoration
 js/calculations.js           Pure worked calculations from the current SI state
+js/math-display.js           Escaped scientific-notation display formatting
+js/integration.js            Validated experiment URLs and iframe snippets
+js/embed-builder.js          Embed generator and real iframe preview
+integration.html             Teacher-facing embed generator
+integration.css              Responsive integration page styles
+INTEGRATION.md               FocusPhysics embedding and self-hosting instructions
 js/simulations.js            Declarative catalogue and graph/parameter configuration
 js/physics.js                Spring and orbital models, shared validation
 js/physics-extra.js          Eight additional pure physics models
@@ -250,6 +258,7 @@ tests/physics.test.mjs        Original 16 physics regression tests
 tests/expanded.test.mjs       29 expansion, catalogue and validation tests
 tests/orbit-refinement.test.mjs Five focused orbital elements/scenario regressions
 tests/calculations.test.mjs   Twelve calculation and edge-case regression tests
+tests/integration.test.mjs    Six URL, embed and maths-formatting regression tests
 scripts/serve.mjs            Dependency-free local static server
 scripts/check.mjs            Required assets and relative-import checks
 vendor/                      Pinned Chart.js and Three.js modules and licences

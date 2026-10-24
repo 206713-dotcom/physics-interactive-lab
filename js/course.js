@@ -32,6 +32,17 @@ export function renderCourse(container) {
   ).join(
     "",
   )}</div><p id="course-empty" hidden>No lesson matches. Try “thermal”, “circuits” or “Moon”.</p><aside class="course-provenance">Course map checked ${COURSE_SCAN.date}: both year hubs, ten topic hubs and 78 lesson pages, including 13 revision/review pages. The <a href="${COURSE_SCAN.checklist}" target="_blank" rel="noopener">0625 checklist ↗</a> links 324 statements to 62 lessons; topic hubs add three practical/extension lessons. Independent student project; no endorsement is implied. <a href="https://github.com/206713-dotcom/physics-interactive-lab/blob/main/IGCSE-COVERAGE.md" target="_blank" rel="noopener">Detailed coverage and limitations ↗</a></aside></div>`;
+  container.querySelector(".course-search-row").insertAdjacentHTML(
+    "beforebegin",
+    `<section class="new-lab-strip"><div class="eyebrow">NEW PRACTICAL LABORATORIES</div><h2>More ways to test the physics.</h2><div>${Object.entries(
+      SIMULATIONS,
+    )
+      .filter(([, d]) => d.isNew && d.level === "IGCSE 0625")
+      .map(([id, d]) => `<a href="#/${id}">${escape(d.short)} ↗</a>`)
+      .join(
+        "",
+      )}</div><p><a href="#/questions">Also new: 312 original A Level questions, in 26 topic groups ↗</a></p></section>`,
+  );
   container.querySelector("#course-search").oninput = (e) => {
     const query = e.target.value.trim().toLowerCase();
     let count = 0;

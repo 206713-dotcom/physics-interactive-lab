@@ -38,6 +38,13 @@ for (const file of [
   "js/render-curriculum.js",
   "js/course-map.js",
   "js/course.js",
+  "js/practical-physics.js",
+  "js/practical-labs.js",
+  "js/render-practical.js",
+  "js/question-data.js",
+  "js/question-bank.js",
+  "questions.css",
+  "QUESTION-BANK.md",
   "curriculum.css",
   "IGCSE-COVERAGE.md",
   "frontiers.css",
@@ -72,5 +79,5 @@ for (const directory of ["js", "vendor"]) {
   }
 }
 console.log(
-  "Static assets, local module imports, 41-lab source files, course map, Chart.js and Three.js verified.",
+  "Static assets, local module imports, 57-lab source files, question bank, course map, Chart.js and Three.js verified.",
 );

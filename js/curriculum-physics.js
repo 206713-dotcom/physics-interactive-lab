@@ -1,6 +1,13 @@
 /** Pure IGCSE models. SI calculations are independent of the Canvas presentation.
  * Analytic models use elapsed simulated time; only radioactive decay is stochastic.
  * Illustrative particle trajectories and stellar storyboards are labelled as such. */
+import {
+  PRACTICAL_RANGES,
+  PRACTICAL_IDS,
+  createPractical,
+  stepPractical,
+  samplePractical,
+} from "./practical-physics.js";
 export const C = 299792458,
   R = 8.314462618,
   K_B = 1.380649e-23;
@@ -14,6 +21,7 @@ export const DEG = Math.PI / 180;
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 // Each parameter is [default, minimum, maximum]. Integer/select parameters are validated too.
 export const RANGES = {
+  ...PRACTICAL_RANGES,
   measurement: {
     length: [0.427, 0.05, 2],
     count: [10, 1, 20],
@@ -207,6 +215,8 @@ const INTEGERS = new Set([
   "seed",
   "planet",
   "stage",
+  "orientation",
+  "order",
 ]);
 export function validate(id, p) {
   if (!RANGES[id]) throw new RangeError("Unknown IGCSE model.");
@@ -242,6 +252,7 @@ export function createCurriculum(id, p = { ...DEFAULTS[id] }) {
   validate(id, p);
   const params = { ...p },
     state = { t: 0 };
+  if (PRACTICAL_IDS.includes(id)) return { params, state: createPractical(id) };
   if (id === "radioactivity") {
     const rng = randomSequence(p.seed);
     state.decayTimes = Array.from(
@@ -254,6 +265,7 @@ export function createCurriculum(id, p = { ...DEFAULTS[id] }) {
 export function stepCurriculum(id, s, p, h) {
   if (!Number.isFinite(h) || h <= 0 || h > 60)
     throw new RangeError("Invalid time step.");
+  if (PRACTICAL_IDS.includes(id)) return stepPractical(id, s, p, h);
   return { ...s, t: s.t + h };
 }
 export const PLANETS = [
@@ -301,6 +313,7 @@ export function heating(p, t) {
   return { temperature, melt, boil, energy: p.power * t };
 }
 export function sampleCurriculum(id, s, p) {
+  if (PRACTICAL_IDS.includes(id)) return samplePractical(id, s, p);
   const t = s.t,
     q = { t };
   switch (id) {

@@ -7,6 +7,8 @@ import { ADVANCED_IDS } from "./physics-advanced.js";
 import { CURRICULUM_LESSONS } from "./content-curriculum.js";
 import { curriculumThumbnail } from "./render-curriculum.js";
 import { renderCourse, relatedLessons } from "./course.js";
+import { renderQuestionBank } from "./question-bank.js";
+import { QUESTION_GROUPS } from "./question-data.js";
 import { draw2D } from "./render2d.js";
 import { ExpandedView } from "./expanded-view.js";
 import { experimentLink } from "./integration.js";
@@ -150,7 +152,7 @@ function thumbnail(id) {
 }
 function card(id) {
   const d = SIMULATIONS[id];
-  return `<a class="simulation-card" href="#/${id}" style="--accent:${d.color}"><div class="card-art">${thumbnail(id)}<span class="art-label">${d.category.toUpperCase()}</span><span class="card-dimension">${d.diagramOnly ? "INTERACTIVE DIAGRAM" : icon("cube") + " 3D + 2D"}</span></div><div class="card-body"><div class="card-meta">${d.level}</div><h3>${d.short}</h3><p>${d.summary}</p><div class="card-bottom"><span class="card-equation">${d.formula}</span><span>Explore ${icon("arrow")}</span></div></div></a>`;
+  return `<a class="simulation-card" href="#/${id}" style="--accent:${d.color}"><div class="card-art">${thumbnail(id)}<span class="art-label">${d.category.toUpperCase()}</span><span class="card-dimension">${d.diagramOnly ? "INTERACTIVE DIAGRAM" : icon("cube") + " 3D + 2D"}</span></div><div class="card-body"><div class="card-meta">${d.level}${d.isNew ? '<span class="new-lab-badge">NEW</span>' : ""}</div><h3>${d.short}</h3><p>${d.summary}</p><div class="card-bottom"><span class="card-equation">${d.formula}</span><span>Explore ${icon("arrow")}</span></div></div></a>`;
 }
 function home() {
   $("#main").innerHTML =
@@ -181,6 +183,10 @@ function home() {
   $(".catalogue").insertAdjacentHTML(
     "beforebegin",
     '<section class="curriculum-banner"><div><div class="eyebrow">NEW · THE COMPLETE IGCSE COURSE MAP</div><h2>Find your lesson. Open its experiment.</h2><p>78 FocusPhysics lesson pages · all six syllabus areas · original resources linked.</p></div><a class="button" href="#/course">Explore the IGCSE course ↗</a></section>',
+  );
+  $(".catalogue").insertAdjacentHTML(
+    "beforebegin",
+    '<section class="curriculum-banner question-banner"><div><div class="eyebrow">NEW · 312 ORIGINAL QUESTIONS · 26 TOPIC GROUPS</div><h2>Turn your experiments into understanding.</h2><p>A Level calculations, explanations, hints and worked solutions. Save your progress and print a practice set.</p></div><a class="button" href="#/questions">Enter the practice room ↗</a></section>',
   );
   let category = "All experiments";
   const filter = () => {
@@ -314,6 +320,12 @@ function labPage(type, query) {
   bindControls();
   $(".lab-page").dataset.model = type;
   const mappedLessons = relatedLessons(type);
+  const practiceGroup = QUESTION_GROUPS.find((group) => group.model === type);
+  if (practiceGroup)
+    $(".lab-title-row").insertAdjacentHTML(
+      "afterend",
+      `<aside class="lesson-course-links"><a href="#/questions?topic=${practiceGroup.id}">Practise ${esc(practiceGroup.title.toLowerCase())} · 12 A Level questions with worked answers ↗</a></aside>`,
+    );
   if (mappedLessons.length)
     $(".lab-title-row").insertAdjacentHTML(
       "afterend",
@@ -793,6 +805,7 @@ function createCharts() {
       : "LIVE TIME HISTORY";
   for (const [i, part] of parts.entries()) {
     const xTitle =
+      part.xTitleFor?.(lab.params) ||
       part.xTitle ||
       (part.phaseX
         ? "Lower rod angle / rad (unwrapped)"
@@ -930,6 +943,7 @@ function updateCharts() {
       c.chart.options.scales.x.min = Math.max(0, s.t / tf - span);
       c.chart.options.scales.x.max = Math.max(Math.min(span, 2), s.t / tf);
     }
+    if (g.xTitleFor) c.chart.options.scales.x.title.text = g.xTitleFor(p);
     c.chart.update("none");
   }
   lab.graphDirty = false;
@@ -1176,7 +1190,10 @@ function exportData() {
   };
   Object.assign(units, lab.definition.csvUnits || {});
   if (g.spatial?.startsWith("curriculum:"))
-    axis = g.xTitle.replace(/[^a-zA-Z0-9]+/g, "_");
+    axis = (g.xTitleFor?.(lab.params) || g.xTitle).replace(
+      /[^a-zA-Z0-9]+/g,
+      "_",
+    );
   const keys = [...new Set(rows.flatMap((r) => Object.keys(r)))].filter((k) =>
     rows.some((r) => typeof r[k] === "number" || r[k] === null),
   );
@@ -1229,6 +1246,8 @@ function advance(count) {
   }
 }
 function route() {
+  $("#main").onclick = null;
+  $("#main").oninput = null;
   expandedView?.close();
   routeToken++;
   viewToken++;
@@ -1249,7 +1268,14 @@ function route() {
   $("#lab-select").value = type || "";
   $$("[data-nav]").forEach((a) => {
     const active =
-      a.dataset.nav === (id === "course" ? "course" : !type ? "home" : "");
+      a.dataset.nav ===
+      (id === "course"
+        ? "course"
+        : id === "questions"
+          ? "questions"
+          : !type
+            ? "home"
+            : "");
     a.classList.toggle("active", active);
     if (active) a.setAttribute("aria-current", "page");
     else a.removeAttribute("aria-current");
@@ -1258,6 +1284,9 @@ function route() {
   else if (id === "course") {
     document.title = "IGCSE course map · Physics Interactive Lab";
     renderCourse($("#main"));
+  } else if (id === "questions") {
+    document.title = "A Level practice · Physics Interactive Lab";
+    renderQuestionBank($("#main"), new URLSearchParams(query));
   } else home();
   window.scrollTo(0, 0);
   lastFrame = 0;

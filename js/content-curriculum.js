@@ -1,7 +1,9 @@
 /** Original teaching text. FocusPhysics links are a course map, not copied lessons. */
 import { CURRICULUM_SIMULATIONS, WORK } from "./curriculum-simulations.js";
 import { sampleCurriculum } from "./curriculum-physics.js";
+import { PRACTICAL_LABS, PRACTICAL_NOTES } from "./practical-labs.js";
 const NOTES = {
+  ...PRACTICAL_NOTES,
   measurement: [
     "A reading is an estimate, not an exact truth.",
     "Ruler divisions limit resolution. Timing many oscillations shares the same two endpoint reaction uncertainties across more cycles.",
@@ -272,11 +274,17 @@ export const CURRICULUM_LESSONS = Object.fromEntries(
         concept,
         answer,
       ] = NOTES[id],
-      p = d.defaults,
-      s = d.create(p).state;
+      p = d.defaults;
+    let s = d.create(p).state;
     // Fixed textbook calculation questions are explicitly tied to a named setup,
     // unlike the calculation inspector, which always follows the current run.
-    s.t = id === "sound" ? 0.001 : id === "charged" ? 1e-9 : 10;
+    const questionTime =
+      PRACTICAL_LABS[id]?.questionTime ??
+      (id === "sound" ? 0.001 : id === "charged" ? 1e-9 : 10);
+    if (id === "filament")
+      while (s.t < questionTime - 1e-12)
+        s = d.step(s, p, Math.min(d.h, questionTime - s.t));
+    else s.t = questionTime;
     const q = sampleCurriculum(id, s, p);
     const questions = WORK[id]
       .slice(0, 3)
@@ -291,28 +299,38 @@ export const CURRICULUM_LESSONS = Object.fromEntries(
         model,
       ],
     );
-    const experiments = d.presets.map(([preset, params], i) => ({
-      title:
-        i === 0
-          ? "Establish a reference"
-          : i === 1
-            ? d.presets[1][0]
-            : d.presets[2][0],
-      preset,
-      text: `Load “${preset}”, inspect the calculation panel, and record the first three readouts. ${
-        i === 0
-          ? "Identify the input, output and controlled variables."
-          : `Compare with “Start here”. Changed settings: ${Object.entries(
-              params,
-            )
-              .filter(([k, v]) => v !== p[k])
-              .map(([k, v]) => `${k} = ${n(v)}`)
-              .join(", ")} (internal units).`
-      }`,
-      predict:
-        "Predict which reading changes, and explain your prediction with an equation.",
-      result: i === 0 ? intro : explanation,
-    }));
+    const experiments =
+      PRACTICAL_LABS[id]?.experiments.map(
+        ([title, preset, text, predict, result]) => ({
+          title,
+          preset,
+          text,
+          predict,
+          result,
+        }),
+      ) ||
+      d.presets.map(([preset, params], i) => ({
+        title:
+          i === 0
+            ? "Establish a reference"
+            : i === 1
+              ? d.presets[1][0]
+              : d.presets[2][0],
+        preset,
+        text: `Load “${preset}”, inspect the calculation panel, and record the first three readouts. ${
+          i === 0
+            ? "Identify the input, output and controlled variables."
+            : `Compare with “Start here”. Changed settings: ${Object.entries(
+                params,
+              )
+                .filter(([k, v]) => v !== p[k])
+                .map(([k, v]) => `${k} = ${n(v)}`)
+                .join(", ")} (internal units).`
+        }`,
+        predict:
+          "Predict which reading changes, and explain your prediction with an equation.",
+        result: i === 0 ? intro : explanation,
+      }));
     return [
       id,
       {
@@ -336,7 +354,7 @@ export const CURRICULUM_LESSONS = Object.fromEntries(
         questions,
         applications,
         model,
-        source: [
+        source: PRACTICAL_LABS[id]?.source || [
           "Cambridge IGCSE Physics 0625 syllabus",
           "https://www.cambridgeinternational.org/programmes-and-qualifications/cambridge-igcse-physics-0625/",
         ],

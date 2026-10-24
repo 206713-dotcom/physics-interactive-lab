@@ -1,5 +1,7 @@
 /** Scientific Canvas instruments. This module reads state; it never advances it. */
 import * as P from "./curriculum-physics.js";
+import { PRACTICAL_IDS } from "./practical-physics.js";
+import { drawPractical, practicalThumbnail } from "./render-practical.js";
 const TAU = Math.PI * 2,
   CYAN = "#6be5d4",
   GOLD = "#ffc580",
@@ -167,6 +169,25 @@ export function drawCurriculum(canvas, lab) {
       col,
       2.5,
     );
+  if (PRACTICAL_IDS.includes(lab.type)) {
+    drawPractical(lab, {
+      c,
+      p,
+      s,
+      q,
+      t,
+      text,
+      line,
+      arrow,
+      rect,
+      circle,
+      arc,
+      fmt,
+      title,
+      foot,
+    });
+    return;
+  }
   switch (lab.type) {
     case "measurement": {
       title("Measurement bench", "Ideal ruler · model timing");
@@ -1739,6 +1760,7 @@ export function drawCurriculum(canvas, lab) {
   }
 }
 export function curriculumThumbnail(id) {
+  if (PRACTICAL_IDS.includes(id)) return practicalThumbnail(id);
   const groups = {
     measurement:
       "M70 100h250M80 100v20m40-20v12m40-12v20m40-20v12m40-12v20m40-20v12",

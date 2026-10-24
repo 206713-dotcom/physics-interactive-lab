@@ -1,14 +1,43 @@
 # Physics Interactive Lab — IGCSE course & 3D studios
 
-**41 working laboratories. All six IGCSE areas. Live calculations you can follow.**
+**57 working laboratories. 312 original A Level practice questions. Live calculations you can follow.**
 
 [Open the live laboratory](https://206713-dotcom.github.io/physics-interactive-lab/) · [Browse the source](https://github.com/206713-dotcom/physics-interactive-lab) · [Automated checks](https://github.com/206713-dotcom/physics-interactive-lab/actions)
 
-A browser-only laboratory for IGCSE, A Level and extension exploration. The [IGCSE course navigator](https://206713-dotcom.github.io/physics-interactive-lab/#/course) maps 78 FocusPhysics lesson pages to interactive experiments. There are 28 new scientific 2D instruments alongside the original 13 WebGL studios. Each experiment includes **three guided investigations, five worked questions, learning objectives, equations, assumptions and applications**: 123 investigations and 205 questions in total.
+A browser-only laboratory for IGCSE, A Level and extension exploration. The [IGCSE course navigator](https://206713-dotcom.github.io/physics-interactive-lab/#/course) maps 78 FocusPhysics lesson pages to interactive experiments. There are 44 scientific 2D instruments alongside the original 13 WebGL studios. Each experiment includes **three guided investigations, five worked questions, learning objectives, equations, assumptions and applications**: 171 investigations and 285 questions. The separate [A Level practice room](https://206713-dotcom.github.io/physics-interactive-lab/#/questions) adds 312 original questions in 26 groups, for **597 questions across the project**.
 
 This is an independent student prototype and a proposed contribution to [FocusPhysics](https://focusphysics.com), not an official or endorsed FocusPhysics integration.
 
 ## What is in the laboratory?
+
+### Version 5: sixteen new practical and A Level instruments
+
+| Laboratory             | What students investigate                                                | Model                                                     |
+| ---------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------- |
+| Hydraulic lift         | Force advantage, shared pressure, piston travel and equal work           | Ideal quasistatic Pascal coupling                         |
+| Spring combinations    | Single, series and parallel extension, force sharing, elastic energy     | Quasistatic Hookean springs                               |
+| Sensor circuits        | LDR illumination, NTC temperature, divider orientation and threshold     | Empirical LDR and NTC beta models, ideal unloaded divider |
+| Radiation chamber      | Alpha/beta curvature, gamma travel, field reversal                       | Exact relativistic magnetic circular motion; gamma at c   |
+| Rectification          | Half/full-wave output, RMS, mean and heating                             | Ideal diode waveform operations                           |
+| Filament lamp          | Inrush current, warming resistance, thermal losses and energy accounting | Coupled electrothermal RK4                                |
+| Cooling curves         | Mass, heat capacity, insulation and ambient temperature                  | Exact Newton cooling                                      |
+| Air-column resonance   | Open/closed ends, pressure/displacement nodes and harmonics              | Analytic standing waves                                   |
+| Photoelectric emission | Threshold, electron energy, photon rate and photocurrent                 | Einstein energy equation, ideal quantum efficiency        |
+| Electron diffraction   | Accelerating voltage, matter wavelength, permitted orders                | Relativistic momentum and Bragg condition                 |
+| Polarisation           | Two/three filters, crossed axes and intensity                            | Ideal Malus projections                                   |
+| Velocity selector      | Balanced and deflected proton beams                                      | Exact uniform crossed-field trajectory                    |
+| Driven oscillations    | Response amplitude, phase, damping and power                             | Exact linear steady-state forced oscillator               |
+| Gas processes          | Isothermal, isobaric and adiabatic expansion/compression                 | Quasistatic monatomic ideal gas and first law             |
+| Blackbody spectra      | Wien peak, Planck shape, area and emissivity                             | Planck spectrum and Stefan–Boltzmann law                  |
+| Young modulus          | Stress, strain, geometry, wire stiffness and energy                      | Quasistatic uniaxial linear elasticity                    |
+
+All sixteen use the existing sliders, graphs, expanded model/variable/working workspace, notebook, share and embed tools. New IGCSE instruments appear in the course navigator. Extension models are labelled A Level and linked to relevant practice groups. Diagrams identify enlarged, normalised or independently scaled quantities; they are not presented as 3D physical measurements.
+
+### A Level practice room
+
+The [practice room](https://206713-dotcom.github.io/physics-interactive-lab/#/questions) has **208 calculations and 104 explanations**, grouped into 26 twelve-question topics. Search, stage/difficulty/type filters, hints, worked solutions, safe numerical checking, bookmarks, self-rated confidence, local progress, JSON progress export/import and printable sets are included. The numerical checker uses ±2% in the requested unit and checks the final number rather than awarding method marks.
+
+The reading shelf references OpenStax **University Physics, Volumes 1–3**. Question wording, numerical scenarios and solutions are original; textbook exercises and exam papers have not been copied. AS/A2/extension labels and suggested marks are study guidance, not an official exam-board specification. See [QUESTION-BANK.md](QUESTION-BANK.md) for all groups, conventions, sources and maintenance details.
 
 ### IGCSE course expansion
 
@@ -95,6 +124,47 @@ The pure functions in `js/curriculum-physics.js` are shared by the display, live
 - Space: circular orbits use `v = √(GM☉/r)` and `T = 2π√(r³/GM☉)`; the orrery screen radii are logarithmic and body sizes enlarged. Daylight uses a geometric declination approximation; Moon illumination `(1−cos phase)/2`. Stellar evolution is a qualitative storyboard with approximate main-sequence scaling, not a stellar structure solver. Low-redshift `v = H₀d`, `z ≈ v/c`, `λobs = λrest(1+z)` and Hubble time `1/H₀` are explicitly approximate.
 
 Supporting references: [Cambridge 0625 syllabus](https://www.cambridgeinternational.org/Images/697209-2026-2028-syllabus.pdf), [NASA planetary fact sheets](https://nssdc.gsfc.nasa.gov/planetary/factsheet/), [OpenStax physics](https://openstax.org/books/university-physics-volume-2/pages/index), and [OpenStax radioactive decay](https://openstax.org/books/university-physics-volume-3/pages/10-3-radioactive-decay). Teaching text and diagram code in this project are original.
+
+### Practical and A Level equations
+
+`js/practical-physics.js` contains pure SI calculations. Most models have analytic solutions, so the rendering never advances a second, inconsistent physical state:
+
+```text
+Hydraulics: F₁/A₁ = F₂/A₂; A₁x₁ = A₂x₂; W₁ = W₂
+Springs: kseries⁻¹ = k₁⁻¹+k₂⁻¹; kparallel = k₁+k₂; U = ½keq x²
+Sensors: VL = Vs RL/(RU+RL)
+  LDR: R = R100 (lux/100)^−0.7
+  NTC: R = R25 exp[B(1/T−1/298.15)], T in kelvin
+Charged beams: K = (energy in eV)e; p = √[K(K+2mc²)]/c
+  v = pc²/(K+mc²); r = p/|qB|; angular rate = −qBv/p
+Rectifier: Vin = Vp sin(2πft); Vout = max(0,Vin) or |Vin|
+  Half-wave: Vmean = Vp/π, Vrms = Vp/2
+  Full-wave: Vmean = 2Vp/π, Vrms = Vp/√2; Pmean = Vrms²/R
+Lamp: R(T) = R20[1+α(T−293.15)]
+  C dT/dt = V²/R(T) − εσA(T⁴−Ta⁴) − hA(T−Ta)
+Cooling: T = Ta+(T₀−Ta)e^(−t/τ); τ = mc/H
+Air columns: fopen,n = nv/(2L); fclosed,n = (2n−1)v/(4L)
+Photoelectric: Kmax = hf−φ when hf>φ; Vs = Kmax/e
+  Iideal,sat = ηeP/(hf), zero below threshold
+Diffraction: λ = h/p; 2d sinθ = nλ (no angle if nλ>2d)
+Polarisation: I₁ = Iincident/2; Ij = Ij−1 cos²(θj−θj−1)
+Selector: vd = E/B, ω = eB/mp, Δv = v₀−vd
+  x = vd t + Δv sin(ωt)/ω; y = Δv[1−cos(ωt)]/ω
+Driven SHM: A = F₀/√[(k−mω²)²+(bω)²]
+  δ = atan2(bω,k−mω²); x = A cos(ωt−δ); Pmean = ½bω²A²
+Gas paths: pV = nRT; ΔU = 3nRΔT/2; Q = ΔU+Wby-gas
+  Isothermal: W = nRT ln(V/V₀); isobaric: W = p₀(V−V₀)
+  Monatomic adiabatic: TV^(2/3) = constant; Q = 0; W = −ΔU
+Thermal spectrum: Bλ = 2hc²/[λ⁵(exp(hc/λkT)−1)]
+  λpeak T = 2.897771955e−3 m K; Pemitted = εσAT⁴
+Material: σ = F/A; strain = σ/E; ΔL = FL/(AE); U = ½FΔL
+```
+
+The lamp uses **RK4 with internal steps no larger than 1/4000 s**, integrating temperature, electrical input energy and transferred energy with the same stages. Its diagnostic is `Ein − Eout − C(T−Ta)`, so stored heat is accounted for rather than discarded. Adopted teaching coefficients are `α=0.0045 K⁻¹`, `ε=0.35`, `h=15 W/(m² K)` and `Ta=293.15 K`. This is a bounded approximate metallic-filament model, not calibrated tungsten data, a melting model or a lamp life prediction.
+
+Hydraulic, wire and spring loading are prescribed quasistatic ramps, not dynamic loading solvers. Sensors omit self-heating and loading; rectifiers omit diode drops and smoothing. Driven motion starts directly in steady state. The velocity selector uses protons in ideal infinite uniform fields; the finite displayed-window exit pauses observation rather than claiming a slit collision. The radiation chamber ends its observation at 100 ns. Charged beam speed uses relativity where needed and never exceeds c. The normalised thermal spectrum is labelled separately from absolute emitted-power readings. Every lab's **Equations & model** tab details its omissions and visual scaling.
+
+Further reading: [OpenStax hydraulics](https://openstax.org/books/university-physics-volume-1/pages/14-3-pascals-principle-and-hydraulics), [forced oscillations](https://openstax.org/books/university-physics-volume-1/pages/15-6-forced-oscillations), [photoelectric effect](https://openstax.org/books/university-physics-volume-3/pages/6-2-photoelectric-effect), [matter waves](https://openstax.org/books/university-physics-volume-3/pages/6-5-de-broglies-matter-waves), [polarisation](https://openstax.org/books/university-physics-volume-3/pages/1-7-polarization), [first law](https://openstax.org/books/university-physics-volume-2/pages/3-3-first-law-of-thermodynamics), and [TDK NTC thermistor guidance](https://product.tdk.com/en/contact/faq/protection-0009.html).
 
 ### Binary and three-body stars
 
@@ -268,7 +338,7 @@ npm test
 npm run check
 ```
 
-There are **122 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
+There are **146 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
 
 - Default spring position against the analytic solution over 30 s, with maximum error below 10⁻⁶ m; default undamped energy drift below 10⁻⁷ over 120 s.
 - Worst supported spring frequency with energy drift below 0.04% over 120 s; damping and critical/overdamped behaviour.
@@ -282,17 +352,19 @@ There are **122 tests** using Node's built-in runner. They exercise the same fun
 - Snell's law, Fresnel reflection, critical angle, TIR and equal-index media.
 - RC one-time-constant fractions, current/charge derivative and stored energy over supported corners.
 - Field/potential scaling, dipole and like-charge cancellation, singularity handling and E = −∇V.
-- All 41 catalogue entries, 123 valid presets, 123 investigations and 205 questions; finite dynamic parameter corners and spatial datasets; invalid inputs and converted endpoints.
+- All 57 catalogue entries, 171 valid presets, 171 investigations and 285 in-lab questions; finite dynamic parameter corners and spatial datasets; invalid inputs and converted endpoints.
 - Worked calculations for every model: current-state substitutions, SI units, damping and drag signs, approximate period/fringe labels, collision predictions, refraction exclusions, RC discharge current, point-charge exclusions, zero charges and tiny-value formatting. Calculation sheets do not mutate or advance the simulation.
-- Embeds for all 41 models, valid parameter round-trips, repository and self-hosted subdirectory paths, clean share links, invalid-model/protocol rejection, escaped iframe attributes and readable scientific notation with safe HTML escaping. Diagram-only models resolve to the supported 2D view.
+- Embeds for all 57 models, valid parameter round-trips, repository and self-hosted subdirectory paths, clean share links, invalid-model/protocol rejection, escaped iframe attributes and readable scientific notation with safe HTML escaping. Diagram-only models resolve to the supported 2D view.
 - Binary virial/barycentre/force relations, ten-period circular radius and energy, Kepler return, elliptical angular momentum, escape and physical scaling.
 - Pairwise stellar momentum balance and inverse-square scaling, approximate figure-eight return, equilateral rotation, perturbed-triple centre of mass, supported stellar corners and close-encounter guards.
 - Independent explicit double-pendulum accelerations, zero instantaneous energy derivative, separate main/twin energy conservation over 60 s, exact-match twins, sensitive dependence, fourth-order convergence and extreme supported settings over 10 s.
 - 37 IGCSE checks: every course mapping and model reachability; all slider endpoints and modes over bounded observations; suvat and terminal fall; vector cancellation; moments/stability; Archimedes and hydrostatic scaling; lift energy accounting; Boyle/temperature scaling; all water heating transitions; conduction and fourth-power radiation; mirrors, real/virtual/focal-plane lens cases; dispersion and EM speed; sound echo path; Kirchhoff and wire-resistance relations; diode/relay/cut-out states; solenoid scaling; constant-energy charged-particle motion; Faraday flux derivative; transformer power; nuclear accounting and Rutherford angles; seeded-decay reproducibility and ensemble expectation; daylight/Moon phases; planetary Kepler relations; stellar scaling; Hubble units and low-redshift bounds.
+- Nineteen practical/A Level checks: hydraulic work/volume; spring force and energy; sensor reference/threshold/swap behaviour; relativistic beam speed, rigidity, reversal and weak-field limits; rectifier integrated mean/RMS; lamp RK4 convergence, energy budget and parameter corners; exact cooling; pipe boundary conditions; photoelectric thresholds; Bragg order limits; Malus projections; crossed-field differential equations and work; driven-oscillator equation/power; first-law gas invariants; Planck integral and Wien peak; modulus geometry; all sixteen models' presets and actual steps.
+- Five practice-room checks covering all 312 records and worked-result round trips, independent fixtures for every topic, notation and invalid-input handling, combined filters and defensive progress import.
 
 These are bounded regression checks for the stated scenarios, not claims of exact or indefinite numerical conservation. `npm run check` verifies assets, every relative JavaScript module import, vendored libraries and GitHub Pages subdirectory compatibility. GitHub Actions runs both commands on pushes and pull requests.
 
-Browser verification covers the original studios and all 28 new diagrams, their presets, expanded calculations and lesson navigation, plus representative graph, editable-input, export and responsive checks. The 78 course links are recorded from inspected public pages. Repeated 2D/3D switching creates a fresh canvas after releasing the previous WebGL context. WebGL failure has an explicit diagram fallback rather than an empty experiment.
+Browser verification covers the original studios, the original 28 course instruments and all sixteen practical/A Level additions, their presets, expanded calculations and lesson navigation, plus representative graph, editable-input, export and responsive checks. The practice room is checked for answer feedback, persistence, filters, pagination, solutions and responsive layout. The 78 course links are recorded from inspected public pages. Repeated 2D/3D switching creates a fresh canvas after releasing the previous WebGL context. WebGL failure has an explicit diagram fallback rather than an empty experiment.
 
 ## GitHub Pages deployment
 
@@ -316,12 +388,19 @@ workbench.css                Readable typography and focused gravitation layout
 frontiers.css                Stellar and nonlinear-dynamics workspace details
 expanded.css                 Expanded model, variable and calculation panes
 curriculum.css               IGCSE course map, lesson links and diagram layouts
+questions.css                Practice-room design, responsive layout and printable sheets
 js/course-map.js             Audited 78-page FocusPhysics title/link/model inventory
 js/course.js                 Searchable six-area course navigator
-js/curriculum-physics.js     28 pure IGCSE models and declared parameter ranges
+js/curriculum-physics.js     Original 28 course models and shared validation/dispatch
+js/practical-physics.js      Sixteen practical/A Level models, exact solutions and lamp RK4
+js/practical-labs.js         Practical controls, equations, presets and authored investigations
+js/render-practical.js      State-only scientific instrument drawings and thumbnails
 js/curriculum-simulations.js Controls, readouts, calculations, graphs and units
 js/render-curriculum.js      Original Canvas instruments and catalogue thumbnails
-js/content-curriculum.js     84 investigations, 140 worked/conceptual questions
+js/content-curriculum.js     132 investigations, 220 worked/conceptual questions
+js/question-data.js          312 original questions, constants, worked values and safe checker
+js/question-bank.js          Practice UI, filtering, progress storage/import/export and print
+QUESTION-BANK.md             Topic inventory, textbook references and answer conventions
 IGCSE-COVERAGE.md            Lesson-by-lesson mappings and scope limitations
 js/app.js                    Small application bootstrap
 js/studio-app.js             Routes, playback, controls, Chart.js, notebook, export
@@ -352,6 +431,8 @@ tests/expanded.test.mjs       29 expansion, catalogue and validation tests
 tests/orbit-refinement.test.mjs Five focused orbital elements/scenario regressions
 tests/calculations.test.mjs   Twelve calculation and edge-case regression tests
 tests/integration.test.mjs    Six URL, embed and maths-formatting regression tests
+tests/practical.test.mjs      Nineteen new instrument and conservation checks
+tests/questions.test.mjs      Five question-bank, answer, filter and persistence checks
 tests/advanced.test.mjs       Seventeen stellar and nonlinear regression tests
 tests/curriculum.test.mjs     37 course, IGCSE physics and bounded-range checks
 scripts/serve.mjs            Dependency-free local static server

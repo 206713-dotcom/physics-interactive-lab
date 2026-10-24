@@ -40,7 +40,7 @@ export const COURSE = [
   {
     title: "Hooke's Law",
     url: "https://focusphysics.com/years/10/topics/forces-moments-and-vectors/lessons/hookes-law/",
-    models: ["spring"],
+    models: ["spring", "hooke"],
     review: false,
     area: 1,
     year: 10,
@@ -76,7 +76,7 @@ export const COURSE = [
   {
     title: "Pressure and Density",
     url: "https://focusphysics.com/years/10/topics/forces-moments-and-vectors/lessons/pressure-and-density/",
-    models: ["buoyancy"],
+    models: ["buoyancy", "hydraulics"],
     review: false,
     area: 1,
     year: 10,
@@ -274,7 +274,7 @@ export const COURSE = [
   {
     title: "Specific Heat Capacity",
     url: "https://focusphysics.com/years/11/topics/thermal-physics/lessons/specific-heat-capacity/",
-    models: ["calorimetry"],
+    models: ["calorimetry", "cooling"],
     review: false,
     area: 2,
     year: 11,
@@ -301,7 +301,7 @@ export const COURSE = [
   {
     title: "Transfer of Thermal Energy Pt 1 - Conduction & Convection",
     url: "https://focusphysics.com/years/11/topics/thermal-physics/lessons/transfer-of-thermal-energy-pt-1-conduction-and-convection/",
-    models: ["heat"],
+    models: ["heat", "cooling"],
     review: false,
     area: 2,
     year: 11,
@@ -310,7 +310,7 @@ export const COURSE = [
   {
     title: "Transfer of Thermal Energy Pt 2 - Radiation & Practice",
     url: "https://focusphysics.com/years/11/topics/thermal-physics/lessons/transfer-of-thermal-energy-pt-2-radiation-and-practice/",
-    models: ["heat"],
+    models: ["heat", "filament", "cooling"],
     review: false,
     area: 2,
     year: 11,
@@ -364,7 +364,7 @@ export const COURSE = [
   {
     title: "Properties of Waves",
     url: "https://focusphysics.com/years/10/topics/waves/lessons/properties-of-waves/",
-    models: ["waves"],
+    models: ["waves", "resonance"],
     review: false,
     area: 3,
     year: 10,
@@ -427,7 +427,7 @@ export const COURSE = [
   {
     title: "Sound",
     url: "https://focusphysics.com/years/10/topics/waves/lessons/sound/",
-    models: ["sound"],
+    models: ["sound", "resonance"],
     review: false,
     area: 3,
     year: 10,
@@ -499,7 +499,7 @@ export const COURSE = [
   {
     title: "Resistance",
     url: "https://focusphysics.com/years/10/topics/electrical-quantities/lessons/resistance/",
-    models: ["dc"],
+    models: ["dc", "filament"],
     review: false,
     area: 4,
     year: 10,
@@ -517,7 +517,7 @@ export const COURSE = [
   {
     title: "Characteristics and Electrical Safety",
     url: "https://focusphysics.com/years/11/topics/electric-circuits-and-electrical-safety/lessons/characteristics-and-electrical-safety/",
-    models: ["devices"],
+    models: ["devices", "filament"],
     review: false,
     area: 4,
     year: 11,
@@ -526,7 +526,7 @@ export const COURSE = [
   {
     title: "Potential Divider",
     url: "https://focusphysics.com/years/11/topics/electric-circuits-and-electrical-safety/lessons/potential-divider/",
-    models: ["dc"],
+    models: ["dc", "sensors"],
     review: false,
     area: 4,
     year: 11,
@@ -535,7 +535,7 @@ export const COURSE = [
   {
     title: "Relays and Diodes",
     url: "https://focusphysics.com/years/11/topics/electric-circuits-and-electrical-safety/lessons/relays-and-diodes/",
-    models: ["devices"],
+    models: ["devices", "rectifier"],
     review: false,
     area: 4,
     year: 11,
@@ -553,7 +553,7 @@ export const COURSE = [
   {
     title: "Variable Potential Divider",
     url: "https://focusphysics.com/years/11/topics/electric-circuits-and-electrical-safety/lessons/variable-potential-divider/",
-    models: ["dc"],
+    models: ["dc", "sensors"],
     review: false,
     area: 4,
     year: 11,
@@ -572,7 +572,7 @@ export const COURSE = [
     url: "https://focusphysics.com/years/11/topics/electromagnetism/lessons/charged-particles/",
     title: "Charged Particles",
     topic: "electromagnetism",
-    models: ["charged"],
+    models: ["charged", "radiation"],
     review: false,
     area: 4,
     year: 11,
@@ -661,7 +661,7 @@ export const COURSE = [
   {
     title: "Radioactive Decay",
     url: "https://focusphysics.com/years/11/topics/nuclear-physics/lessons/radioactive-decay/",
-    models: ["radioactivity", "atom"],
+    models: ["radioactivity", "atom", "radiation"],
     review: false,
     area: 5,
     year: 11,

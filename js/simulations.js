@@ -1123,6 +1123,7 @@ export const CATEGORIES = [
   "Magnetism",
   "Nuclear physics",
   "Space physics",
+  "Quantum physics",
 ];
 export function spatialRows(type, s, p) {
   if (type.startsWith("curriculum:")) return curriculumRows(type, s, p);

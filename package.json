@@ -1,9 +1,9 @@
 {
   "name": "physics-interactive-lab",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "private": true,
   "type": "module",
-  "description": "41 browser-based physics laboratories with an audited FocusPhysics IGCSE course map, live calculations and teaching resources.",
+  "description": "57 browser-based physics laboratories and 312 original A Level questions with worked solutions, book references and a FocusPhysics IGCSE course map.",
   "scripts": {
     "dev": "node scripts/serve.mjs",
     "test": "node --test tests/*.test.mjs",

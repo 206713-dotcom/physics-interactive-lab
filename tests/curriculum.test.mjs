@@ -35,14 +35,16 @@ test("course scan accounts for every public IGCSE lesson, ten hubs and six areas
     for (const model of lesson.models)
       assert.ok(SIMULATIONS[model], `${lesson.title}: ${model}`);
   }
-  for (const id of P.CURRICULUM_IDS)
+  for (const id of P.CURRICULUM_IDS.filter(
+    (id) => LABS[id].level === "IGCSE 0625",
+  ))
     assert.ok(
       COURSE.some((x) => x.models.includes(id)),
       `${id} is not reachable from course`,
     );
 });
-test("all 28 additions expose real calculations, lessons, valid presets and diagram embeds", () => {
-  assert.equal(P.CURRICULUM_IDS.length, 28);
+test("all 44 scientific instruments expose real calculations, lessons, valid presets and diagram embeds", () => {
+  assert.equal(P.CURRICULUM_IDS.length, 44);
   for (const [id, d] of Object.entries(LABS)) {
     assert.equal(d.presets.length, 3);
     assert.equal(CURRICULUM_LESSONS[id].questions.length, 5);

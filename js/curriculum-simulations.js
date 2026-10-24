@@ -1,4 +1,10 @@
 import * as P from "./curriculum-physics.js";
+import {
+  PRACTICAL_LABS,
+  PRACTICAL_PARAMETERS,
+  PRACTICAL_WORK,
+  PRACTICAL_INFO,
+} from "./practical-labs.js";
 // Parameter metadata is shared by sliders, the calculation inspector and CSV headers.
 const number = (
   key,
@@ -14,6 +20,7 @@ const choice = (
   hint = "Select a model, then inspect its assumptions.",
 ) => ({ key, label, options, hint });
 export const PARAMETERS = {
+  ...PRACTICAL_PARAMETERS,
   measurement: [
     number("length", "Object length", "m"),
     number("resolution", "Ruler division", "mm", 0.001),
@@ -305,6 +312,7 @@ const W = (key, title, unit, formula, sub) => ({
   sub,
 });
 export const WORK = {
+  ...PRACTICAL_WORK,
   measurement: [
     W(
       "measured",
@@ -1176,6 +1184,7 @@ export const WORK = {
   ],
 };
 const INFO = {
+  ...PRACTICAL_INFO,
   measurement: [
     "Measurement & uncertainty",
     "Mechanics",
@@ -1394,6 +1403,7 @@ export const CURRICULUM_SIMULATIONS = Object.fromEntries(
             "protons",
             "neutrons",
             "charge",
+            "order",
           ].includes(c.key)
             ? 1
             : "any",
@@ -1437,7 +1447,8 @@ export const CURRICULUM_SIMULATIONS = Object.fromEntries(
           { mass: 15, stage: 4 },
         ],
         universe: [{ distance: 200 }, { scale: 5 }],
-      }[id] || [{ charge: 1 }, { field: 0 }];
+      }[id] ||
+        PRACTICAL_LABS[id]?.variations || [{ charge: 1 }, { field: 0 }];
     const names = {
       measurement: ["Single cycle", "Twenty cycles"],
       motion: ["No drag", "Terminal fall"],
@@ -1453,7 +1464,8 @@ export const CURRICULUM_SIMULATIONS = Object.fromEntries(
       earthmoon: ["June solstice", "December solstice"],
       solarsystem: ["Mercury", "Neptune"],
       stars: ["Massive giant", "Massive remnant"],
-    }[id] || ["Compare A", "Compare B"];
+    }[id] ||
+      PRACTICAL_LABS[id]?.names || ["Compare A", "Compare B"];
     const readouts = WORK[id],
       sample = (s, p) => P.sampleCurriculum(id, s, p);
     return [
@@ -1508,13 +1520,14 @@ export const CURRICULUM_SIMULATIONS = Object.fromEntries(
             label: r.title,
             value: sample(s, p)[r.key],
             unit: r.unit,
-            decimals: ["measurement", "lenses", "universe", "devices"].includes(
-              id,
-            )
-              ? 4
-              : id === "expansion"
-                ? 6
-                : 2,
+            decimals:
+              PRACTICAL_LABS[id] && r.unit === "m"
+                ? 4
+                : ["measurement", "lenses", "universe", "devices"].includes(id)
+                  ? 4
+                  : id === "expansion"
+                    ? 6
+                    : 2,
             note:
               r.formula.length > 65
                 ? "Live calculation · expand to see the working"
@@ -1549,7 +1562,7 @@ export const CURRICULUM_SIMULATIONS = Object.fromEntries(
 export function curriculumRows(type, s, p) {
   const id = type.slice("curriculum:".length),
     d = CURRICULUM_SIMULATIONS[id],
-    key = d.sweep,
+    key = d.sweepFor?.(p) || d.sweep,
     range = P.RANGES[id][key],
     meta = d.controls.find((c) => c.key === key);
   const rows = Array.from({ length: 161 }, (_, i) => {
@@ -1574,6 +1587,7 @@ export function curriculumRows(type, s, p) {
   return rows;
 }
 export function parameterUnit(type, c) {
+  if (c.siUnit) return c.siUnit;
   if (type === "charged" && c.key === "charge") return "e";
   if (c.options) return "choice value";
   if (!c.factor || c.factor === 1) return c.unit || "";
@@ -1893,6 +1907,25 @@ const SAMPLE_UNITS = {
 };
 for (const [id, d] of Object.entries(CURRICULUM_SIMULATIONS))
   d.csvUnits = { t: id === "solarsystem" ? "yr" : "s", ...SAMPLE_UNITS[id] };
+for (const [id, practical] of Object.entries(PRACTICAL_LABS)) {
+  const d = CURRICULUM_SIMULATIONS[id];
+  Object.assign(d, practical.timing || {}, {
+    isNew: true,
+    level: practical.level || d.level,
+    ended: practical.ended,
+    path: practical.path,
+    spectral: practical.spectral,
+    sweepFor: practical.sweepFor,
+    graphs: practical.graphs || d.graphs,
+    csvUnits: { t: "s", ...practical.units },
+  });
+  if (id === "sensors")
+    d.graphs.forEach(
+      (g) =>
+        (g.xTitleFor = (p) =>
+          p.mode ? "Thermistor temperature / °C" : "Illuminance / lux"),
+    );
+}
 export function curriculumCalculationSheet(type, s, p, n) {
   const q = P.sampleCurriculum(type, s, p);
   return {

@@ -265,14 +265,49 @@ export class SceneView {
     const c = this.canvas;
     this.handlers = {};
     let down = null;
+    const pointer = (e) => {
+      const rect = c.getBoundingClientRect();
+      return new T.Vector2(
+        ((e.clientX - rect.left) / rect.width) * 2 - 1,
+        1 - ((e.clientY - rect.top) / rect.height) * 2,
+      );
+    };
     this.handlers.pointerdown = (e) => {
       if (e.button !== 0) return;
+      this.cameraGoal = null;
+      const handle = this.curriculum?.interaction?.pick(
+        pointer(e),
+        this.camera,
+      );
+      if (handle) {
+        e.preventDefault();
+        this.editingHandle = true;
+        this.curriculum.interaction.begin(handle);
+        c.setPointerCapture(e.pointerId);
+        c.classList.add("editing-vector");
+        this.onEditStart?.();
+        return;
+      }
       down = [e.clientX, e.clientY];
       c.setPointerCapture(e.pointerId);
       c.classList.add("dragging");
     };
     this.handlers.pointermove = (e) => {
-      if (!down) return;
+      if (this.editingHandle) {
+        const patch = this.curriculum?.interaction?.move(
+          pointer(e),
+          this.camera,
+        );
+        if (patch) this.onParameterEdit?.(patch);
+        return;
+      }
+      if (!down) {
+        c.classList.toggle(
+          "over-handle",
+          !!this.curriculum?.interaction?.pick(pointer(e), this.camera),
+        );
+        return;
+      }
       this.azimuth -= (e.clientX - down[0]) * 0.007;
       this.polar = Math.max(
         0.15,
@@ -281,11 +316,18 @@ export class SceneView {
       down = [e.clientX, e.clientY];
     };
     this.handlers.pointerup = () => {
+      if (this.editingHandle) {
+        this.editingHandle = false;
+        this.curriculum?.interaction?.end();
+        this.onEditEnd?.();
+      }
+      c.classList.remove("editing-vector");
       down = null;
       c.classList.remove("dragging");
     };
     this.handlers.wheel = (e) => {
       e.preventDefault();
+      this.cameraGoal = null;
       this.radius = Math.max(
         5,
         Math.min(34, this.radius * Math.exp(e.deltaY * 0.001)),
@@ -293,6 +335,7 @@ export class SceneView {
     };
     this.handlers.keydown = (e) => {
       const k = e.key;
+      this.cameraGoal = null;
       if (
         [
           "ArrowLeft",
@@ -317,21 +360,40 @@ export class SceneView {
     for (const [name, fn] of Object.entries(this.handlers))
       c.addEventListener(name, fn, { passive: false });
     c.addEventListener("pointercancel", this.handlers.pointerup);
+    c.addEventListener("lostpointercapture", this.handlers.pointerup);
   }
   home() {
+    this.cameraGoal = null;
     this.azimuth = this.homeAzimuth ?? -0.38;
     this.polar = this.homePolar ?? 1.05;
     this.radius = this.homeRadius || 15;
   }
   cameraView(name) {
+    const previous = {
+      azimuth: this.azimuth,
+      polar: this.polar,
+      radius: this.radius,
+    };
     this.home();
     if (name === "front") {
       this.azimuth = 0;
       this.polar = Math.PI / 2;
     }
     if (name === "above") {
-      this.azimuth = 0;
-      this.polar = 0.035;
+      this.azimuth = this.type === "vectors" ? -0.55 : 0;
+      this.polar = this.type === "vectors" ? 1.02 : 0.035;
+    }
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const delta = Math.atan2(
+        Math.sin(this.azimuth - previous.azimuth),
+        Math.cos(this.azimuth - previous.azimuth),
+      );
+      this.cameraGoal = {
+        azimuth: previous.azimuth + delta,
+        polar: this.polar,
+        radius: this.radius,
+      };
+      Object.assign(this, previous);
     }
   }
   clear() {
@@ -365,7 +427,8 @@ export class SceneView {
       -0.82;
     this.grid.position.y = this.floor.position.y + 0.02;
     // A spatial reference in the orbital plane, not a ground beneath the planet.
-    this.floor.visible = type !== "gravity";
+    this.floor.visible = !["gravity", "vectors"].includes(type);
+    this.grid.visible = type !== "vectors";
     this.grid.position.y = type === "gravity" ? 1 : this.grid.position.y;
     this.grid.material.opacity = type === "gravity" ? 0.1 : 0.55;
     const add = (name, mesh, pos) => {
@@ -889,8 +952,13 @@ export class SceneView {
     const p = lab.params,
       s = lab.state,
       type = lab.type;
-    if (this.type !== type || this.key !== JSON.stringify(p))
+    const key = JSON.stringify(p);
+    if (
+      this.type !== type ||
+      (this.key !== key && !this.curriculum?.liveParams)
+    )
       this.build(type, p);
+    else this.key = key;
     const o = this.objects;
     // Restore label visibility before each model applies its own conditions
     // (for example a velocity label disappears when its vector is zero).
@@ -1174,6 +1242,30 @@ export class SceneView {
     }
     // Preserve room for the orbit on narrow screens; manual zoom remains a
     // camera-only control, and never changes distance or any physical state.
+    if (this.cameraGoal) {
+      const factor =
+        1 -
+        Math.exp(
+          -12 *
+            Math.min(
+              0.05,
+              (performance.now() -
+                (this.lastCameraFrame || performance.now() - 16)) /
+                1000,
+            ),
+        );
+      for (const field of ["azimuth", "polar", "radius"])
+        this[field] += (this.cameraGoal[field] - this[field]) * factor;
+      if (
+        ["azimuth", "polar", "radius"].every(
+          (field) => Math.abs(this[field] - this.cameraGoal[field]) < 0.0001,
+        )
+      ) {
+        Object.assign(this, this.cameraGoal);
+        this.cameraGoal = null;
+      }
+    }
+    this.lastCameraFrame = performance.now();
     const cameraRadius =
       this.radius *
       (["gravity", ...ADVANCED_IDS].includes(type) || this.curriculum
@@ -1198,6 +1290,10 @@ export class SceneView {
     for (const [name, fn] of Object.entries(this.handlers))
       this.canvas.removeEventListener(name, fn);
     this.canvas.removeEventListener("pointercancel", this.handlers.pointerup);
+    this.canvas.removeEventListener(
+      "lostpointercapture",
+      this.handlers.pointerup,
+    );
     this.renderer.dispose();
     this.renderer.forceContextLoss();
   }

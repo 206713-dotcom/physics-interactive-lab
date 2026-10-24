@@ -39,6 +39,8 @@ Use the [IGCSE course map](https://206713-dotcom.github.io/physics-interactive-l
 
 The embed loads **paused** with the model, parameters, current values and worked calculations. It omits the main site's header and footer. **Lessons & notes** reveals the existing learning resources inside the frame; **Open full lab** opens the full lesson in another tab. Expanding a model fills its iframe, rather than covering the host website. The simulation never reads or modifies its parent page and uses no cross-frame messages.
 
+The vector workbench also works in an iframe, with draggable tips in either view and an optional construction animation. For a particular method, add `method=triangle`, `method=parallelogram` or `method=components` to the route query; for example, `?embed=1#/vectors?view=3d&method=parallelogram`. Shared vector setup links also preserve coordinate-grid, angle-marker and component-guide settings. The construction animation reveals fixed vectors; it does not simulate forces changing in time.
+
 ## 2. Add it using the site's editor
 
 - **Custom HTML/static site:** insert the iframe at the desired point in the lesson HTML.

@@ -13,6 +13,7 @@ import { draw2D } from "./render2d.js";
 import { ExpandedView } from "./expanded-view.js";
 import { SCENE_GUIDES } from "./scene-guides.js";
 import { visualState } from "./visual-state.js";
+import { VectorStudio } from "./vector-studio.js";
 import { experimentLink } from "./integration.js";
 import {
   createOrbit,
@@ -70,6 +71,7 @@ const icons = {
 const icon = (n) =>
   `<svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[n]}</svg>`;
 let lab = null,
+  vectorStudio = null,
   expandedView = null,
   hero = null,
   view = null,
@@ -270,7 +272,7 @@ function labPage(type, query) {
     type,
     definition: d,
     ...d.create(params),
-    running: !embedded && !reduced(),
+    running: type !== "vectors" && !embedded && !reduced(),
     speed: 1,
     accumulator: 0,
     previousState: null,
@@ -278,9 +280,21 @@ function labPage(type, query) {
     trail: [],
     showTrail: true,
     vectors: true,
+    showLabels: true,
+    vectorMethod: ["triangle", "parallelogram", "components"].includes(
+      query.get("method"),
+    )
+      ? query.get("method")
+      : "triangle",
+    vectorProgress: 1,
+    vectorGrid: query.get("grid") !== "0",
+    vectorAngle: query.get("angleMarker") !== "0",
+    vectorComponents: query.get("components") === "1",
     graph: d.graphs.some((g) => g.id === query.get("graph"))
       ? query.get("graph")
-      : d.graphs[0].id,
+      : (type === "vectors"
+          ? d.graphs.find((g) => g.keys.includes("resultant"))?.id
+          : null) || d.graphs[0].id,
     nextSample: 0,
     lastUI: -1,
     ended: null,
@@ -389,6 +403,20 @@ function labPage(type, query) {
     notes.append($("#stage-caption"));
   }
   installVisualGuide();
+  if (type === "vectors") {
+    vectorStudio = new VectorStudio({
+      root: $(".lab-page"),
+      getLab: () => lab,
+      onChange: editVector,
+      onEditStart: beginVectorEdit,
+      onEditEnd: finishVectorEdit,
+      onSeek: seekVector,
+    });
+    $("#camera-hint").textContent =
+      "Drag A / B rings to edit · drag background to rotate";
+    $('[data-camera="above"]').textContent = "Isometric";
+    $(".controls-heading h2").textContent = "Your vectors";
+  }
   sample();
   createCharts();
   updateReadouts();
@@ -463,7 +491,7 @@ function syncInputs() {
     $(`#${d.key}-slider`).value = d.log ? Math.log10(v) : v;
   }
 }
-function reset(params = lab.params) {
+function reset(params = lab.params, { deferUI = false } = {}) {
   const model = lab.definition.create(params);
   Object.assign(lab, model, {
     accumulator: 0,
@@ -471,16 +499,49 @@ function reset(params = lab.params) {
     history: [],
     trail: [],
     nextSample: 0,
-    lastUI: -1,
+    lastUI: deferUI ? lab.lastUI : -1,
     ended: null,
     graphDirty: true,
     initialEnergy: undefined,
     fieldKey: null,
+    vectorProgress: 1,
   });
   $$("[data-preset]").forEach((b) => b.setAttribute("aria-pressed", "false"));
   sample();
-  updateCharts();
+  if (!deferUI) {
+    updateCharts();
+    updateReadouts();
+    syncPlay();
+  }
+}
+function beginVectorEdit() {
+  if (!lab || lab.type !== "vectors") return;
+  lab.running = false;
+  lab.vectorProgress = 1;
+  syncPlay();
+}
+function editVector(patch) {
+  if (
+    !lab ||
+    lab.type !== "vectors" ||
+    Object.entries(patch).every(([k, v]) => lab.params[k] === v)
+  )
+    return;
+  reset({ ...lab.params, ...patch }, { deferUI: true });
+  syncInputs();
+}
+function finishVectorEdit() {
+  if (!lab) return;
+  lab.lastUI = -1;
   updateReadouts();
+  updateCharts();
+  syncPlay();
+}
+function seekVector(progress) {
+  if (!lab || lab.type !== "vectors") return;
+  lab.running = false;
+  lab.vectorProgress = progress;
+  lab.lastUI = -1;
   syncPlay();
 }
 function loadPreset(index) {
@@ -490,7 +551,7 @@ function loadPreset(index) {
     },
   );
   syncInputs();
-  lab.running = !reduced();
+  lab.running = lab.type !== "vectors" && !reduced();
   $$("[data-preset]").forEach((b) =>
     b.setAttribute("aria-pressed", String(Number(b.dataset.preset) === index)),
   );
@@ -530,6 +591,12 @@ function bindControls() {
     };
   }
   $("#play").onclick = () => {
+    if (lab.type === "vectors") {
+      if (!lab.running && lab.vectorProgress >= 1) lab.vectorProgress = 0;
+      lab.running = !lab.running;
+      syncPlay();
+      return;
+    }
     if (lab.ended) reset();
     lab.running = !lab.running;
     syncPlay();
@@ -539,6 +606,12 @@ function bindControls() {
     toast("Run reset to its initial conditions.");
   };
   $("#step").onclick = () => {
+    if (lab.type === "vectors") {
+      seekVector(
+        Math.min(1, (lab.vectorProgress >= 1 ? 0 : lab.vectorProgress) + 0.1),
+      );
+      return;
+    }
     if (lab.ended) reset();
     lab.running = false;
     const rate = lab.definition.rateFor?.(lab.params) ?? lab.definition.rate;
@@ -704,7 +777,7 @@ function bindControls() {
   };
 }
 function setupLink(embed = false) {
-  return experimentLink({
+  const link = experimentLink({
     baseURL: location.href,
     model: lab.type,
     params: lab.params,
@@ -712,6 +785,15 @@ function setupLink(embed = false) {
     graph: lab.graph,
     embed,
   });
+  if (lab.type !== "vectors") return link;
+  const [path, query = ""] = link.split("#"),
+    [route, search = ""] = query.split("?"),
+    args = new URLSearchParams(search);
+  args.set("method", lab.vectorMethod);
+  args.set("components", lab.vectorComponents ? "1" : "0");
+  args.set("grid", lab.vectorGrid ? "1" : "0");
+  args.set("angleMarker", lab.vectorAngle ? "1" : "0");
+  return `${path}#${route}?${args}`;
 }
 async function setView(mode) {
   if (!lab) return;
@@ -748,6 +830,9 @@ async function setView(mode) {
       const nextCanvas = previousCanvas.cloneNode(false);
       previousCanvas.replaceWith(nextCanvas);
       view = new SceneView(nextCanvas);
+      view.onParameterEdit = editVector;
+      view.onEditStart = beginVectorEdit;
+      view.onEditEnd = finishVectorEdit;
       view.homeRadius =
         lab.type === "gravity"
           ? 10.8
@@ -760,6 +845,12 @@ async function setView(mode) {
         view.homePolar = 1.15;
         view.homeAzimuth = -0.22;
         view.target.y = 2.2;
+      }
+      if (lab.type === "vectors") {
+        view.homeRadius = 10;
+        view.homePolar = 1.45;
+        view.homeAzimuth = -0.06;
+        view.target.y = 2.65;
       }
       view.home();
       view.update(lab);
@@ -783,6 +874,18 @@ function syncPlay() {
     : lab.running
       ? "RUNNING"
       : "PAUSED";
+  if (lab.type === "vectors") {
+    $("#play").innerHTML =
+      icon(lab.running ? "pause" : "play") +
+      (lab.running
+        ? " Pause build"
+        : lab.vectorProgress >= 1
+          ? " Animate addition"
+          : " Continue build");
+    $("#run-status").textContent = lab.running
+      ? "CONSTRUCTION DEMO"
+      : "READY TO EXPLORE";
+  }
   expandedView?.refresh();
 }
 function sample() {
@@ -1009,9 +1112,10 @@ function updateReadouts() {
     p = lab.params,
     s = lab.state;
   const metrics = d.metrics(s, p);
+  vectorStudio?.update();
   $("#metrics").innerHTML = metrics.map(metricMarkup).join("");
   const focus = metrics[0];
-  if (focus && $("#guide-reading"))
+  if (focus && $("#guide-reading") && lab.type !== "vectors")
     $("#guide-reading").textContent =
       `${focus.label}: ${fmt(focus.value, focus.decimals ?? 2)} ${focus.unit}`;
   if (lab.type === "gravity") {
@@ -1038,6 +1142,9 @@ function updateReadouts() {
   }
   $("#time-readout").textContent =
     `t = ${fmt(s.t / d.timeFactor)} ${d.timeUnit}`;
+  if (lab.type === "vectors")
+    $("#time-readout").textContent =
+      `Build ${Math.round(lab.vectorProgress * 100)}%`;
   $("#energy-summary").innerHTML = d
     .supplementary(s, p)
     .map(
@@ -1308,6 +1415,8 @@ function route() {
   $("#main").onclick = null;
   $("#main").oninput = null;
   expandedView?.close();
+  vectorStudio?.dispose();
+  vectorStudio = null;
   routeToken++;
   viewToken++;
   view?.dispose();
@@ -1369,7 +1478,16 @@ function frame(now) {
     heroView?.update(hero);
   }
   if (lab) {
-    if (lab.running && !document.hidden) {
+    if (lab.type === "vectors" && lab.running && !document.hidden) {
+      lab.vectorProgress = Math.min(
+        1,
+        lab.vectorProgress + (dt * lab.speed) / 5,
+      );
+      if (lab.vectorProgress >= 1) {
+        lab.running = false;
+        syncPlay();
+      }
+    } else if (lab.running && !document.hidden) {
       const rate = lab.definition.rateFor?.(lab.params) ?? lab.definition.rate;
       lab.accumulator += dt * lab.speed * rate;
       const h = integrationStep();

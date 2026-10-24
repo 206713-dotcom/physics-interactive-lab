@@ -165,6 +165,7 @@ export function createSceneKit(root, { labels = true } = {}) {
           transparent: true,
           depthTest: false,
           depthWrite: false,
+          toneMapped: false,
         }),
       );
       o.scale.set(width, (width * map.image.height) / map.image.width, 1);
@@ -172,8 +173,28 @@ export function createSceneKit(root, { labels = true } = {}) {
     } else o = new T.Object3D();
     add(o, pos, "label");
     o.userData.text = text;
+    o.userData.labelWidth = width;
+    o.userData.labelColor = color;
     annotations.push(o);
     return o;
+  };
+  const setLabel = (o, text, color = "#cfe6ef", width = 2.25) => {
+    if (
+      o.userData.text === text &&
+      o.userData.labelWidth === width &&
+      o.userData.labelColor === color
+    )
+      return;
+    o.userData.text = text;
+    o.userData.labelWidth = width;
+    o.userData.labelColor = color;
+    if (!o.material) return;
+    const old = o.material.map,
+      map = textTexture(text, color);
+    o.material.map = map;
+    o.material.needsUpdate = true;
+    o.scale.set(width, (width * map.image.height) / map.image.width, 1);
+    old?.dispose();
   };
   const glass = (w, h, d, pos, color = 0x82c6df) =>
     box(w, h, d, color, pos, {
@@ -277,6 +298,7 @@ export function createSceneKit(root, { labels = true } = {}) {
     arrow,
     setArrow,
     label,
+    setLabel,
     glass,
     ring,
     spring,

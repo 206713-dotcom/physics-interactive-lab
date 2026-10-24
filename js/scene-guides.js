@@ -17,7 +17,7 @@ export const SCENE_GUIDES = {
     "Cyan A leads into gold B. Purple runs directly from the starting point to the final point.",
     "Head-to-tail addition gives the same resultant as adding horizontal and vertical components.",
     "Try 0°, 90° and 180°. Predict the resultant before reading its value.",
-    "All arrows use the same length scale. Rotation changes your view, not the vector components.",
+    "All arrows and coordinate ticks share one fitted force scale. Drag the A/B rings to change the inputs; the construction demo only translates or reveals fixed vectors. Use Components to inspect the projections. Camera rotation changes the view without changing the forces.",
   ],
   moments: [
     "Compare the downward loads and their distances from the central pivot.",

@@ -1,5 +1,5 @@
-import { PALETTE as C, clamp, putRod, setPath } from "./scene-kit.js";
-import { vectorComponents } from "./curriculum-physics.js";
+import { PALETTE as C, putRod } from "./scene-kit.js";
+import { createVectorApparatus } from "./scene-vectors.js";
 const TAU = Math.PI * 2;
 export const MECHANICAL_SCENES = {
   measurement(p, k) {
@@ -55,42 +55,7 @@ export const MECHANICAL_SCENES = {
     };
   },
   vectors(p, k) {
-    k.stand(9, 5);
-    const { bx, by } = vectorComponents(p),
-      xs = [0, p.a, p.a + bx],
-      min = Math.min(...xs),
-      max = Math.max(...xs),
-      scale = Math.min(6 / Math.max(1, max - min), 3.5 / Math.max(1, by)),
-      start = [(-(min + max) * scale) / 2, 0.7, 0],
-      a = [p.a * scale, 0, 0],
-      b = [bx * scale, by * scale, 0];
-    k.arrow(start, a, C.cyan);
-    const join = start.map((v, i) => v + a[i]),
-      end = join.map((v, i) => v + b[i]);
-    k.arrow(join, b, C.gold);
-    k.arrow(
-      start,
-      a.map((v, i) => v + b[i]),
-      C.purple,
-    );
-    k.ball(0.075, C.white, start);
-    k.ball(0.07, C.white, join);
-    k.line([start, [end[0], start[1], 0], end], C.muted, 0.45);
-    k.label(
-      "A · " + p.a + " N",
-      [start[0] + a[0] / 2, start[1] + 0.5, 0.1],
-      "#64e8d1",
-      1.8,
-    );
-    k.label(
-      "B · " + p.b + " N",
-      [join[0] + b[0] / 2 + 0.4, join[1] + b[1] / 2 + 0.55, 0.1],
-      "#ffc584",
-      1.8,
-    );
-    k.label("Resultant = A + B", [0, 4.9, 0], "#c3a6ff", 3.8);
-    k.label("θ = " + p.angle + "°", [0, 0.1, 1.3], "#cfe6ef", 2);
-    return () => {};
+    return createVectorApparatus(p, k);
   },
   moments(p, k) {
     k.stand();

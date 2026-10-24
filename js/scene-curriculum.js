@@ -18,12 +18,24 @@ export function createCurriculumScene(type, params, root, options = {}) {
   const builder = CURRICULUM_BUILDERS[type];
   if (!builder) throw new RangeError("No 3D apparatus for " + type);
   const kit = createSceneKit(root, options),
-    animate = builder(params, kit);
+    built = builder(params, kit),
+    animate = typeof built === "function" ? built : built.update;
   return {
     kit,
+    liveParams: !!built.liveParams,
+    interaction: built.interaction,
     update(lab) {
-      animate(lab.state, sampleCurriculum(type, lab.state, params), lab);
+      animate(
+        lab.state,
+        sampleCurriculum(
+          type,
+          lab.state,
+          built.liveParams ? lab.params : params,
+        ),
+        lab,
+      );
       kit.visibility(lab.showLabels !== false, lab.vectors !== false);
+      built.afterVisibility?.(lab);
     },
   };
 }

@@ -10,6 +10,14 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 ## What is in the laboratory?
 
+### Version 6.1: a hands-on vector workbench
+
+The vector laboratory now has **draggable A/B tips in both 3D and 2D**, with head-to-tail, parallelogram and component constructions. A live resultant, direction and substituted component equations stay alongside the diagram. Coordinate ticks and arrows share one fitted force scale; zero resultants explicitly have no defined direction. Numeric inputs provide precise values; dragging snaps to 0.1 N and 1°. The supported model still has A along +x and B at 0–180°.
+
+**Animate addition** demonstrates four construction steps with pause, speed, single-step and a progress scrubber. It translates or reveals fixed vectors; it is not physical force evolution, and the calculated forces stay fixed during playback. Shared setup links preserve the construction method and diagram details. The expanded calculation inspector opens on the resultant magnitude. Camera preset transitions are smooth across the lab and respect reduced-motion preferences.
+
+`vector-geometry.js` supplies shared endpoints and inverse pointer mapping; `scene-vectors.js` keeps meshes alive through parameter edits; `render-vectors.js` draws the 2D companion; `vector-studio.js` manages the lesson controls without taking over physics integration. Regression tests check common scales, construction invariance, bounded drag inversion, actual Three.js ray picking, geometry reuse and responsive 2D coordinate inversion.
+
 ### Version 6: understand the animation
 
 The existing catalogue now has consistent spatial apparatus: solid force arrows, coils, transparent vessels, pistons, optical benches, particle chambers and astronomical models. **Perspective, Front and Above** camera buttons, a label toggle and mouse/touch/keyboard controls help inspect the same physical model from different angles. Every experiment has a **What to watch → Why it happens → Try a change** walkthrough beside a live reading, with model-specific visual-scale notes.
@@ -346,7 +354,7 @@ npm test
 npm run check
 ```
 
-There are **156 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
+There are **162 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
 
 - Default spring position against the analytic solution over 30 s, with maximum error below 10⁻⁶ m; default undamped energy drift below 10⁻⁷ over 120 s.
 - Worst supported spring frequency with energy drift below 0.04% over 120 s; damping and critical/overdamped behaviour.

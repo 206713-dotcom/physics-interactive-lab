@@ -29,7 +29,11 @@ export class ExpandedView {
     this.moves = [];
     const snapshot = getSnapshot(),
       sheet = calculationSheet(snapshot.type, snapshot.state, snapshot.params);
-    this.selectedId = sheet.calculations[0].id;
+    this.selectedId =
+      (sheet.type === "vectors"
+        ? sheet.calculations.find((item) => item.id === "resultant-2")
+        : null
+      )?.id || sheet.calculations[0].id;
     const root = document.createElement("section");
     this.root = root;
     root.className = "expanded-lab";
@@ -76,6 +80,7 @@ export class ExpandedView {
     this.time = root.querySelector(".calculation-time");
     this.footnote = root.querySelector(".calculation-footnote");
     this.choice = root.querySelector("#calculation-choice");
+    this.choice.value = this.selectedId;
     this.resultNodes = Object.fromEntries(
       [
         "h3",
@@ -200,6 +205,10 @@ export class ExpandedView {
     );
     this.time.classList.toggle("is-live", !!running);
     setText(this.play, running ? "Ⅱ Pause" : ended ? "↻ Replay" : "▶ Resume");
+    if (type === "vectors") {
+      setText(this.time, "STATIC VECTORS · construction demo");
+      setText(this.play, running ? "Ⅱ Pause build" : "▶ Animate addition");
+    }
     this.play.setAttribute(
       "aria-label",
       running
@@ -217,13 +226,15 @@ export class ExpandedView {
     const { type, state, params } = this.getSnapshot(),
       sheet = calculationSheet(type, state, params),
       item = sheet.calculations.find((entry) => entry.id === this.selectedId);
-    const text = `${item.title}\nt = ${calculationNumber(sheet.time)} s\n${item.formula}\n${item.substitution}\n= ${quantity(item.value, item.unit)}\n${item.note}\n\nValues used:\n${sheet.variables.map((value) => `${value.symbol} (${value.label}) = ${quantity(value.value, value.unit)}`).join("\n")}\n\n${sheet.note}`;
+    const text = `${item.title}\n${type === "vectors" ? "Static vector setup" : `t = ${calculationNumber(sheet.time)} ${sheetTimeUnit(sheet)}`}\n${item.formula}\n${item.substitution}\n= ${quantity(item.value, item.unit)}\n${item.note}\n\nValues used:\n${sheet.variables.map((value) => `${value.symbol} (${value.label}) = ${quantity(value.value, value.unit)}`).join("\n")}\n\n${sheet.note}`;
     const status = this.root.querySelector(".copy-working-status");
     try {
       await navigator.clipboard.writeText(text);
       setText(
         status,
-        `Working copied from t = ${calculationNumber(sheet.time)} s.`,
+        type === "vectors"
+          ? "Working copied from this static vector setup."
+          : `Working copied from t = ${calculationNumber(sheet.time)} ${sheetTimeUnit(sheet)}.`,
       );
     } catch {
       const field = this.root.querySelector(".calculation-copy");

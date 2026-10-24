@@ -1,0 +1,377 @@
+/* A focused mathematical workbench. All effects respect reduced motion. */
+[data-model="vectors"] .stage {
+  border-radius: 18px;
+  border-color: #315367;
+  box-shadow: 0 16px 40px #102b4012;
+}
+.vector-headline {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  column-gap: 12px;
+  line-height: 1.15;
+}
+.vector-headline > span {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: #aaa1d0;
+  grid-column: 1;
+}
+.vector-headline > output {
+  font-size: 29px;
+  letter-spacing: -0.04em;
+  font-weight: 650;
+  color: #e4d5ff;
+  grid-column: 1;
+  white-space: nowrap;
+}
+.vector-headline > small {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #a9c3d0;
+  grid-column: 2;
+  grid-row: 1/3;
+  max-width: 125px;
+}
+.vector-methods {
+  display: flex;
+  gap: 5px;
+  padding: 10px 18px;
+  background: #102b3c;
+  border-block: 1px solid #4065794d;
+}
+.vector-methods button {
+  flex: 1;
+  padding: 10px 9px;
+  min-height: 42px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #a3bac9;
+  font-size: 14px;
+  font-weight: 600;
+  transition:
+    background 0.18s,
+    color 0.18s;
+}
+.vector-methods button span {
+  font:
+    11px Consolas,
+    monospace;
+  margin-right: 9px;
+  opacity: 0.6;
+}
+.vector-methods button[aria-pressed="true"] {
+  background: #203e52;
+  border-color: #456478;
+  color: #e3f7f7;
+  box-shadow: 0 2px 7px #0002;
+}
+[data-model="vectors"] .camera-toolbar {
+  background: #0b2333;
+  padding-block: 7px;
+}
+[data-model="vectors"] .camera-toolbar button {
+  padding-block: 5px;
+  min-height: 31px;
+}
+[data-model="vectors"] .scene-container {
+  height: 510px;
+}
+[data-model="vectors"] .scene-equation {
+  display: none;
+}
+[data-model="vectors"] #camera-hint {
+  font-size: 12px;
+  letter-spacing: 0;
+  line-height: 1.5;
+  bottom: 13px;
+  max-width: 70%;
+  padding: 5px 8px;
+  background: #071b2bd9;
+  border-radius: 5px;
+  color: #b2ced9;
+}
+[data-model="vectors"] .camera-reset {
+  top: 15px;
+  right: 16px;
+}
+[data-model="vectors"] .control-hint {
+  font-size: 14px;
+}
+.scene-container #scene-3d.over-handle {
+  cursor: grab;
+}
+.scene-container #scene-3d.editing-vector {
+  cursor: grabbing;
+}
+[data-model="vectors"] #simulation {
+  touch-action: none;
+}
+[data-model="vectors"] .transport .time-readout {
+  display: none;
+}
+.expanded-lab[data-model="vectors"] .transport {
+  padding: 11px 14px;
+  gap: 8px 12px;
+  min-height: 68px;
+}
+.vector-display-options {
+  margin: 20px 0 27px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #dce6ec;
+}
+.vector-display-options h3 {
+  font-size: 15px;
+  margin: 0 0 12px;
+  color: #375365;
+}
+.vector-display-options label {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  margin: 10px 0;
+  font-size: 14px;
+  color: #486778;
+}
+.vector-display-options input {
+  width: 16px;
+  height: 16px;
+  accent-color: #0d9297;
+}
+.vector-display-options p {
+  font-size: 13px;
+  color: #657f91;
+  line-height: 1.7;
+  margin: 15px 0 0;
+}
+.vector-evidence {
+  margin-top: 18px;
+}
+.vector-equation-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.vector-equation-cards article {
+  padding: 21px 23px;
+  border: 1px solid #d4e2ea;
+  border-radius: 13px;
+  background: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.vector-equation-cards article::before {
+  position: absolute;
+  content: "";
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #799ee5;
+}
+.vector-equation-cards article > span {
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  color: #738ca1;
+  font-weight: 650;
+}
+.vector-equation-cards h3 {
+  font:
+    italic 22px Cambria,
+    Georgia,
+    serif;
+  color: #294e68;
+  margin: 7px 0 8px;
+}
+.vector-equation-cards p {
+  font-size: 14px;
+  color: #597386;
+  margin: 0 0 8px;
+  font-variant-numeric: tabular-nums;
+}
+.vector-equation-cards output {
+  font-size: 27px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: #324b74;
+}
+.vector-construction {
+  padding: 25px 26px;
+  margin-top: 16px;
+  border-radius: 14px;
+  border: 1px solid #c9dfdf;
+  background: linear-gradient(120deg, #f2faf9, #fff);
+}
+.vector-construction strong {
+  display: block;
+  font-size: 23px;
+  color: #193e50;
+  margin: 6px 0 4px;
+  letter-spacing: -0.02em;
+}
+.construction-label {
+  font-size: 12px;
+  color: #648596;
+}
+.vector-phase-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  margin: 20px 0 15px;
+}
+.vector-phase-buttons button {
+  text-align: left;
+  background: #fff;
+  border: 1px solid #d5e6e9;
+  border-radius: 8px;
+  color: #567787;
+  padding: 11px;
+  line-height: 1.4;
+  font-size: 13px;
+  min-height: 66px;
+}
+.vector-phase-buttons span {
+  display: block;
+  font:
+    11px Consolas,
+    monospace;
+  opacity: 0.6;
+  margin-bottom: 4px;
+}
+.vector-phase-buttons button[aria-pressed="true"] {
+  background: #143e50;
+  border-color: #143e50;
+  color: #bcf0e7;
+}
+#vector-phase-copy {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #34586b;
+  min-height: 50px;
+  margin: 0 0 18px;
+}
+.vector-seek-label {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 12px;
+  color: #5c7b8d;
+}
+#vector-progress {
+  flex: 1;
+  min-width: 0;
+  accent-color: #11969a;
+  height: 5px;
+}
+.vector-method-description {
+  font-size: 14px;
+  color: #618093;
+  margin: 19px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid #d9e8e9;
+  line-height: 1.7;
+}
+.expanded-model [data-model="vectors"] .scene-container,
+.expanded-lab[data-model="vectors"] .scene-container {
+  height: clamp(300px, 45dvh, 570px);
+}
+.expanded-lab[data-model="vectors"] .vector-methods {
+  padding: 7px 12px;
+}
+.expanded-lab[data-model="vectors"] .vector-methods button {
+  font-size: 12px;
+  min-height: 35px;
+  padding: 8px;
+}
+.expanded-lab[data-model="vectors"] .vector-headline > output {
+  font-size: 25px;
+}
+.expanded-lab[data-model="vectors"] .vector-headline > small {
+  font-size: 11px;
+  max-width: 90px;
+}
+.expanded-lab[data-model="vectors"] .vector-equation-cards article {
+  padding: 17px;
+}
+.expanded-lab[data-model="vectors"] .vector-equation-cards h3 {
+  font-size: 21px;
+}
+.expanded-lab[data-model="vectors"] .vector-phase-buttons {
+  grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 1100px) {
+  .vector-methods button span {
+    display: none;
+  }
+  .vector-equation-cards article {
+    padding: 18px;
+  }
+  .vector-headline {
+    column-gap: 9px;
+  }
+  .vector-headline > output {
+    font-size: 26px;
+  }
+}
+@media (max-width: 600px) {
+  .vector-methods {
+    padding: 8px;
+  }
+  .vector-methods button {
+    font-size: 12px;
+    padding: 7px;
+    min-height: 38px;
+  }
+  [data-model="vectors"] .scene-container {
+    height: 380px;
+  }
+  [data-model="vectors"] .stage-top {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .vector-headline > output {
+    font-size: 26px;
+  }
+  .vector-headline > small {
+    font-size: 11px;
+    max-width: 100px;
+  }
+  .vector-equation-cards {
+    gap: 9px;
+  }
+  .vector-equation-cards article {
+    padding: 16px 13px;
+  }
+  .vector-equation-cards h3 {
+    font-size: 19px;
+  }
+  .vector-equation-cards p {
+    font-size: 12px;
+  }
+  .vector-construction {
+    padding: 20px;
+  }
+  .vector-construction strong {
+    font-size: 22px;
+  }
+  .vector-phase-buttons {
+    grid-template-columns: 1fr 1fr;
+  }
+  .vector-seek-label {
+    display: block;
+  }
+  #vector-progress {
+    width: 100%;
+    margin-top: 15px;
+  }
+  [data-model="vectors"] #camera-hint {
+    font-size: 11px;
+    max-width: 80%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vector-methods button {
+    transition: none;
+  }
+}

@@ -2,6 +2,7 @@
 import * as P from "./curriculum-physics.js";
 import { PRACTICAL_IDS } from "./practical-physics.js";
 import { drawPractical, practicalThumbnail } from "./render-practical.js";
+import { drawVectorDiagram } from "./render-vectors.js";
 const TAU = Math.PI * 2,
   CYAN = "#6be5d4",
   GOLD = "#ffc580",
@@ -10,6 +11,7 @@ const TAU = Math.PI * 2,
   MUTED = "#8faec2",
   WHITE = "#e7f5ff";
 export function drawCurriculum(canvas, lab) {
+  if (lab.type === "vectors") return drawVectorDiagram(canvas, lab);
   const width = canvas.clientWidth,
     height = canvas.clientHeight,
     dpr = Math.min(devicePixelRatio || 1, 2);

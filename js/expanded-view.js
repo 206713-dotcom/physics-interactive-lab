@@ -1,6 +1,8 @@
 import { calculationSheet, calculationNumber } from "./calculations.js";
 import { mathHTML, setMath } from "./math-display.js";
 
+const sheetTimeUnit = (sheet) =>
+  sheet.variables.find((value) => value.symbol === "t")?.unit || "s";
 const quantity = (value, unit) =>
   `${calculationNumber(value)}${value !== null && unit ? " " + unit : ""}`;
 const setText = (node, text) => {
@@ -96,7 +98,7 @@ export class ExpandedView {
         (button.onclick = () => {
           this.choose(button.dataset.calculation);
           root.querySelector(".expanded-calculations").scrollTo({ top: 0 });
-          if (matchMedia("(max-width: 760px)").matches)
+          if (matchMedia("(max-width: 900px)").matches)
             root
               .querySelector(".expanded-calculations")
               .scrollIntoView({ block: "start" });
@@ -114,7 +116,7 @@ export class ExpandedView {
             .forEach((tab) =>
               tab.setAttribute("aria-pressed", String(tab === button)),
             );
-          if (matchMedia("(max-width: 760px)").matches)
+          if (matchMedia("(max-width: 900px)").matches)
             root
               .querySelector(
                 variables ? ".expanded-variables" : ".expanded-calculations",
@@ -194,7 +196,7 @@ export class ExpandedView {
     });
     setText(
       this.time,
-      `${running ? "LIVE" : "PAUSED"} · t = ${calculationNumber(sheet.time)} s`,
+      `${running ? "LIVE" : "PAUSED"} · t = ${calculationNumber(sheet.time)} ${sheetTimeUnit(sheet)}`,
     );
     this.time.classList.toggle("is-live", !!running);
     setText(this.play, running ? "Ⅱ Pause" : ended ? "↻ Replay" : "▶ Resume");

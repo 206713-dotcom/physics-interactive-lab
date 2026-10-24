@@ -4,11 +4,19 @@
 
 [Open the live laboratory](https://206713-dotcom.github.io/physics-interactive-lab/) · [Browse the source](https://github.com/206713-dotcom/physics-interactive-lab) · [Automated checks](https://github.com/206713-dotcom/physics-interactive-lab/actions)
 
-A browser-only laboratory for IGCSE, A Level and extension exploration. The [IGCSE course navigator](https://206713-dotcom.github.io/physics-interactive-lab/#/course) maps 78 FocusPhysics lesson pages to interactive experiments. There are 44 scientific 2D instruments alongside the original 13 WebGL studios. Each experiment includes **three guided investigations, five worked questions, learning objectives, equations, assumptions and applications**: 171 investigations and 285 questions. The separate [A Level practice room](https://206713-dotcom.github.io/physics-interactive-lab/#/questions) adds 312 original questions in 26 groups, for **597 questions across the project**.
+A browser-only laboratory for IGCSE, A Level and extension exploration. The [IGCSE course navigator](https://206713-dotcom.github.io/physics-interactive-lab/#/course) maps 78 FocusPhysics lesson pages to interactive experiments. All **57 laboratories have WebGL 3D apparatus and a 2D diagram**. Each experiment includes **three guided investigations, five worked questions, learning objectives, equations, assumptions and applications**: 171 investigations and 285 questions. The separate [A Level practice room](https://206713-dotcom.github.io/physics-interactive-lab/#/questions) adds 312 original questions in 26 groups, for **597 questions across the project**.
 
 This is an independent student prototype and a proposed contribution to [FocusPhysics](https://focusphysics.com), not an official or endorsed FocusPhysics integration.
 
 ## What is in the laboratory?
+
+### Version 6: understand the animation
+
+The existing catalogue now has consistent spatial apparatus: solid force arrows, coils, transparent vessels, pistons, optical benches, particle chambers and astronomical models. **Perspective, Front and Above** camera buttons, a label toggle and mouse/touch/keyboard controls help inspect the same physical model from different angles. Every experiment has a **What to watch → Why it happens → Try a change** walkthrough beside a live reading, with model-specific visual-scale notes.
+
+The expanded workspace keeps the model, parameter controls and substituted calculations together. Fixed-step interpolation smooths drawing between integration steps; pause and single-step show the exact state. Graphs, energy checks, exports and calculation sheets always use the authoritative model state. Dynamic paths reuse GPU buffers rather than replacing geometry every frame.
+
+The 44 curriculum apparatus builders are separated into `scene-mechanics.js`, `scene-thermal.js`, `scene-waves.js`, `scene-electric.js` and `scene-space.js`. `scene-kit.js` supplies shared meshes, labels, arrows and reusable paths; `scene-curriculum.js` reads model samples without advancing them. `scene-guides.js` documents every view. A 3D camera does not make a planar model three-dimensional physics: particle illustrations, magnified extensions, fitted orbits and qualitative storyboards are explicitly labelled. Complete 2D views remain available, including automatic fallback when WebGL is unavailable.
 
 ### Version 5: sixteen new practical and A Level instruments
 
@@ -31,7 +39,7 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 | Blackbody spectra      | Wien peak, Planck shape, area and emissivity                             | Planck spectrum and Stefan–Boltzmann law                  |
 | Young modulus          | Stress, strain, geometry, wire stiffness and energy                      | Quasistatic uniaxial linear elasticity                    |
 
-All sixteen use the existing sliders, graphs, expanded model/variable/working workspace, notebook, share and embed tools. New IGCSE instruments appear in the course navigator. Extension models are labelled A Level and linked to relevant practice groups. Diagrams identify enlarged, normalised or independently scaled quantities; they are not presented as 3D physical measurements.
+All sixteen use the existing sliders, graphs, expanded model/variable/working workspace, notebook, share and embed tools. New IGCSE instruments appear in the course navigator. Extension models are labelled A Level and linked to relevant practice groups. Both views identify enlarged, normalised or independently scaled quantities. Readouts provide the physical measurements calculated by the model.
 
 ### A Level practice room
 
@@ -338,7 +346,7 @@ npm test
 npm run check
 ```
 
-There are **146 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
+There are **156 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
 
 - Default spring position against the analytic solution over 30 s, with maximum error below 10⁻⁶ m; default undamped energy drift below 10⁻⁷ over 120 s.
 - Worst supported spring frequency with energy drift below 0.04% over 120 s; damping and critical/overdamped behaviour.
@@ -354,12 +362,13 @@ There are **146 tests** using Node's built-in runner. They exercise the same fun
 - Field/potential scaling, dipole and like-charge cancellation, singularity handling and E = −∇V.
 - All 57 catalogue entries, 171 valid presets, 171 investigations and 285 in-lab questions; finite dynamic parameter corners and spatial datasets; invalid inputs and converted endpoints.
 - Worked calculations for every model: current-state substitutions, SI units, damping and drag signs, approximate period/fringe labels, collision predictions, refraction exclusions, RC discharge current, point-charge exclusions, zero charges and tiny-value formatting. Calculation sheets do not mutate or advance the simulation.
-- Embeds for all 57 models, valid parameter round-trips, repository and self-hosted subdirectory paths, clean share links, invalid-model/protocol rejection, escaped iframe attributes and readable scientific notation with safe HTML escaping. Diagram-only models resolve to the supported 2D view.
+- Embeds for all 57 models, valid parameter round-trips, repository and self-hosted subdirectory paths, clean share links, invalid-model/protocol rejection, escaped iframe attributes and readable scientific notation with safe HTML escaping. Every model supports either 3D or 2D embed selection.
 - Binary virial/barycentre/force relations, ten-period circular radius and energy, Kepler return, elliptical angular momentum, escape and physical scaling.
 - Pairwise stellar momentum balance and inverse-square scaling, approximate figure-eight return, equilateral rotation, perturbed-triple centre of mass, supported stellar corners and close-encounter guards.
 - Independent explicit double-pendulum accelerations, zero instantaneous energy derivative, separate main/twin energy conservation over 60 s, exact-match twins, sensitive dependence, fourth-order convergence and extreme supported settings over 10 s.
 - 37 IGCSE checks: every course mapping and model reachability; all slider endpoints and modes over bounded observations; suvat and terminal fall; vector cancellation; moments/stability; Archimedes and hydrostatic scaling; lift energy accounting; Boyle/temperature scaling; all water heating transitions; conduction and fourth-power radiation; mirrors, real/virtual/focal-plane lens cases; dispersion and EM speed; sound echo path; Kirchhoff and wire-resistance relations; diode/relay/cut-out states; solenoid scaling; constant-energy charged-particle motion; Faraday flux derivative; transformer power; nuclear accounting and Rutherford angles; seeded-decay reproducibility and ensemble expectation; daylight/Moon phases; planetary Kepler relations; stellar scaling; Hubble units and low-redshift bounds.
 - Nineteen practical/A Level checks: hydraulic work/volume; spring force and energy; sensor reference/threshold/swap behaviour; relativistic beam speed, rigidity, reversal and weak-field limits; rectifier integrated mean/RMS; lamp RK4 convergence, energy budget and parameter corners; exact cooling; pipe boundary conditions; photoelectric thresholds; Bragg order limits; Malus projections; crossed-field differential equations and work; driven-oscillator equation/power; first-law gas invariants; Planck integral and Wien peak; modulus geometry; all sixteen models' presets and actual steps.
+- Ten 3D/display checks: finite geometry and transforms across every instrument’s presets and parameter endpoints; complete guides and 3D coverage; no physical-state mutations or frame-by-frame geometry growth; head-to-tail vectors; magnetic-force tangency; seeded decay colours; reusable path buffers; coil/flux orientation; standing-wave phase; bounded immutable interpolation and discrete collision handling.
 - Five practice-room checks covering all 312 records and worked-result round trips, independent fixtures for every topic, notation and invalid-input handling, combined filters and defensive progress import.
 
 These are bounded regression checks for the stated scenarios, not claims of exact or indefinite numerical conservation. `npm run check` verifies assets, every relative JavaScript module import, vendored libraries and GitHub Pages subdirectory compatibility. GitHub Actions runs both commands on pushes and pull requests.

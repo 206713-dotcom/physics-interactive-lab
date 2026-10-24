@@ -31,7 +31,7 @@ For orbital mechanics, a minimal embed is:
 </p>
 ```
 
-For the spring, change `#/gravity` to `#/spring`. All **57 models** work in the embed generator. The original 13 have 3D and 2D views; the 44 IGCSE/A Level instruments use scientific 2D diagrams and automatically select that supported view. New routes include `#/photoelectric`, `#/driven`, `#/gasprocess`, `#/filament` and `#/resonance`.
+For the spring, change `#/gravity` to `#/spring`. All **57 models** work in the embed generator. Every model offers 3D apparatus and a 2D diagram. The embed generator preserves the selected view; devices without WebGL fall back to the complete 2D experiment. Camera presets, visual walkthroughs, variables and live calculations also work in the expanded embed. New routes include `#/photoelectric`, `#/driven`, `#/gasprocess`, `#/filament` and `#/resonance`.
 
 The separate [A Level practice room](https://206713-dotcom.github.io/physics-interactive-lab/#/questions) can be linked directly from a lesson. For a specific twelve-question group, use a URL such as `https://206713-dotcom.github.io/physics-interactive-lab/#/questions?topic=quantum` or `...?topic=capacitors`. Question progress is stored in the student's browser; browser privacy settings may block persistence inside third-party iframes, so a full-tab link is recommended for practice.
 

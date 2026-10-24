@@ -1478,7 +1478,7 @@ export const CURRICULUM_SIMULATIONS = Object.fromEntries(
         formula,
         level: "IGCSE 0625",
         color: ["#59dcca", "#80b9ff", "#edbc78", "#c6a1f6"][index % 4],
-        diagramOnly: true,
+        diagramOnly: false,
         curriculum: true,
         defaults,
         limits: Object.fromEntries(
@@ -1552,7 +1552,7 @@ export const CURRICULUM_SIMULATIONS = Object.fromEntries(
             : {}),
         })),
         caption:
-          "Calculated model · scientific diagram · visual sizes / animation timing illustrative · see Equations & model for assumptions.",
+          "Calculated physics · rotate the 3D apparatus or use the 2D diagram. Open the visual-scale notes for enlarged quantities and illustrative timing.",
         insight: `${summary} Open the guided experiments for three investigations.`,
         sweep,
       },

@@ -68,7 +68,7 @@ test("all 44 scientific instruments expose real calculations, lessons, valid pre
             .split("?")
             .at(-1),
         ).get("view"),
-        "2d",
+        "3d",
       );
     }
   }
@@ -169,7 +169,10 @@ test("perpendicular and opposing force vectors obey Pythagoras and cancellation"
   const q = sample("vectors");
   close(q.resultant, 10);
   close(q.direction, 36.86989764584402);
-  assert.ok(sample("vectors", { a: 10, b: 10, angle: 180 }).resultant < 1e-12);
+  const cancelled = sample("vectors", { a: 10, b: 10, angle: 180 });
+  assert.equal(cancelled.resultant, 0);
+  assert.equal(cancelled.direction, null);
+  assert.equal(sample("vectors", { a: 8, b: 6, angle: 180 }).y, 0);
 });
 test("balanced moments and stability threshold use perpendicular lever arms", () => {
   assert.ok(Math.abs(sample("moments").net) < 1e-10);

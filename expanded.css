@@ -267,7 +267,7 @@ body.has-expanded-lab {
 .expanded-model .orbit-legend span:nth-child(3)::after {
   content: "a · acceleration";
 }
-@media (min-width: 761px) and (max-height: 800px) {
+@media (min-width: 901px) and (max-height: 800px) {
   .expanded-model .scene-container {
     height: clamp(210px, 31dvh, 250px);
   }
@@ -580,7 +580,7 @@ body.has-expanded-lab {
     font-size: 17px;
   }
 }
-@media (min-width: 761px) and (max-width: 1279px) {
+@media (min-width: 901px) and (max-width: 1279px) {
   .expanded-layout {
     grid-template-columns: minmax(0, 1fr) 350px;
     gap: 16px;
@@ -679,7 +679,7 @@ body.has-expanded-lab {
     text-align: right;
   }
 }
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .expanded-lab {
     overflow: auto;
     display: block;
@@ -836,7 +836,7 @@ body.has-expanded-lab {
 .is-embedded .expanded-header h2 {
   font-size: 22px;
 }
-@media (min-width: 761px) and (max-height: 800px) {
+@media (min-width: 901px) and (max-height: 800px) {
   .expanded-lab .calculation-heading h2 {
     font-size: 23px;
     margin: 5px 0 12px;
@@ -848,7 +848,7 @@ body.has-expanded-lab {
     margin-top: 18px;
   }
 }
-@media (min-width: 761px) and (max-width: 960px) {
+@media (min-width: 901px) and (max-width: 960px) {
   .expanded-header {
     flex-wrap: wrap;
     gap: 10px;
@@ -864,7 +864,7 @@ body.has-expanded-lab {
     flex: 1;
   }
 }
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .is-embedded .expanded-close::after {
     content: "Notes";
   }

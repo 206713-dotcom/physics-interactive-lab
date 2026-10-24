@@ -3,6 +3,11 @@
 import * as T from "../vendor/three.module.min.js";
 import { createAdvancedScene } from "./scene-advanced.js";
 import { ADVANCED_IDS } from "./physics-advanced.js";
+import {
+  createCurriculumScene,
+  CURRICULUM_BUILDERS,
+} from "./scene-curriculum.js";
+import { setPath, createSceneKit } from "./scene-kit.js";
 import { centralRadius, orbitAcceleration } from "./physics.js";
 import {
   waveAt,
@@ -73,10 +78,7 @@ function beam(points, color, opacity = 1) {
   );
 }
 function updateLine(line, points) {
-  line.geometry.dispose();
-  line.geometry = new T.BufferGeometry().setFromPoints(
-    points.map((p) => new T.Vector3(...p)),
-  );
+  setPath(line, points);
 }
 function rodBetween(mesh, a, b) {
   const av = new T.Vector3(...a),
@@ -107,6 +109,7 @@ function label(value, color = "#a9c8d9") {
     }),
   );
   sprite.scale.set(2.5, 0.47, 1);
+  sprite.userData.role = "label";
   return sprite;
 }
 
@@ -203,6 +206,7 @@ export class SceneView {
     this.scene.add(this.ambient);
     const key = new T.DirectionalLight(0xe2f4ff, 3.2);
     key.position.set(-4, 8, 5);
+    this.keyLight = key;
     key.castShadow = true;
     key.shadow.mapSize.set(1024, 1024);
     key.shadow.camera.left = -12;
@@ -212,6 +216,7 @@ export class SceneView {
     this.scene.add(key);
     const rim = new T.PointLight(CYAN, 18, 20);
     rim.position.set(4, 2, -4);
+    this.rimLight = rim;
     this.scene.add(rim);
     this.root = new T.Group();
     this.scene.add(this.root);
@@ -318,8 +323,21 @@ export class SceneView {
     this.polar = this.homePolar ?? 1.05;
     this.radius = this.homeRadius || 15;
   }
+  cameraView(name) {
+    this.home();
+    if (name === "front") {
+      this.azimuth = 0;
+      this.polar = Math.PI / 2;
+    }
+    if (name === "above") {
+      this.azimuth = 0;
+      this.polar = 0.035;
+    }
+  }
   clear() {
     this.advanced = null;
+    this.curriculum = null;
+    this.trackedLabels = null;
     this.root.traverse((o) => {
       o.geometry?.dispose();
       if (o.material) {
@@ -336,7 +354,10 @@ export class SceneView {
     this.clear();
     this.type = type;
     this.key = JSON.stringify(p);
-    this.ambient.intensity = type === "gravity" ? 0.65 : 2;
+    this.ambient.intensity =
+      type === "gravity" ? 0.65 : type === "earthmoon" ? 0.13 : 2;
+    this.keyLight.intensity = type === "earthmoon" ? 0 : 3.2;
+    this.rimLight.intensity = type === "earthmoon" ? 0 : 18;
     const r = this.root,
       o = this.objects;
     this.floor.position.y =
@@ -353,6 +374,10 @@ export class SceneView {
       r.add(mesh);
       return mesh;
     };
+    if (Object.hasOwn(CURRICULUM_BUILDERS, type)) {
+      this.curriculum = createCurriculumScene(type, p, r);
+      return;
+    }
     if (ADVANCED_IDS.includes(type)) {
       this.ambient.intensity = type === "doublependulum" ? 1.4 : 0.35;
       this.advanced = createAdvancedScene(type, p, this);
@@ -867,7 +892,13 @@ export class SceneView {
     if (this.type !== type || this.key !== JSON.stringify(p))
       this.build(type, p);
     const o = this.objects;
-    if (this.advanced) this.advanced.update(lab);
+    // Restore label visibility before each model applies its own conditions
+    // (for example a velocity label disappears when its vector is zero).
+    this.root.traverse((node) => {
+      if (node.userData.role === "label") node.visible = true;
+    });
+    if (this.curriculum) this.curriculum.update(lab);
+    else if (this.advanced) this.advanced.update(lab);
     else if (type === "gravity") {
       let extent = p.distance * 1.35;
       for (const q of lab.trail || [])
@@ -1098,6 +1129,40 @@ export class SceneView {
       o.plate1.material.emissive.setHex(CYAN);
       o.plate1.material.emissiveIntensity = (q.voltage / p.voltage) * 0.6;
     }
+    if (!this.curriculum && !this.trackedLabels) {
+      const specs =
+        {
+          spring: [["block", "Mass", [0, 0.85, 0]]],
+          pendulum: [["bob", "Bob", [0, 0.65, 0]]],
+          projectile: [["ball", "Projectile", [0, 0.6, 0]]],
+          collisions: [
+            ["a", "Cart A", [0, 0.65, 0]],
+            ["b", "Cart B", [0, 0.65, 0]],
+          ],
+          waves: [["probe", "Probe", [0, 0.65, 0]]],
+          interference: [
+            ["slitBoard", "Coherent sources", [0, 2, 0]],
+            ["screen", "Screen", [0, 2, 0]],
+          ],
+          fields: [["probe", "Field probe", [0, 0.7, 0]]],
+        }[type] || [];
+      const kit = createSceneKit(this.root);
+      this.trackedLabels = specs
+        .filter(([key]) => o[key])
+        .map(([key, text, offset]) => ({
+          mesh: o[key],
+          offset,
+          label: kit.label(text, [0, 0, 0], "#cfe6ef", 1.8),
+        }));
+    }
+    for (const item of this.trackedLabels || [])
+      item.label.position
+        .copy(item.mesh.position)
+        .add(new T.Vector3(...item.offset));
+    if (lab.showLabels === false)
+      this.root.traverse((node) => {
+        if (node.userData.role === "label") node.visible = false;
+      });
     const w = this.canvas.clientWidth,
       h = this.canvas.clientHeight;
     if (this.w !== w || this.h !== h) {
@@ -1111,7 +1176,7 @@ export class SceneView {
     // camera-only control, and never changes distance or any physical state.
     const cameraRadius =
       this.radius *
-      (["gravity", ...ADVANCED_IDS].includes(type)
+      (["gravity", ...ADVANCED_IDS].includes(type) || this.curriculum
         ? Math.max(1, 1.35 / this.camera.aspect)
         : 1);
     this.camera.position.set(

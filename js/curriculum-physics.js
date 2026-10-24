@@ -18,6 +18,13 @@ export const SIGMA = 5.670374419e-8,
   G = 6.6743e-11,
   SUN = 1.98847e30;
 export const DEG = Math.PI / 180;
+/** Preserve exact cardinal directions instead of presenting floating-point
+ * sin(π) residue as a real perpendicular force. Other angles keep full precision. */
+export function vectorComponents(p) {
+  const bx = p.b * (p.angle === 90 ? 0 : Math.cos(p.angle * DEG)),
+    by = p.b * ([0, 180].includes(p.angle) ? 0 : Math.sin(p.angle * DEG));
+  return { bx, by, x: p.a + bx, y: by };
+}
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 // Each parameter is [default, minimum, maximum]. Integer/select parameters are validated too.
 export const RANGES = {
@@ -353,13 +360,12 @@ export function sampleCurriculum(id, s, p) {
       break;
     }
     case "vectors": {
-      const x = p.a + p.b * Math.cos(p.angle * DEG),
-        y = p.b * Math.sin(p.angle * DEG);
+      const { x, y } = vectorComponents(p);
       Object.assign(q, {
         x,
         y,
         resultant: Math.hypot(x, y),
-        direction: Math.atan2(y, x) / DEG,
+        direction: x === 0 && y === 0 ? null : Math.atan2(y, x) / DEG,
       });
       break;
     }

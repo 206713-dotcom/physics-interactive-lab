@@ -19,6 +19,7 @@ function textSprite(text, color = "#b7cedf") {
     }),
   );
   sprite.scale.set(2.6, 0.49, 1);
+  sprite.userData.role = "label";
   return sprite;
 }
 function glowTexture() {

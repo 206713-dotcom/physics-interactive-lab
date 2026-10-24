@@ -3,7 +3,13 @@ import { drawSpring, drawOrbit } from "./canvas.js";
 import * as E from "./physics-extra.js";
 import { ADVANCED_IDS } from "./physics-advanced.js";
 import { drawAdvanced } from "./render-advanced.js";
+import { CURRICULUM_IDS } from "./curriculum-physics.js";
+import { drawCurriculum } from "./render-curriculum.js";
 export function draw2D(canvas, lab) {
+  if (CURRICULUM_IDS.includes(lab.type)) {
+    drawCurriculum(canvas, lab);
+    return;
+  }
   if (ADVANCED_IDS.includes(lab.type)) {
     drawAdvanced(canvas, lab);
     return;

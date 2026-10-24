@@ -33,7 +33,7 @@ export function experimentLink({
   url.search = embed ? "?embed=1" : "";
   const query = new URLSearchParams({
     ...validated,
-    view: view === "2d" ? "2d" : "3d",
+    view: view === "2d" || definition.diagramOnly ? "2d" : "3d",
   });
   if (definition.graphs.some((item) => item.id === graph))
     query.set("graph", graph);

@@ -31,7 +31,9 @@ For orbital mechanics, a minimal embed is:
 </p>
 ```
 
-For the spring, change `#/gravity` to `#/spring`. Other routes are `binary`, `threebody`, `doublependulum`, `pendulum`, `projectile`, `collisions`, `waves`, `interference`, `refraction`, `circuits` and `fields`. All thirteen models work in the embed generator.
+For the spring, change `#/gravity` to `#/spring`. All **41 models** work in the embed generator. The original 13 have 3D and 2D views; the 28 new IGCSE instruments use scientific 2D diagrams and automatically select that supported view.
+
+Use the [IGCSE course map](https://206713-dotcom.github.io/physics-interactive-lab/#/course) to find the experiment supporting each of the 78 original lesson pages. For example, use `#/calorimetry` for heating and phase changes, `#/dc` for circuits and dividers, `#/lenses` for ray constructions, `#/radioactivity` for half-life, and `#/earthmoon` for seasons and Moon phases. The map links back to existing FocusPhysics notes and resources. Detailed scope and mappings are in [IGCSE-COVERAGE.md](IGCSE-COVERAGE.md).
 
 The embed loads **paused** with the model, parameters, current values and worked calculations. It omits the main site's header and footer. **Lessons & notes** reveals the existing learning resources inside the frame; **Open full lab** opens the full lesson in another tab. Expanding a model fills its iframe, rather than covering the host website. The simulation never reads or modifies its parent page and uses no cross-frame messages.
 

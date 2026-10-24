@@ -31,7 +31,10 @@ test("every expanded model provides stable worked steps, SI values and no state 
         first.calculations.map((c) => c.id),
         next.calculations.map((c) => c.id),
       );
-      assert.ok(first.variables.length >= 4 && first.calculations.length >= 4);
+      assert.ok(
+        first.variables.length >= (definition.curriculum ? 3 : 4) &&
+          first.calculations.length >= 4,
+      );
       for (const sheet of [first, next]) {
         for (const item of sheet.calculations) {
           assert.ok(item.formula && item.substitution && item.title);

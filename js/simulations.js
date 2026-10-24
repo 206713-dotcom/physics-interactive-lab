@@ -2,6 +2,10 @@
 import * as P from "./physics.js";
 import * as E from "./physics-extra.js";
 import { ADVANCED_SIMULATIONS } from "./advanced-simulations.js";
+import {
+  CURRICULUM_SIMULATIONS,
+  curriculumRows,
+} from "./curriculum-simulations.js";
 const control = (key, label, unit, min, max, step, hint, factor = 1) => ({
   key,
   label,
@@ -41,6 +45,7 @@ const baseExtra = (id) => ({
 const range = (n, min, max, fn) =>
   Array.from({ length: n }, (_, i) => fn(min + ((max - min) * i) / (n - 1)));
 export const SIMULATIONS = {
+  ...CURRICULUM_SIMULATIONS,
   ...ADVANCED_SIMULATIONS,
   spring: {
     title: "Simple harmonic motion",
@@ -1114,8 +1119,13 @@ export const CATEGORIES = [
   "Waves",
   "Optics",
   "Electricity",
+  "Thermal physics",
+  "Magnetism",
+  "Nuclear physics",
+  "Space physics",
 ];
 export function spatialRows(type, s, p) {
+  if (type.startsWith("curriculum:")) return curriculumRows(type, s, p);
   if (type === "wave")
     return range(321, 0, 8, (x) => ({ x, ...E.waveAt(x, s.t, p) }));
   if (type === "interference")

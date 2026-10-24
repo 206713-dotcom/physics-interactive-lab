@@ -4,6 +4,8 @@ import * as P from "./physics.js";
 import * as E from "./physics-extra.js";
 import { ADVANCED_IDS } from "./physics-advanced.js";
 import { advancedCalculationSheet } from "./calculations-advanced.js";
+import { CURRICULUM_IDS } from "./curriculum-physics.js";
+import { curriculumCalculationSheet } from "./curriculum-simulations.js";
 
 export function calculationNumber(value) {
   if (typeof value === "string") return value;
@@ -37,6 +39,8 @@ const v = variable,
   c = calculation;
 
 export function calculationSheet(type, s, p) {
+  if (CURRICULUM_IDS.includes(type))
+    return curriculumCalculationSheet(type, s, p, n);
   if (ADVANCED_IDS.includes(type))
     return advancedCalculationSheet(type, s, p, n);
   let variables = [],

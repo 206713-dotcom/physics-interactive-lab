@@ -31,6 +31,8 @@ $("#embed-model").value = model;
 $("#embed-view").value = supplied.get("view") === "2d" ? "2d" : "3d";
 function update() {
   const definition = SIMULATIONS[model];
+  $("#embed-view").disabled = !!definition.diagramOnly;
+  if (definition.diagramOnly) $("#embed-view").value = "2d";
   const options = {
     baseURL: location.href,
     model,

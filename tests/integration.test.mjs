@@ -6,7 +6,7 @@ import { mathHTML } from "../js/math-display.js";
 
 const baseURL =
   "https://206713-dotcom.github.io/physics-interactive-lab/index.html?embed=1#/spring";
-test("all thirteen embedded setups preserve validated SI values and graph selection", () => {
+test("all 41 embedded setups preserve validated values and graph selection", () => {
   for (const [model, definition] of Object.entries(SIMULATIONS)) {
     const params = Object.freeze({ ...definition.defaults });
     const graph = definition.graphs.at(-1).id;

@@ -709,6 +709,14 @@ export const EXTRA_LESSONS = {
         "Lines are a map",
         "Field-line tangents show field direction. They are geometric streamlines, not moving charges or simulated detections.",
       ],
+      [
+        "IGCSE: how objects become charged",
+        "Rubbing can transfer electrons between materials; protons remain bound in nuclei. Losing electrons leaves a positive charge, gaining electrons leaves a negative charge. Mobile electrons move readily through conductors but not through insulators. Like charges repel and unlike charges attract.",
+      ],
+      [
+        "IGCSE: charging by induction",
+        "A nearby charged object redistributes mobile electrons in a conductor without contact. With a suitable earth connection, electrons can enter or leave; removing the earth before the inducing object can leave a net charge. This point-charge lab visualises the resulting fields; it does not solve mobile-charge redistribution inside a conductor.",
+      ],
     ],
     equations: [
       [

@@ -1,14 +1,31 @@
-# Physics Interactive Lab — 3D Studio
+# Physics Interactive Lab — IGCSE course & 3D studios
 
-**Thirteen experiments. Three dimensions. A clearer way to understand physics.**
+**41 working laboratories. All six IGCSE areas. Live calculations you can follow.**
 
 [Open the live laboratory](https://206713-dotcom.github.io/physics-interactive-lab/) · [Browse the source](https://github.com/206713-dotcom/physics-interactive-lab) · [Automated checks](https://github.com/206713-dotcom/physics-interactive-lab/actions)
 
-A browser-only laboratory for IGCSE, A Level and extension exploration. Rotate a real WebGL scene, compare a calibrated diagram, change parameters, and follow the calculated graphs. Each experiment includes **three guided investigations, five worked questions, learning objectives, equations, assumptions and applications**: 39 investigations and 65 questions in total.
+A browser-only laboratory for IGCSE, A Level and extension exploration. The [IGCSE course navigator](https://206713-dotcom.github.io/physics-interactive-lab/#/course) maps 78 FocusPhysics lesson pages to interactive experiments. There are 28 new scientific 2D instruments alongside the original 13 WebGL studios. Each experiment includes **three guided investigations, five worked questions, learning objectives, equations, assumptions and applications**: 123 investigations and 205 questions in total.
 
 This is an independent student prototype and a proposed contribution to [FocusPhysics](https://focusphysics.com), not an official or endorsed FocusPhysics integration.
 
 ## What is in the laboratory?
+
+### IGCSE course expansion
+
+| Area                      | New working laboratories                                                                                                                                      |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Motion, forces and energy | Measurement/uncertainty; motion/forces/free fall/ticker tape; vectors; moments/stability; density/pressure/floating; energy/power/resources                   |
+| Thermal physics           | Particle arrangements/ideal gas; thermal expansion; calorimetry/phase changes; conduction/convection/radiation                                                |
+| Waves and optics          | Wavefront reflection/diffraction; plane mirrors; converging/diverging lenses; dispersion; EM spectrum; sound/echoes                                           |
+| Electricity and magnetism | Series/parallel circuits/dividers/wire resistance; diode/relay/cut-out; solenoid/wire fields; charged particles; generators/motors; transformers/transmission |
+| Nuclear physics           | Atomic/isotope/ion/decay accounting and Rutherford angle; seeded random radioactive decay/half-life/attenuation                                               |
+| Space physics             | Earth/seasons/Moon phases; eight-planet orrery; stellar evolution/spectrum; Hubble relation/redshift/CMB                                                      |
+
+The audit inspected both IGCSE year hubs, ten topic hubs and 78 linked lesson pages on **24 October 2026**. The checklist links 324 statements to 62 distinct lessons; topic hubs add three practical/extension lessons and 13 revision/review pages. All 78 pages have model entry points and links to their original resources. [IGCSE-COVERAGE.md](IGCSE-COVERAGE.md) records every mapping.
+
+**A mapped lesson does not mean every syllabus statement has its own quantitative simulation.** Each lab demonstrates selected physical ideas and supplies supporting notes. Resource evaluation, electrical safety, stellar stages and particle arrangements include explicitly qualitative explanations. Hands-on practical work and the teacher's existing notes remain essential. FocusPhysics slides, worksheets and other resources remain on their original pages; they are not republished here. The A Level and Year 9 parts of FocusPhysics are outside this IGCSE audit.
+
+### Original 3D studios
 
 | Experiment         | Explore                                                                               | Model                                             |
 | ------------------ | ------------------------------------------------------------------------------------- | ------------------------------------------------- |
@@ -53,11 +70,31 @@ Open <http://localhost:4173/physics-interactive-lab/>. No install or build step,
 - **Embed:** open the [embed generator](https://206713-dotcom.github.io/physics-interactive-lab/integration.html), or choose **Embed** from an experiment to preserve its initial setup. The working iframe preview and copyable HTML make it ready for an existing lesson page. `?embed=1#/gravity` opens a paused, compact model with calculations; **Lessons & notes** reveals its learning resources. See [INTEGRATION.md](INTEGRATION.md) for FocusPhysics handover, host-page checks and self-hosting. No changes to FocusPhysics itself are made by this repository.
 - **Library:** search by topic or filter by subject. The experiment selector makes it easy to move between studios.
 
-Reduced-motion preference starts experiments paused and keeps the home orbit preview still. Background tabs do not accumulate simulation time. Very small numerical readouts may display `≈ 0`; CSV exports retain their full numerical values.
+Reduced-motion preference starts experiments paused and keeps the home orbit preview still. Background tabs do not accumulate simulation time. Tiny nonzero readouts use scientific notation; CSV exports retain their full numerical values. The new IGCSE instruments use 2D diagrams and do not advertise a 3D camera.
 
 ## Physics and numerical methods
 
-Models calculate in SI units. Interface conversions such as km, nm, µC, µF, mA and millimetres are labelled; angles in degrees are explicitly identified. Exported angles are labelled radians or degrees as appropriate. The physics modules are shared by the browser and tests.
+Models use documented units, converting to SI for dimensional equations. Interface conversions such as km, nm, µC, µF, mA and millimetres are labelled; angles in degrees are explicitly identified. The new decay attenuation model uses matched cm and cm⁻¹, atomic alpha energy is entered in eV and converted to joules, planetary animation time is in Julian years, and astronomical comparisons use labelled solar/AU/Mpc units. Exports label these units. The physics modules are shared by the browser and tests.
+
+### New IGCSE modelling methods
+
+The pure functions in `js/curriculum-physics.js` are shared by the display, live calculations and tests. Analytic models evaluate at elapsed simulated time, avoiding integration drift:
+
+- Motion: `m dv/dt = F − bv`, with `v = F/b + (u − F/b) exp(−bt/m)` and its exact position integral; the `b = 0` branch uses constant acceleration. In free fall `F = mg`. Equal-time 50 Hz ticker dots use this same position function.
+- Vectors: add Cartesian components; moments `M = Fd`; rectangular-body stability `tan θc = width/(2 × COM height)`; hydrostatic gauge pressure `p = ρgh`; upthrust `U = ρfluid g Vdisplaced`.
+- Power: `Euseful = mgh`, `Puseful = ηPinput`, with input = useful + dissipated. The lift stops at its target; it does not solve acceleration.
+- Gases: `pV = nRT`, `vrms = √(3RT/M)` for a nitrogen reference. Solid/liquid dot modes are schematic and suppress gas-law results. Expansion: `ΔL = αL₀ΔT`.
+- Calorimetry: `Q = Pt`, `Q = mcΔT` between transitions and `Q = mL` during transitions. The water model uses piecewise constant properties at 1 atmosphere; insulation is ideal. Heating curves retain a sample every two simulated seconds so both phase plateaus remain visible.
+- Transfer: conduction `P = kAΔT/d`, convection comparison `P = hAΔT` with fixed `h = 10 W/(m² K)`, net radiation `P = εσA(Th⁴ − Tc⁴)` in kelvin. Reservoir temperatures are held fixed; fluid circulation is illustrative.
+- Optics: plane reflection `i = r`, thin lens `v = fu/(u−f)` and `m = −v/u`; `u = f` returns no finite image. Cauchy dispersion `n = A + B/λ²` uses λ in μm before Snell refraction. Spectrum `f = c/λ`; sound echo `t = 2d/v`. Wavefront spreading is a qualitative construction, not a computed diffraction intensity field.
+- Circuits: series/parallel Ohm/Kirchhoff equations, unloaded potential divider and `Rwire = ρL/A`. The diode uses a 0.7 V forward drop; relay and protective cut-out use stated ideal thresholds. No mains construction advice or real fuse trip curve is implied.
+- Magnetism: long-solenoid `B = μ₀NI/L`, wire `B = μ₀I/(2πr)` at a fixed 5 cm probe, perpendicular charged-particle `F = qv × B`, `r = mv/|qB|` and constant kinetic energy. These are nonrelativistic analytic circular trajectories; `B = 0` is straight motion.
+- Machines: `Φ = BA cos(ωt)`, `ε = NBAω sin(ωt)`, ideal commutated motor `τ = NBIA|sin θ|`; imposed rotation is not a mechanical rotor solver. Transformer `Vs/Vp = Ns/Np`, `VpIp = VsIs`; `Ip²Rline` is a separate comparison estimate.
+- Nuclei: `A = Z + N`, ion electron counting, alpha/beta/gamma nuclear accounting, and point-charge Rutherford angle. Impossible daughters return undefined; selecting an equation does not assert that an arbitrary isotope undergoes that decay.
+- Decay: each nucleus gets an exponential waiting time `−ln(1−U)/λ`, with `λ = ln2/T½` from a seeded PRNG. The random sample and expected `N₀2^(−t/T½)` are shown separately. Attenuation is `exp(−μx)`; the detector is an expected rate, not experimental data or a Poisson counter.
+- Space: circular orbits use `v = √(GM☉/r)` and `T = 2π√(r³/GM☉)`; the orrery screen radii are logarithmic and body sizes enlarged. Daylight uses a geometric declination approximation; Moon illumination `(1−cos phase)/2`. Stellar evolution is a qualitative storyboard with approximate main-sequence scaling, not a stellar structure solver. Low-redshift `v = H₀d`, `z ≈ v/c`, `λobs = λrest(1+z)` and Hubble time `1/H₀` are explicitly approximate.
+
+Supporting references: [Cambridge 0625 syllabus](https://www.cambridgeinternational.org/Images/697209-2026-2028-syllabus.pdf), [NASA planetary fact sheets](https://nssdc.gsfc.nasa.gov/planetary/factsheet/), [OpenStax physics](https://openstax.org/books/university-physics-volume-2/pages/index), and [OpenStax radioactive decay](https://openstax.org/books/university-physics-volume-3/pages/10-3-radioactive-decay). Teaching text and diagram code in this project are original.
 
 ### Binary and three-body stars
 
@@ -231,7 +268,7 @@ npm test
 npm run check
 ```
 
-There are **85 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
+There are **122 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
 
 - Default spring position against the analytic solution over 30 s, with maximum error below 10⁻⁶ m; default undamped energy drift below 10⁻⁷ over 120 s.
 - Worst supported spring frequency with energy drift below 0.04% over 120 s; damping and critical/overdamped behaviour.
@@ -245,16 +282,17 @@ There are **85 tests** using Node's built-in runner. They exercise the same func
 - Snell's law, Fresnel reflection, critical angle, TIR and equal-index media.
 - RC one-time-constant fractions, current/charge derivative and stored energy over supported corners.
 - Field/potential scaling, dipole and like-charge cancellation, singularity handling and E = −∇V.
-- All thirteen catalogue entries, 39 valid presets, 39 investigations and 65 questions; finite dynamic parameter corners and spatial datasets; invalid inputs and converted endpoints.
+- All 41 catalogue entries, 123 valid presets, 123 investigations and 205 questions; finite dynamic parameter corners and spatial datasets; invalid inputs and converted endpoints.
 - Worked calculations for every model: current-state substitutions, SI units, damping and drag signs, approximate period/fringe labels, collision predictions, refraction exclusions, RC discharge current, point-charge exclusions, zero charges and tiny-value formatting. Calculation sheets do not mutate or advance the simulation.
-- Embeds for all thirteen models, valid parameter round-trips, repository and self-hosted subdirectory paths, clean share links, invalid-model/protocol rejection, escaped iframe attributes and readable scientific notation with safe HTML escaping.
+- Embeds for all 41 models, valid parameter round-trips, repository and self-hosted subdirectory paths, clean share links, invalid-model/protocol rejection, escaped iframe attributes and readable scientific notation with safe HTML escaping. Diagram-only models resolve to the supported 2D view.
 - Binary virial/barycentre/force relations, ten-period circular radius and energy, Kepler return, elliptical angular momentum, escape and physical scaling.
 - Pairwise stellar momentum balance and inverse-square scaling, approximate figure-eight return, equilateral rotation, perturbed-triple centre of mass, supported stellar corners and close-encounter guards.
 - Independent explicit double-pendulum accelerations, zero instantaneous energy derivative, separate main/twin energy conservation over 60 s, exact-match twins, sensitive dependence, fourth-order convergence and extreme supported settings over 10 s.
+- 37 IGCSE checks: every course mapping and model reachability; all slider endpoints and modes over bounded observations; suvat and terminal fall; vector cancellation; moments/stability; Archimedes and hydrostatic scaling; lift energy accounting; Boyle/temperature scaling; all water heating transitions; conduction and fourth-power radiation; mirrors, real/virtual/focal-plane lens cases; dispersion and EM speed; sound echo path; Kirchhoff and wire-resistance relations; diode/relay/cut-out states; solenoid scaling; constant-energy charged-particle motion; Faraday flux derivative; transformer power; nuclear accounting and Rutherford angles; seeded-decay reproducibility and ensemble expectation; daylight/Moon phases; planetary Kepler relations; stellar scaling; Hubble units and low-redshift bounds.
 
 These are bounded regression checks for the stated scenarios, not claims of exact or indefinite numerical conservation. `npm run check` verifies assets, every relative JavaScript module import, vendored libraries and GitHub Pages subdirectory compatibility. GitHub Actions runs both commands on pushes and pull requests.
 
-Browser verification covers the thirteen studios and their 2D diagrams, camera controls, graph selection, pause/reset/step, presets, editable inputs, notebook, lesson resources, CSV/share actions and responsive layouts. Repeated 2D/3D switching creates a fresh canvas after releasing the previous WebGL context. WebGL failure has an explicit diagram fallback rather than an empty experiment.
+Browser verification covers the original studios and all 28 new diagrams, their presets, expanded calculations and lesson navigation, plus representative graph, editable-input, export and responsive checks. The 78 course links are recorded from inspected public pages. Repeated 2D/3D switching creates a fresh canvas after releasing the previous WebGL context. WebGL failure has an explicit diagram fallback rather than an empty experiment.
 
 ## GitHub Pages deployment
 
@@ -277,6 +315,14 @@ studio.css                   Responsive v2 catalogue and 3D studio design
 workbench.css                Readable typography and focused gravitation layout
 frontiers.css                Stellar and nonlinear-dynamics workspace details
 expanded.css                 Expanded model, variable and calculation panes
+curriculum.css               IGCSE course map, lesson links and diagram layouts
+js/course-map.js             Audited 78-page FocusPhysics title/link/model inventory
+js/course.js                 Searchable six-area course navigator
+js/curriculum-physics.js     28 pure IGCSE models and declared parameter ranges
+js/curriculum-simulations.js Controls, readouts, calculations, graphs and units
+js/render-curriculum.js      Original Canvas instruments and catalogue thumbnails
+js/content-curriculum.js     84 investigations, 140 worked/conceptual questions
+IGCSE-COVERAGE.md            Lesson-by-lesson mappings and scope limitations
 js/app.js                    Small application bootstrap
 js/studio-app.js             Routes, playback, controls, Chart.js, notebook, export
 js/expanded-view.js          Accessible expanded workspace and DOM restoration
@@ -307,6 +353,7 @@ tests/orbit-refinement.test.mjs Five focused orbital elements/scenario regressio
 tests/calculations.test.mjs   Twelve calculation and edge-case regression tests
 tests/integration.test.mjs    Six URL, embed and maths-formatting regression tests
 tests/advanced.test.mjs       Seventeen stellar and nonlinear regression tests
+tests/curriculum.test.mjs     37 course, IGCSE physics and bounded-range checks
 scripts/serve.mjs            Dependency-free local static server
 scripts/check.mjs            Required assets and relative-import checks
 vendor/                      Pinned Chart.js and Three.js modules and licences

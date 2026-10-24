@@ -4,6 +4,9 @@ import { LESSONS as ORIGINAL_LESSONS } from "./content.js";
 import { EXTRA_LESSONS } from "./content-extra.js";
 import { ADVANCED_LESSONS } from "./content-advanced.js";
 import { ADVANCED_IDS } from "./physics-advanced.js";
+import { CURRICULUM_LESSONS } from "./content-curriculum.js";
+import { curriculumThumbnail } from "./render-curriculum.js";
+import { renderCourse, relatedLessons } from "./course.js";
 import { draw2D } from "./render2d.js";
 import { ExpandedView } from "./expanded-view.js";
 import { experimentLink } from "./integration.js";
@@ -16,7 +19,12 @@ import {
   orbitInfo,
   centralRadius,
 } from "./physics.js";
-const LESSONS = { ...ORIGINAL_LESSONS, ...EXTRA_LESSONS, ...ADVANCED_LESSONS };
+const LESSONS = {
+  ...ORIGINAL_LESSONS,
+  ...EXTRA_LESSONS,
+  ...ADVANCED_LESSONS,
+  ...CURRICULUM_LESSONS,
+};
 const LAB_COUNT = Object.keys(SIMULATIONS).length;
 const $ = (s, r = document) => r.querySelector(s),
   $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -35,16 +43,14 @@ const fmt = (n, d = 2) =>
     ? String(n ?? "—")
     : !Number.isFinite(n)
       ? "—"
-      : Math.abs(n) > 0 && Math.abs(n) < 1e-12
-        ? "≈ 0"
-        : Math.abs(n) >= 1e6 || (Math.abs(n) > 0 && Math.abs(n) < 0.001)
-          ? n.toExponential(2)
-          : n.toLocaleString("en", {
-              maximumFractionDigits:
-                Math.abs(n) > 0 && Math.abs(n) < 0.01 ? Math.max(4, d) : d,
-              minimumFractionDigits:
-                Math.abs(n) > 0 && Math.abs(n) < 0.01 ? Math.max(4, d) : d,
-            });
+      : Math.abs(n) >= 1e6 || (Math.abs(n) > 0 && Math.abs(n) < 0.001)
+        ? n.toExponential(2)
+        : n.toLocaleString("en", {
+            maximumFractionDigits:
+              Math.abs(n) > 0 && Math.abs(n) < 0.01 ? Math.max(4, d) : d,
+            minimumFractionDigits:
+              Math.abs(n) > 0 && Math.abs(n) < 0.01 ? Math.max(4, d) : d,
+          });
 const icons = {
   play: '<path d="m6 3 9 6-9 6z"/>',
   pause: '<path d="M6 4v10M12 4v10"/>',
@@ -111,6 +117,7 @@ function toast(message) {
   toastTimer = setTimeout(() => $("#toast").classList.remove("show"), 4500);
 }
 function thumbnail(id) {
+  if (SIMULATIONS[id]?.curriculum) return curriculumThumbnail(id);
   const drawing = {
     binary:
       '<ellipse cx="140" cy="90" rx="75" ry="44" transform="rotate(-20 140 90)"/><ellipse cx="222" cy="90" rx="115" ry="65" transform="rotate(-20 222 90)" opacity=".3"/><circle cx="109" cy="101" r="24" fill="#ffcc84"/><circle cx="294" cy="50" r="16" fill="#8edfff"/><path d="M181 77v16m-8-8h16" stroke="#fff"/>',
@@ -143,7 +150,7 @@ function thumbnail(id) {
 }
 function card(id) {
   const d = SIMULATIONS[id];
-  return `<a class="simulation-card" href="#/${id}" style="--accent:${d.color}"><div class="card-art">${thumbnail(id)}<span class="art-label">${d.category.toUpperCase()}</span><span class="card-dimension">${icon("cube")} 3D + 2D</span></div><div class="card-body"><div class="card-meta">${d.level}</div><h3>${d.short}</h3><p>${d.summary}</p><div class="card-bottom"><span class="card-equation">${d.formula}</span><span>Explore ${icon("arrow")}</span></div></div></a>`;
+  return `<a class="simulation-card" href="#/${id}" style="--accent:${d.color}"><div class="card-art">${thumbnail(id)}<span class="art-label">${d.category.toUpperCase()}</span><span class="card-dimension">${d.diagramOnly ? "INTERACTIVE DIAGRAM" : icon("cube") + " 3D + 2D"}</span></div><div class="card-body"><div class="card-meta">${d.level}</div><h3>${d.short}</h3><p>${d.summary}</p><div class="card-bottom"><span class="card-equation">${d.formula}</span><span>Explore ${icon("arrow")}</span></div></div></a>`;
 }
 function home() {
   $("#main").innerHTML =
@@ -171,6 +178,10 @@ function home() {
       .join(
         "",
       )}</section><p class="home-note"><strong>Real models. Clear assumptions.</strong> Every experiment runs locally in your browser. Rotate the 3D camera without changing the physics, switch to a calibrated 2D diagram, and export calculated data. Built for IGCSE and A Level exploration.</p></div>`;
+  $(".catalogue").insertAdjacentHTML(
+    "beforebegin",
+    '<section class="curriculum-banner"><div><div class="eyebrow">NEW · THE COMPLETE IGCSE COURSE MAP</div><h2>Find your lesson. Open its experiment.</h2><p>78 FocusPhysics lesson pages · all six syllabus areas · original resources linked.</p></div><a class="button" href="#/course">Explore the IGCSE course ↗</a></section>',
+  );
   let category = "All experiments";
   const filter = () => {
     const q = $("#search").value.toLowerCase().trim(),
@@ -302,6 +313,29 @@ function labPage(type, query) {
     $("#vectors").closest("label").hidden = true;
   bindControls();
   $(".lab-page").dataset.model = type;
+  const mappedLessons = relatedLessons(type);
+  if (mappedLessons.length)
+    $(".lab-title-row").insertAdjacentHTML(
+      "afterend",
+      `<aside class="lesson-course-links"><p>Explore the model, then return to the original FocusPhysics lesson.</p><div>${mappedLessons
+        .slice(0, 8)
+        .map(
+          (l) =>
+            `<a href="${l.url}" target="_blank" rel="noopener">${esc(l.title)} ↗</a>`,
+        )
+        .join(
+          "",
+        )}</div><a href="#/course">View the full IGCSE course map →</a></aside>`,
+    );
+  if (d.diagramOnly) {
+    $(".lab-page").classList.add("curriculum-lab");
+    $('[data-view="3d"]').hidden = true;
+    $(".controls-heading").after($(".preset-block"));
+    $("#simulation").setAttribute(
+      "aria-label",
+      `${d.short}: calculated scientific diagram. Numeric results appear below and in the expanded calculation inspector.`,
+    );
+  }
   if (type === "gravity") {
     $("#stage-caption").insertAdjacentHTML(
       "afterend",
@@ -642,6 +676,7 @@ function setupLink(embed = false) {
 }
 async function setView(mode) {
   if (!lab) return;
+  if (lab.definition.diagramOnly) mode = "2d";
   if (mode === "3d" && lab.view === mode && view) return;
   view?.dispose();
   view = null;
@@ -757,19 +792,21 @@ function createCharts() {
       ? "SPATIAL / PARAMETER VIEW"
       : "LIVE TIME HISTORY";
   for (const [i, part] of parts.entries()) {
-    const xTitle = part.phaseX
-      ? "Lower rod angle / rad (unwrapped)"
-      : part.spatial === "trajectory"
-        ? "Horizontal distance / m"
-        : part.spatial === "wave"
-          ? "Position / m"
-          : part.spatial === "interference"
-            ? "Screen position / mm"
-            : part.spatial === "refraction"
-              ? "Incident angle / °"
-              : part.spatial === "field"
-                ? "Position x / m"
-                : `Time / ${lab.definition.timeUnit}`;
+    const xTitle =
+      part.xTitle ||
+      (part.phaseX
+        ? "Lower rod angle / rad (unwrapped)"
+        : part.spatial === "trajectory"
+          ? "Horizontal distance / m"
+          : part.spatial === "wave"
+            ? "Position / m"
+            : part.spatial === "interference"
+              ? "Screen position / mm"
+              : part.spatial === "refraction"
+                ? "Incident angle / °"
+                : part.spatial === "field"
+                  ? "Position x / m"
+                  : `Time / ${lab.definition.timeUnit}`);
     const chart = new Chart($(`#plot-${i}`), {
       type: "line",
       data: {
@@ -839,7 +876,8 @@ function createCharts() {
             border: { color: "#e0e9ef" },
           },
           y: {
-            beginAtZero: true,
+            type: part.yLog ? "logarithmic" : "linear",
+            beginAtZero: !part.yLog,
             ticks: {
               maxTicksLimit: 4,
               color: "#6c8392",
@@ -897,7 +935,7 @@ function updateCharts() {
   lab.graphDirty = false;
 }
 function metricMarkup(m) {
-  return `<div class="metric"><div class="metric-label">${esc(m.label)}</div><div class="metric-value">${esc(fmt(m.value))}<span>${esc(m.unit)}</span></div><div class="metric-note">${esc(m.note)}</div></div>`;
+  return `<div class="metric"><div class="metric-label">${esc(m.label)}</div><div class="metric-value">${esc(fmt(m.value, m.decimals ?? 2))}<span>${esc(m.unit)}</span></div><div class="metric-note">${esc(m.note || "")}</div></div>`;
 }
 function updateReadouts() {
   const d = lab.definition,
@@ -1011,6 +1049,12 @@ function showLesson(tab) {
     panel.innerHTML = `<h2>Test your understanding.</h2><p>Try each question before revealing the worked explanation.</p>${l.questions.map(([q, a], i) => `<details class="question"><summary><span>${String(i + 1).padStart(2, "0")}</span>${q}</summary><p>${a}</p></details>`).join("")}`;
   if (tab === "model")
     panel.innerHTML = `<h2>The mathematics behind the motion.</h2><div class="equation-grid">${l.equations.map(([title, formula, note]) => `<article class="equation"><h3>${title}</h3><p class="formula">${formula}</p><p>${note}</p></article>`).join("")}</div><aside class="model-note"><h3>Assumptions, numerical method & 3D view</h3><p>${l.model}</p><p>3D is a camera around the same model used by the graphs. Planar systems remain planar. Grid, object sizes, glow and optical wavefronts may be illustrative; numeric readouts use the documented physical units. Drag / touch to rotate, scroll to zoom, arrow keys to rotate, + / − to zoom, and 0 to reset the camera. Use 2D diagram mode for calibrated diagrams or if WebGL is unavailable.</p><a href="${l.source[1]}" target="_blank" rel="noopener">${l.source[0]} ↗</a> · <a href="https://github.com/206713-dotcom/physics-interactive-lab#physics-and-numerical-methods" target="_blank" rel="noopener">Tested models & source ↗</a></aside>`;
+  if (tab === "model" && lab.definition.diagramOnly) {
+    $(".model-note h3", panel).textContent =
+      "Assumptions, method & visual scaling";
+    $(".model-note p:nth-of-type(2)", panel).textContent =
+      "This laboratory uses a scientific 2D diagram. Numeric results use the documented physical units. Visual sizes, dot counts and animation timing may be illustrative as stated above; no 3D camera is implied.";
+  }
 }
 function renderNotebook() {
   const readings = lab.notebook
@@ -1130,6 +1174,9 @@ function exportData() {
     vx3: "m_per_s",
     vy3: "m_per_s",
   };
+  Object.assign(units, lab.definition.csvUnits || {});
+  if (g.spatial?.startsWith("curriculum:"))
+    axis = g.xTitle.replace(/[^a-zA-Z0-9]+/g, "_");
   const keys = [...new Set(rows.flatMap((r) => Object.keys(r)))].filter((k) =>
     rows.some((r) => typeof r[k] === "number" || r[k] === null),
   );
@@ -1140,7 +1187,7 @@ function exportData() {
         k === "x" && g.spatial && g.spatial !== "trajectory"
           ? axis
           : k === "t"
-            ? "time_s"
+            ? `time_${lab.definition.csvUnits?.t || "s"}`
             : `${k}${units[k] ? "_" + units[k] : ""}`,
       )
       .join(","),
@@ -1201,12 +1248,17 @@ function route() {
     : "Physics Interactive Lab · Explore in 3D";
   $("#lab-select").value = type || "";
   $$("[data-nav]").forEach((a) => {
-    a.classList.toggle("active", !type);
-    if (!type) a.setAttribute("aria-current", "page");
+    const active =
+      a.dataset.nav === (id === "course" ? "course" : !type ? "home" : "");
+    a.classList.toggle("active", active);
+    if (active) a.setAttribute("aria-current", "page");
     else a.removeAttribute("aria-current");
   });
   if (type) labPage(type, new URLSearchParams(query));
-  else home();
+  else if (id === "course") {
+    document.title = "IGCSE course map · Physics Interactive Lab";
+    renderCourse($("#main"));
+  } else home();
   window.scrollTo(0, 0);
   lastFrame = 0;
   if (location.hash === "#simulations")

@@ -1,5 +1,6 @@
 /** Reusable 3D apparatus. Display transforms never modify physical state. */
 import * as T from "../vendor/three.module.min.js";
+import { roundedBox } from "./scene-finish.js";
 export const PALETTE = {
   cyan: 0x64e8d1,
   gold: 0xffc584,
@@ -48,14 +49,14 @@ function textTexture(text, color) {
     Math.min(1900, Math.ceil(c.measureText(text).width) + 58),
   );
   canvas.height = 110;
-  c.fillStyle = "rgba(5,22,36,.92)";
+  c.fillStyle = "rgba(8,19,31,.86)";
   c.beginPath();
   c.roundRect(3, 3, canvas.width - 6, 104, 16);
   c.fill();
-  c.strokeStyle = "rgba(150,206,222,.3)";
+  c.strokeStyle = "rgba(150,206,222,.16)";
   c.lineWidth = 2;
   c.stroke();
-  c.font = "600 60px Segoe UI,sans-serif";
+  c.font = "500 60px Segoe UI,sans-serif";
   c.textAlign = "center";
   c.textBaseline = "middle";
   c.fillStyle = color;
@@ -72,8 +73,9 @@ export function createSceneKit(root, { labels = true } = {}) {
   const material = (color, extra = {}) =>
     new T.MeshStandardMaterial({
       color,
-      metalness: 0.28,
-      roughness: 0.34,
+      metalness: 0.16,
+      roughness: 0.4,
+      envMapIntensity: 0.6,
       ...extra,
     });
   const add = (mesh, pos = [0, 0, 0], role = "apparatus") => {
@@ -97,9 +99,9 @@ export function createSceneKit(root, { labels = true } = {}) {
     return add(o, pos);
   };
   const box = (w, h, d, color, pos, extra) =>
-    mesh(new T.BoxGeometry(w, h, d), color, pos, extra);
+    mesh(Math.min(w, h, d) >= 0.075 ? roundedBox(w, h, d) : new T.BoxGeometry(w, h, d), color, pos, extra);
   const ball = (r, color, pos, extra) =>
-    mesh(new T.SphereGeometry(r, 24, 16), color, pos, extra);
+    mesh(new T.SphereGeometry(r, 40, 28), color, pos, extra);
   const cylinder = (r, h, color, pos, extra) =>
     mesh(new T.CylinderGeometry(r, r, h, 36), color, pos, extra);
   const line = (points, color = PALETTE.cyan, opacity = 1) => {
@@ -144,8 +146,9 @@ export function createSceneKit(root, { labels = true } = {}) {
   };
   const arrow = (origin, vector, color = PALETTE.gold) => {
     const o = new T.Group(),
-      // Indicator colours match the legend under every lighting/camera setup.
-      m = new T.MeshBasicMaterial({ color, toneMapped: false });
+      // A small emission keeps the teaching colours legible while soft studio
+      // reflections reveal the cylindrical shaft and conical arrow head.
+      m = new T.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.18, metalness: 0.18, roughness: 0.36 });
     o.add(
       new T.Mesh(new T.CylinderGeometry(0.032, 0.032, 1, 10), m),
       new T.Mesh(new T.ConeGeometry(0.09, 0.24, 16), m),
@@ -268,8 +271,14 @@ export function createSceneKit(root, { labels = true } = {}) {
     o.computeBoundingSphere();
   };
   const stand = (w = 8, d = 3) => {
-    const base = box(w, 0.18, d, 0x203e53, [0, -0.1, 0]);
+    const base = box(w, 0.2, d, 0x192b3b, [0, -0.1, 0], { roughness: 0.55, metalness: 0.35 });
     base.userData.role = "base";
+    box(w - 0.14, 0.018, d - 0.14, 0x344e5e, [0, 0.009, 0], { roughness: 0.7 });
+    for (const x of [-w / 2 + 0.3, w / 2 - 0.3])
+      for (const z of [-d / 2 + 0.3, d / 2 - 0.3]) {
+        cylinder(0.12, 0.18, 0x0d1721, [x, -0.27, z], { roughness: 0.88 });
+        cylinder(0.038, 0.016, 0x98a8ad, [x, 0.027, z], { metalness: 0.8, roughness: 0.25 });
+      }
     return base;
   };
   const resistor = (x, y, z, color = PALETTE.gold) => {

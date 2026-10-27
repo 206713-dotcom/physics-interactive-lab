@@ -10,6 +10,14 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 ## What is in the laboratory?
 
+### Version 8: detailed 3D apparatus & Atlas-style studio
+
+The shared renderer now uses bevelled apparatus, a prefiltered studio-light environment, softer shadows, higher-resolution edges, a fading work surface and smooth camera transitions. Star fields are confined to astronomical scenes. Expanded experiments use an Atlas-style dark surround, a larger canvas and a **Scene focus** control; laptop users switch between Parameters and Calculations instead of squeezing the animation between three panels.
+
+Floating/sinking has a clear open-top tank, separate glass panes, a calibrated depth scale, a machined cube and a permeable support. Surface highlights are decorative and driven by actual cube speed; the free surface remains flat and no fluid-wave solver is implied. SHM has a solid helical wire with changing pitch, an engraved displacement scale and kinetic/potential bars calculated on the same release-energy scale. The nonlinear pendulum uses a rigid link, fitted angle scale and actual-state trail. Generator poles, windings, bearings and brushes have more detail; their appearance adds no circuit model or losses.
+
+The gravity studio shares the Atlas's local NASA Blue Marble texture and procedural cloud shell. The solid trail still contains Verlet samples. A separate, dashed analytic Kepler reference stops at the central surface or six release distances; it is not simulation history. Appearance, spacecraft size, atmosphere and camera motion do not affect the SI physics. Dedicated geometry tests check fixed buffers, exact displacement/length transforms, waterline, volume and the reference conic.
+
 ### Version 7: Cambridge learning modes
 
 **[Choose a learning path](https://206713-dotcom.github.io/physics-interactive-lab/#/syllabus)** for Cambridge IGCSE 0625, AS 9702, A2 9702 or enrichment. The 57 physics engines now have **91 teaching profiles**: 40 IGCSE Extended profiles, 48 AS/A Level profiles and three enrichment profiles. Shared models have a level selector that changes objectives, the suggested investigation, a worked question and the highlighted live calculations. Switching preserves the current physical state; “Load recommended setup” explicitly starts a fresh paused experiment. The original resources remain available in a labelled full-model section.
@@ -137,7 +145,7 @@ Open <http://localhost:4173/physics-interactive-lab/>. No install or build step,
 - **Embed:** open the [embed generator](https://206713-dotcom.github.io/physics-interactive-lab/integration.html), or choose **Embed** from an experiment to preserve its initial setup. The working iframe preview and copyable HTML make it ready for an existing lesson page. `?embed=1#/gravity` opens a paused, compact model with calculations; **Lessons & notes** reveals its learning resources. See [INTEGRATION.md](INTEGRATION.md) for FocusPhysics handover, host-page checks and self-hosting. No changes to FocusPhysics itself are made by this repository.
 - **Library:** search by topic or filter by subject. The experiment selector makes it easy to move between studios.
 
-Reduced-motion preference starts experiments paused and keeps the home orbit preview still. Background tabs do not accumulate simulation time. Tiny nonzero readouts use scientific notation; CSV exports retain their full numerical values. The new IGCSE instruments use 2D diagrams and do not advertise a 3D camera.
+Reduced-motion preference starts experiments paused and keeps the home orbit preview still. Background tabs do not accumulate simulation time. Tiny nonzero readouts use scientific notation; CSV exports retain their full numerical values. All IGCSE instruments retain their calibrated 2D diagrams alongside the 3D apparatus.
 
 ## Physics and numerical methods
 

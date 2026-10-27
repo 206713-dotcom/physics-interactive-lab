@@ -100,6 +100,19 @@ export class ExpandedView {
     this.overview = [...root.querySelectorAll("[data-calculation]")];
     this.play = root.querySelector(".expanded-play");
     this.play.onclick = onPlayback;
+    const focus = document.createElement("button");
+    focus.type = "button";
+    focus.className = "scene-focus-toggle";
+    focus.textContent = "Scene focus";
+    focus.setAttribute("aria-pressed", "false");
+    root.querySelector(".stage-views").prepend(focus);
+    focus.onclick = () => {
+      const active = root.classList.toggle("scene-focused");
+      focus.setAttribute("aria-pressed", String(active));
+      focus.textContent = active ? "Show inspector" : "Scene focus";
+      this.onLayout?.();
+    };
+    this.focusToggle = focus;
     root.querySelector(".expanded-close").onclick = () => this.close();
     this.choice.onchange = () => this.choose(this.choice.value);
     this.overview.forEach(
@@ -118,6 +131,9 @@ export class ExpandedView {
     root.querySelectorAll("[data-inspector]").forEach(
       (button) =>
         (button.onclick = () => {
+          root.classList.remove("scene-focused");
+          focus.setAttribute("aria-pressed", "false");
+          focus.textContent = "Scene focus";
           const variables = button.dataset.inspector === "variables";
           root.classList.toggle("inspect-variables", variables);
           root
@@ -266,6 +282,7 @@ export class ExpandedView {
   close() {
     if (this.closed) return;
     this.closed = true;
+    this.focusToggle.remove();
     document.removeEventListener("keydown", this.keydown, true);
     [...this.moves]
       .reverse()

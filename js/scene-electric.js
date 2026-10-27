@@ -312,15 +312,25 @@ export const ELECTRIC_SCENES = {
   },
   induction(p, k) {
     board(k);
-    k.box(1, 3, 2, C.red, [-3, 1.6, 0]);
-    k.box(1, 3, 2, C.blue, [3, 1.6, 0]);
-    k.label("N", [-3, 3.6, 0], "#ff9d91", 0.8);
-    k.label("S", [3, 3.6, 0], "#89baff", 0.8);
-    for (const y of [0.8, 2.4]) k.arrow([-2.3, y, -0.6], [4.6, 0, 0], C.cyan);
+    const metal = { metalness: 0.75, roughness: 0.3 };
+    // Laminated rear yoke and machined pole shoes make the air gap explicit.
+    k.box(6.8, 0.45, 0.9, 0x445564, [0, 0.35, -0.8], metal);
+    for (const [x, color] of [[-2.8, 0xa34f4d], [2.8, 0x40678f]]) {
+      k.box(1.1, 2.8, 1.75, color, [x, 1.85, 0], { metalness: 0.45, roughness: 0.4 });
+      k.box(0.14, 2.25, 1.9, 0xa9b9c0, [x + (x < 0 ? 0.62 : -0.62), 1.85, 0], metal);
+      k.box(1.3, 0.15, 2, 0x3d505d, [x, 0.35, 0], metal);
+      for (const z of [-0.7, 0.7]) {
+        const bolt = k.cylinder(0.06, 0.035, 0xb4c6ce, [x, 3.26, z], metal);
+        k.rod([x - 0.22, 0.6, z], [x - 0.22, 3.15, z], 0x627580, 0.018);
+      }
+    }
+    k.label("N", [-2.8, 3.7, 0], "#ff9d91", 0.65);
+    k.label("S", [2.8, 3.7, 0], "#89baff", 0.65);
+    for (const y of [1.05, 2.5]) k.arrow([-2.1, y, -0.8], [4.2, 0, 0], C.cyan);
     const rotor = new T.Group();
-    rotor.position.y = 1.6;
-    k.add(rotor, [0, 1.6, 0]);
-    for (const z of [-0.08, 0, 0.08]) {
+    k.add(rotor, [0, 1.8, 0]);
+    // Visible turns are a schematic bundle; N is taken from the calculation.
+    for (const z of [-0.12, -0.06, 0, 0.06, 0.12]) {
       const points = [
         [0, -1, z - 0.8],
         [0, 1, z - 0.8],
@@ -329,23 +339,29 @@ export const ELECTRIC_SCENES = {
         [0, -1, z - 0.8],
       ].map((a) => new T.Vector3(...a));
       const curve = new T.CatmullRomCurve3(points, false, "centripetal", 0.05),
-        path = k.mesh(new T.TubeGeometry(curve, 100, 0.026, 8, false), C.gold);
+        path = k.mesh(new T.TubeGeometry(curve, 128, 0.025, 10, false), 0xd89055, [0, 0, 0], { metalness: 0.68, roughness: 0.26 });
       rotor.add(path);
     }
-    k.cylinder(0.045, 4, C.white, [0, 1.9, 0]);
-    k.box(7, 0.18, 0.3, C.muted, [0, 0.2, -1.2]);
-    for (const y of [0.25, 3.75]) {
-      const bearing = k.cylinder(0.18, 0.25, C.muted, [0, y, 0]);
-      k.ring(0.2, C.white, [0, y + 0.14, 0]);
+    const shaft = k.cylinder(0.055, 3.85, C.white, [0, 1.9, 0], metal);
+    for (const y of [0.25, 3.6]) {
+      k.box(0.62, 0.16, 0.65, 0x374f60, [0, y, 0], metal);
+      const bearing = k.cylinder(0.18, 0.3, 0x9bb0ba, [0, y, 0], metal);
+      k.ring(0.2, C.white, [0, y + 0.16, 0]);
+    }
+    for (const y of [3.05, 3.22]) k.ring(0.1, 0xdca46d, [0, y, 0], "y", 1);
+    // Brushes and leads are illustrative connections, not an added circuit.
+    for (const z of [-0.12, 0.12]) {
+      k.box(0.19, 0.13, 0.13, 0x52606a, [0.2, 3.13 + z * 0.7, z], metal);
+      k.rod([0.28, 3.13 + z * 0.7, z], [1.1, 3.13 + z * 0.7, z], z < 0 ? C.gold : C.blue, 0.022);
     }
     rotor.userData.role = "rotor";
-    const normal = k.arrow([0, 1.6, 0], [1.5, 0, 0], C.purple);
-    k.label("B → cyan · coil normal → purple", [0, 4.5, 0], "#cfe6ef", 5);
+    const normal = k.arrow([0, 1.8, 0], [1.5, 0, 0], C.purple);
+    k.label("B → cyan · coil normal → purple", [0, 4.5, 0], "#cfe6ef", 4.8);
     return (s, q) => {
       rotor.rotation.y = q.phase;
       k.setArrow(
         normal,
-        [0, 1.6, 0],
+        [0, 1.8, 0],
         [1.4 * Math.cos(q.phase), 0, -1.4 * Math.sin(q.phase)],
       );
     };

@@ -1,0 +1,132 @@
+/* A larger, quieter 3D viewer. The calculations remain beside the experiment. */
+.stage {
+  background: #0b1522;
+  border: 1px solid #273b4b;
+  box-shadow: 0 22px 55px -35px #07121ed9, inset 0 1px #ffffff0a;
+  border-radius: 20px;
+}
+.stage-top, .camera-toolbar, .transport { background: #101f2e; }
+.stage-top { border-bottom-color: #243543; }
+.camera-toolbar { border-bottom: 1px solid #243543; }
+.camera-toolbar button { border-radius: 7px; }
+.camera-toolbar button[aria-pressed="true"] { background: #2c414f; color: #c7f2ed; }
+.scene-container { height: clamp(420px, 42vw, 640px); background: #080f1b; }
+.scene-camera-hint { color: #89a4b6; font-size: 11px; letter-spacing: .04em; }
+.scene-equation {
+  color: #c1d6e4;
+  background: #101c2bd9;
+  border: 1px solid #58708240;
+  border-radius: 9px;
+  padding: 5px 12px;
+  font-size: clamp(16px, 1.5vw, 23px);
+}
+.camera-reset { background: #1c2b39d9; border-color: #5e7a8b4d; }
+.transport { border-top: 1px solid #283b48; }
+.play-button { box-shadow: 0 4px 16px #5ccdbc18; }
+/* The expanded studio shares the Atlas's dark surround: the lit apparatus and
+ * pale equations take visual priority. Ordinary lesson pages stay light. */
+.expanded-lab { background: #080f1b; color: #d7e4ec; }
+.expanded-header { background: #101f2c; border-color: #2c3e4d; }
+.expanded-lab .expanded-eyebrow { color: #82dace; }
+.expanded-header h2, .expanded-calculations h2, .expanded-calculations h3,
+.expanded-variables h2, .expanded-variables h3 { color: #e5edf3; }
+.expanded-full-link { color: #9ccdd5; }
+.expanded-close { background: #172b3a; color: #ccdde7; border-color: #3b5262; }
+.expanded-close kbd { color: #b5cedb; border-color: #526a7c; }
+.expanded-panel-tabs { background: #0a1723; }
+.expanded-panel-tabs button { color: #91acbf; }
+.expanded-panel-tabs button[aria-pressed="true"] { background: #294251; color: #bbf0e6; box-shadow: none; }
+.expanded-calculations, .expanded-variables .controls { background: #112332; color: #d4e2ec; border-color: #304655; }
+.expanded-calculations .calculation-heading > p,
+.expanded-calculations .calculation-level-scope,
+.expanded-calculations .calculation-note,
+.expanded-calculations .calculation-footnote { color: #9fb7c8; border-color: #304655; }
+.expanded-calculations .calculation-choice-label,
+.expanded-calculations .working-label { color: #94b2c5; }
+.expanded-calculations #calculation-choice { background: #1b3445; border-color: #405d70; color: #d9e8f1; color-scheme: dark; }
+.expanded-calculations .calculation-formula { color: #e7edf2; }
+.expanded-calculations .calculation-substitution,
+.expanded-calculations .calculation-time { background: #0b1b28; color: #b5cbd9; }
+.expanded-calculations .calculation-time.is-live { color: #84deca; }
+.expanded-calculations .calculation-answer { background: #163d42; border-color: #397170; }
+.expanded-calculations .calculation-answer .working-label,
+.expanded-calculations .calculation-result { color: #a0ead7; }
+.expanded-calculations .copy-working { background: #1b3445; border-color: #3b596c; color: #bfdae7; }
+.expanded-calculations .calculation-variables dl > div { background: #0b1b28; border-color: #2a4354; }
+.expanded-calculations .calculation-variables dt var,
+.expanded-calculations .calculation-variables dd { color: #d8e7ed; }
+.expanded-calculations .calculation-variables dt span,
+.expanded-calculations .calculation-variables h3 span { color: #9cb8c9; }
+.expanded-calculations .calculation-overview button { color: #9cb8c9; border-color: #304655; }
+.expanded-calculations .calculation-overview button strong { color: #a0ead7; }
+.expanded-calculations .calculation-overview button:hover { background: #1a3545; }
+.expanded-variables .controls-heading, .expanded-variables .preset-block { border-color: #334a5a; }
+.expanded-variables .controls-heading span, .expanded-variables .control-hint,
+.expanded-variables .slider-ends, .expanded-variables .control-footnote { color: #9bb5c7; }
+.expanded-variables .value-input { background: #0d1c2a; border-color: #395264; }
+.expanded-variables .value-input input { color: #e1edf3; }
+.expanded-variables .value-input span { color: #9cb8cb; }
+.expanded-variables .preset-button { background: #203948; border-color: #3d596c; color: #d1e3ef; }
+.expanded-variables .preset-button[aria-pressed="true"] { background: #2b5b5d; color: #bcecdf; border-color: #6da79b; }
+.expanded-variables .parameter-select { background: #1b3445; color: #d9e8f1; border-color: #405d70; color-scheme: dark; }
+.expanded-variables .learning-mode-controls { background: transparent; border-color: #395264; }
+.expanded-variables .learning-mode-controls > p { color: #a7bfce; }
+.expanded-variables .learning-mode-options button { background: #203948; border-color: #3d596c; color: #c5dce8; }
+.expanded-variables .learning-mode-options button[aria-pressed="true"] { background: #30716d; border-color: #6aa89e; color: white; }
+.expanded-variables .study-control-marker { color: #a4bdcd; }
+.expanded-variables .study-control-marker.is-focus,
+.expanded-variables .section-kicker { color: #86d3c9; }
+.expanded-model .stage-caption { color: #9ab4c6; }
+.expanded-model .orbit-legend span { font-size: 12px; }
+.expanded-model .orbit-legend span::after { display: none; }
+.expanded-panel-tabs { display: flex; }
+.expanded-panel-tabs button { min-height: 42px; }
+.scene-focus-toggle {
+  color: #bed1df;
+  background: #20323f;
+  border: 1px solid #405564;
+  border-radius: 8px;
+  padding: 8px 13px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.scene-focus-toggle[aria-pressed="true"] { background: #a1e2da; color: #10252d; border-color: #a1e2da; }
+/* At normal laptop widths three columns squeeze the model to a thumbnail.
+ * Reuse the existing Parameters / Calculations inspector instead. */
+@media (min-width: 901px) and (max-width: 1540px) {
+  .expanded-layout { grid-template-columns: minmax(0, 1fr) 325px; gap: 18px; padding: 18px; }
+  .expanded-model { grid-column: 1; }
+  .expanded-calculations, .expanded-variables { grid-column: 2; grid-row: 1; }
+  .expanded-variables { display: none; }
+  .expanded-lab.inspect-variables .expanded-variables { display: block; }
+  .expanded-lab.inspect-variables .expanded-calculations { display: none; }
+  .expanded-header { flex-wrap: wrap; gap: 10px 20px; padding: 14px 20px; }
+  .expanded-heading { flex: 1; min-width: 230px; }
+  .expanded-actions { margin-left: auto; }
+  .expanded-header h2 { font-size: 22px; }
+  .expanded-panel-tabs { order: 0; width: auto; justify-content: flex-end; }
+  .expanded-panel-tabs button { min-width: 110px; padding-inline: 13px; }
+  .expanded-calculations { padding: 22px; }
+}
+@media (min-width: 901px) {
+  .expanded-model .scene-container { height: clamp(320px, calc(100dvh - 330px), 780px); }
+  .expanded-lab.scene-focused .expanded-layout { grid-template-columns: minmax(0, 1fr); }
+  .expanded-lab.scene-focused .expanded-model { grid-column: 1; }
+  .expanded-lab.scene-focused .expanded-variables,
+  .expanded-lab.scene-focused .expanded-calculations { display: none; }
+  .expanded-lab.scene-focused .expanded-model .scene-container { height: calc(100dvh - 320px); min-height: 400px; }
+}
+@media (min-width: 1541px) {
+  .expanded-panel-tabs { display: none; }
+  .expanded-layout { grid-template-columns: 285px minmax(0, 1fr) 340px; gap: 20px; }
+}
+@media (max-width: 900px) {
+  .stage-views .scene-focus-toggle { display: none; }
+  .scene-container, .expanded-model .scene-container { height: clamp(360px, 65vw, 540px); }
+  .scene-equation { bottom: 12px; right: 12px; font-size: 16px; }
+  .scene-camera-hint, .buoyancy-stage .scene-camera-hint {
+    top: 16px; bottom: auto; left: 16px; max-width: calc(100% - 90px);
+    font-size: 10px; white-space: normal; line-height: 1.5;
+  }
+}

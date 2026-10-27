@@ -29,7 +29,7 @@ export const SCENE_GUIDES = {
     "Watch the released cube rise or sink. Gold is weight, cyan is upthrust, blue is drag and purple is the support force.",
     "Upthrust equals the weight of displaced liquid. A floating object displaces just enough liquid to balance its weight.",
     "Increase object density through the liquid density and compare the two forces.",
-    "The cube, depth ruler and 0.50 m liquid column share one length scale. Vertical motion is integrated from actual immersion, weight and approximate fluid drag. A permeable 5 mm support allows liquid underneath; contact is inelastic. The separate pressure probe does not change the tank depth.",
+    "The cube, depth ruler and 0.50 m liquid column share one length scale. Vertical motion is integrated from actual immersion, weight and approximate fluid drag. A permeable 5 mm support allows liquid underneath; contact is inelastic. The separate pressure probe does not change the tank depth. Surface highlights are schematic, driven by the cube speed; fluid waves are not solved.",
   ],
   energy: [
     "Watch the winch lift the gold load and compare the energy bars.",
@@ -266,22 +266,22 @@ export const SCENE_GUIDES = {
     "The display curve fits its own peak; use the graph for calibrated spectral axes and comparisons. Glow is illustrative.",
   ],
   spring: [
-    "Compare the mass position with the velocity and acceleration arrows.",
+    "Follow the solid spring and mass. Gold shows velocity; cyan shows the spring’s restoring force. The two small bars compare kinetic and elastic potential energy.",
     "The restoring spring force opposes displacement. Damping removes mechanical energy.",
     "Set damping to zero and compare kinetic, elastic and total energy over several cycles.",
-    "The 3D spring and mass are enlarged. Numeric data and the 2D view provide the physical scale.",
+    "Displacement and the engraved track share 3.2 scene units per metre. Force and velocity arrows use separate bounded display scales. Energy bars share the release-energy scale, and are zero for zero release energy. Rollers and wire thickness are apparatus illustrations; no friction or wire inertia is added.",
   ],
   gravity: [
     "Follow the satellite, its tangential velocity and inward acceleration.",
     "Gravity changes velocity continuously; energy and angular momentum determine the orbit.",
     "Compare circular, elliptical and escape launch speeds at the same separation.",
-    "The orbit is planar. The display fits the trail; the central body surface is illustrative and r is measured centre to centre.",
+    "The orbit is planar. The solid trail contains integrated samples; the dashed curve is an analytic Kepler reference, stopped at the surface or six release distances. The display fits the trail; r is measured centre to centre. The Earth surface uses the Muon Atlas NASA Blue Marble asset. Its Earth appearance is illustrative when changing mass. Clouds and glow do not add atmospheric drag.",
   ],
   pendulum: [
-    "Watch the bob exchange height and speed through each swing.",
+    "Watch the brass bob exchange height and speed. The gold arrow shows weight and the cyan arrow shows tangential velocity; the arc marks the actual angle from the vertical.",
     "Gravity supplies a tangential restoring component. The integrated model uses sin θ, not the small-angle approximation.",
     "Compare periods at a small angle and a large angle.",
-    "The pendulum moves in one plane. Camera rotation adds perspective without adding out-of-plane motion.",
+    "The pendulum moves in one plane. Its length is fitted per setup and the trail uses that same scale. The rigid link supports starting angles above 90° in this nonlinear model. Weight and velocity arrows use separate illustrative scales. Camera rotation does not change the physical angle.",
   ],
   projectile: [
     "Compare the moving body with the ideal no-drag reference path.",

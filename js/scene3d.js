@@ -8,6 +8,10 @@ import {
   CURRICULUM_BUILDERS,
 } from "./scene-curriculum.js";
 import { setPath, createSceneKit } from "./scene-kit.js";
+import { roundedBox, studioEnvironment, studioGrid } from "./scene-finish.js";
+import { createDetailedMechanics } from "./scene-precision.js";
+import { cloudShell } from "../atlas/visual-detail.js";
+import { orbitalReference } from "./orbital-reference.js";
 import { centralRadius, orbitAcceleration } from "./physics.js";
 import {
   waveAt,
@@ -53,8 +57,9 @@ export function wavelengthRGB(nm) {
 function material(color, extra = {}) {
   return new T.MeshStandardMaterial({
     color,
-    roughness: 0.3,
-    metalness: 0.3,
+    roughness: 0.4,
+    metalness: 0.22,
+    envMapIntensity: 0.6,
     ...extra,
   });
 }
@@ -64,7 +69,7 @@ function sphere(r, color) {
   return m;
 }
 function box(x, y, z, color) {
-  const m = new T.Mesh(new T.BoxGeometry(x, y, z), material(color));
+  const m = new T.Mesh(roundedBox(x, y, z), material(color));
   m.castShadow = true;
   return m;
 }
@@ -79,14 +84,6 @@ function beam(points, color, opacity = 1) {
 }
 function updateLine(line, points) {
   setPath(line, points);
-}
-function rodBetween(mesh, a, b) {
-  const av = new T.Vector3(...a),
-    bv = new T.Vector3(...b),
-    delta = bv.clone().sub(av);
-  mesh.position.copy(av.add(bv).multiplyScalar(0.5));
-  mesh.scale.set(1, delta.length(), 1);
-  mesh.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), delta.normalize());
 }
 function ribbonGeometry() {
   const g = new T.PlaneGeometry(8, 1.5, 160, 1);
@@ -113,111 +110,54 @@ function label(value, color = "#a9c8d9") {
   return sprite;
 }
 
-let illustratedSurface;
-/** A deterministic, seamless, Earth-like illustration. These continents and
- * clouds are decorative geometry/colour, never geographic or atmospheric data.
- * Cache pixels, but make a fresh GPU texture for each disposable scene. */
-function planetSurface() {
-  if (!illustratedSurface) {
-    const canvas = document.createElement("canvas");
-    canvas.width = 1024;
-    canvas.height = 512;
-    const context = canvas.getContext("2d"),
-      pixels = context.createImageData(canvas.width, canvas.height);
-    const mix = (a, b, t) => a + (b - a) * Math.max(0, Math.min(1, t));
-    for (let row = 0; row < canvas.height; row++) {
-      const latitude = (0.5 - row / (canvas.height - 1)) * Math.PI;
-      const y = Math.sin(latitude),
-        ring = Math.cos(latitude);
-      for (let column = 0; column < canvas.width; column++) {
-        const longitude = (column / canvas.width) * Math.PI * 2;
-        const x = ring * Math.cos(longitude),
-          z = ring * Math.sin(longitude);
-        const terrain =
-          0.82 *
-            Math.sin(3.4 * x + 1.7 * Math.sin(2.4 * y)) *
-            Math.cos(3.8 * z - 0.9 * y) +
-          0.4 * Math.sin(7.5 * x + 3.1 * z) * Math.cos(6.2 * y - 2.8 * z) +
-          0.18 * Math.sin(17 * x + 8 * z) * Math.cos(14 * y + 3 * x) +
-          0.07 * Math.sin(41 * z - 22 * x) * Math.cos(36 * y + 11 * z);
-        const land = terrain > 0.17,
-          height = Math.max(0, terrain - 0.17);
-        let color = land
-          ? [mix(37, 133, height), mix(111, 146, height), mix(100, 116, height)]
-          : [
-              mix(6, 22, (terrain + 0.5) * 0.8),
-              mix(37, 99, (terrain + 0.5) * 0.8),
-              mix(69, 121, (terrain + 0.5) * 0.8),
-            ];
-        // Pale coast, polar ice and thin stationary cloud patterns add depth.
-        if (Math.abs(terrain - 0.17) < 0.025)
-          color = color.map((c, i) => mix(c, [72, 151, 143][i], 0.55));
-        const ice = Math.max(0, (Math.abs(y) - 0.935) * 17);
-        const cloud =
-          Math.max(
-            0,
-            Math.sin(12 * x + 7 * z + 2 * Math.sin(8 * y)) *
-              Math.cos(11 * y - 5 * z) +
-              0.3 * Math.sin(28 * z + 14 * x) * Math.cos(27 * y) -
-              0.48,
-          ) * 0.32;
-        const index = (row * canvas.width + column) * 4;
-        for (let channel = 0; channel < 3; channel++)
-          pixels.data[index + channel] = mix(
-            mix(color[channel], [218, 235, 233][channel], ice),
-            [224, 239, 242][channel],
-            cloud,
-          );
-        pixels.data[index + 3] = 255;
-      }
-    }
-    context.putImageData(pixels, 0, 0);
-    illustratedSurface = canvas;
-  }
-  const texture = new T.CanvasTexture(illustratedSurface);
-  texture.colorSpace = T.SRGBColorSpace;
-  texture.anisotropy = 4;
-  return texture;
-}
-
 export class SceneView {
   constructor(canvas) {
     this.canvas = canvas;
+    canvas.setAttribute("aria-busy", "true");
     this.renderer = new T.WebGLRenderer({
       canvas,
       antialias: true,
       alpha: false,
       powerPreference: "high-performance",
     });
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.7));
-    this.renderer.setClearColor(0x071522);
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+    this.renderer.setClearColor(0x080f1b);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = T.PCFSoftShadowMap;
     this.renderer.toneMapping = T.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.3;
+    this.renderer.toneMappingExposure = 1.05;
     this.scene = new T.Scene();
-    this.scene.fog = new T.FogExp2(0x071522, 0.022);
+    this.scene.fog = new T.FogExp2(0x080f1b, 0.018);
+    this.environmentTarget = studioEnvironment(this.renderer);
+    this.scene.environment = this.environmentTarget.texture;
+    this.scene.environmentIntensity = 0.65;
     this.camera = new T.PerspectiveCamera(38, 1, 0.05, 200);
     this.target = new T.Vector3(0, 1, 0);
     this.azimuth = -0.38;
     this.polar = 1.05;
     this.radius = 15;
-    this.ambient = new T.HemisphereLight(0xc6edff, 0x0d2438, 2.0);
+    this.ambient = new T.HemisphereLight(0xc6deed, 0x142033, 0.8);
     this.scene.add(this.ambient);
-    const key = new T.DirectionalLight(0xe2f4ff, 3.2);
-    key.position.set(-4, 8, 5);
+    const key = new T.DirectionalLight(0xffefde, 2.6);
+    key.position.set(-4, 9, 6);
     this.keyLight = key;
     key.castShadow = true;
-    key.shadow.mapSize.set(1024, 1024);
+    key.shadow.mapSize.set(2048, 2048);
+    key.shadow.normalBias = 0.025;
+    key.shadow.bias = -0.00015;
+    key.shadow.radius = 3;
     key.shadow.camera.left = -12;
     key.shadow.camera.right = 12;
     key.shadow.camera.top = 12;
     key.shadow.camera.bottom = -12;
     this.scene.add(key);
-    const rim = new T.PointLight(CYAN, 18, 20);
-    rim.position.set(4, 2, -4);
+    const rim = new T.PointLight(0x8acfea, 20, 25);
+    rim.position.set(4, 5, -4);
     this.rimLight = rim;
     this.scene.add(rim);
+    this.fillLight = new T.DirectionalLight(0x91b4d4, 0.75);
+    this.fillLight.position.set(6, 3, 2);
+    this.scene.add(this.fillLight);
     this.root = new T.Group();
     this.scene.add(this.root);
     this.addEnvironment();
@@ -225,18 +165,18 @@ export class SceneView {
   }
   addEnvironment() {
     const floor = new T.Mesh(
-      new T.CircleGeometry(14, 72),
-      material(0x0b2031, { roughness: 0.9, metalness: 0.15 }),
+      new T.PlaneGeometry(200, 200),
+      material(0x101b29, { roughness: 0.95, metalness: 0, envMapIntensity: 0.15 }),
     );
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = -0.82;
     floor.receiveShadow = true;
     this.scene.add(floor);
     this.floor = floor;
-    const grid = new T.GridHelper(24, 32, 0x26526a, 0x153346);
+    const grid = studioGrid();
     grid.position.y = -0.8;
     grid.material.transparent = true;
-    grid.material.opacity = 0.55;
+    grid.material.opacity = 0.3;
     this.scene.add(grid);
     this.grid = grid;
     const points = [];
@@ -249,8 +189,7 @@ export class SceneView {
     }
     const g = new T.BufferGeometry();
     g.setAttribute("position", new T.Float32BufferAttribute(points, 3));
-    this.scene.add(
-      new T.Points(
+    this.stars = new T.Points(
         g,
         new T.PointsMaterial({
           color: 0x83afc3,
@@ -258,8 +197,8 @@ export class SceneView {
           transparent: true,
           opacity: 0.7,
         }),
-      ),
-    );
+      );
+    this.scene.add(this.stars);
   }
   bindCamera() {
     const c = this.canvas;
@@ -308,11 +247,14 @@ export class SceneView {
         );
         return;
       }
-      this.azimuth -= (e.clientX - down[0]) * 0.007;
-      this.polar = Math.max(
+      const goal = this.cameraGoal || { azimuth: this.azimuth, polar: this.polar, radius: this.radius };
+      goal.azimuth -= (e.clientX - down[0]) * 0.007;
+      goal.polar = Math.max(
         0.15,
-        Math.min(Math.PI - 0.15, this.polar + (e.clientY - down[1]) * 0.006),
+        Math.min(Math.PI - 0.15, goal.polar + (e.clientY - down[1]) * 0.006),
       );
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) Object.assign(this, goal);
+      else this.cameraGoal = goal;
       down = [e.clientX, e.clientY];
     };
     this.handlers.pointerup = () => {
@@ -327,11 +269,13 @@ export class SceneView {
     };
     this.handlers.wheel = (e) => {
       e.preventDefault();
-      this.cameraGoal = null;
-      this.radius = Math.max(
+      const goal = this.cameraGoal || { azimuth: this.azimuth, polar: this.polar, radius: this.radius };
+      goal.radius = Math.max(
         5,
-        Math.min(34, this.radius * Math.exp(e.deltaY * 0.001)),
+        Math.min(34, goal.radius * Math.exp(e.deltaY * 0.001)),
       );
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) Object.assign(this, goal);
+      else this.cameraGoal = goal;
     };
     this.handlers.keydown = (e) => {
       const k = e.key;
@@ -399,6 +343,7 @@ export class SceneView {
   clear() {
     this.advanced = null;
     this.curriculum = null;
+    this.precision = null;
     this.trackedLabels = null;
     this.root.traverse((o) => {
       o.geometry?.dispose();
@@ -416,21 +361,24 @@ export class SceneView {
     this.clear();
     this.type = type;
     this.key = JSON.stringify(p);
-    this.ambient.intensity =
-      type === "gravity" ? 0.65 : type === "earthmoon" ? 0.13 : 2;
-    this.keyLight.intensity = type === "earthmoon" ? 0 : 3.2;
-    this.rimLight.intensity = type === "earthmoon" ? 0 : 18;
+    const space = ["gravity", "earthmoon", "solarsystem", "stars", "binary", "threebody", "universe"].includes(type);
+    this.ambient.intensity = type === "gravity" ? 0.12 : type === "earthmoon" ? 0.13 : 0.8;
+    this.keyLight.intensity = type === "earthmoon" ? 0 : 2.6;
+    this.rimLight.intensity = space ? 0 : 20;
+    this.fillLight.intensity = space ? 0.05 : 0.75;
+    this.scene.environmentIntensity = space ? 0.08 : 0.65;
+    this.stars.visible = space;
     const r = this.root,
       o = this.objects;
     this.floor.position.y =
       { gravity: -3.5, fields: -4.6, waves: -2, refraction: -2.5 }[type] ??
-      -0.82;
+      -0.38;
     this.grid.position.y = this.floor.position.y + 0.02;
     // A spatial reference in the orbital plane, not a ground beneath the planet.
     this.floor.visible = !["gravity", "vectors"].includes(type);
-    this.grid.visible = type !== "vectors";
+    this.grid.visible = !["vectors", "gravity"].includes(type);
     this.grid.position.y = type === "gravity" ? 1 : this.grid.position.y;
-    this.grid.material.opacity = type === "gravity" ? 0.1 : 0.55;
+    this.grid.material.opacity = 0.3;
     const add = (name, mesh, pos) => {
       o[name] = mesh;
       if (pos) mesh.position.set(...pos);
@@ -439,13 +387,22 @@ export class SceneView {
     };
     if (Object.hasOwn(CURRICULUM_BUILDERS, type)) {
       if (type === "buoyancy") {
-        this.target.set(0, 1.9, 0);
-        this.homeRadius = 10.5;
-        this.homePolar = 1.3;
-        this.homeAzimuth = -0.18;
+        this.target.set(0, 2.15, 0);
+        this.homeRadius = 10.4;
+        this.homePolar = 1.24;
+        this.homeAzimuth = -0.25;
         this.home();
       }
       this.curriculum = createCurriculumScene(type, p, r);
+      return;
+    }
+    if (["spring", "pendulum"].includes(type)) {
+      this.precision = createDetailedMechanics(type, p, r);
+      this.target.set(...this.precision.target);
+      this.homeRadius = this.precision.radius;
+      this.homePolar = type === "spring" ? 1.05 : 1.48;
+      this.homeAzimuth = type === "spring" ? -0.25 : -0.1;
+      this.home();
       return;
     }
     if (ADVANCED_IDS.includes(type)) {
@@ -458,12 +415,23 @@ export class SceneView {
       planet.geometry.dispose();
       planet.geometry = new T.SphereGeometry(1, 64, 48);
       planet.material.dispose();
+      const earthMap = new T.TextureLoader().load(new URL("../atlas/assets/earth-blue-marble.png", import.meta.url).href, (texture) => {
+        if (this.objects.planet !== planet) { texture.dispose(); return; }
+        planet.material.map = texture;
+        planet.material.color.setHex(0xffffff);
+        planet.material.needsUpdate = true;
+      }, undefined, () => earthMap.dispose());
+      earthMap.colorSpace = T.SRGBColorSpace;
+      earthMap.anisotropy = Math.min(8, this.renderer.capabilities.getMaxAnisotropy());
       planet.material = new T.MeshStandardMaterial({
-        map: planetSurface(),
-        color: 0xffffff,
+        color: 0x356f8a,
         metalness: 0.05,
         roughness: 0.78,
       });
+      planet.add(cloudShell(1.012));
+      const reference = add("reference", new T.Line(new T.BufferGeometry(), new T.LineDashedMaterial({ color: 0x80b4c7, transparent: true, opacity: 0.35, dashSize: 0.09, gapSize: 0.07 })));
+      reference.frustumCulled = false;
+      o.referencePoints = orbitalReference(p);
       // Procedural longitude/latitude lines are a coordinate texture, not surface data.
       for (let j = -2; j <= 2; j++) {
         const rr = Math.sqrt(1 - (j * 0.3) ** 2);
@@ -472,7 +440,7 @@ export class SceneView {
           new T.MeshBasicMaterial({
             color: 0x78e0df,
             transparent: true,
-            opacity: 0.1,
+            opacity: 0.025,
           }),
         );
         ring.rotation.x = Math.PI / 2;
@@ -485,13 +453,14 @@ export class SceneView {
           new T.MeshBasicMaterial({
             color: 0x7ac6df,
             transparent: true,
-            opacity: 0.08,
+            opacity: 0.02,
           }),
         );
         ring.rotation.y = (j * Math.PI) / 6;
         planet.add(ring);
       }
       const atmosphere = add("atmosphere", sphere(1.06, 0x53d5f7), [0, 1, 0]);
+      atmosphere.castShadow = false;
       atmosphere.material.dispose();
       atmosphere.material = new T.ShaderMaterial({
         uniforms: { glowColor: { value: new T.Color(0x54cfee) } },
@@ -584,65 +553,6 @@ export class SceneView {
       o.trail.material.dispose();
       o.trail.material = new T.LineBasicMaterial({ vertexColors: true });
       o.trail.frustumCulled = false;
-    } else if (type === "spring") {
-      add("wall", box(0.2, 2, 1.1, 0x285268), [-4.7, 1.1, 0]);
-      add("rail", box(10, 0.15, 1.4, 0x203c50), [0, 0.12, 0]);
-      add("block", box(0.9, 0.9, 0.9, CYAN));
-      add(
-        "coil",
-        beam(
-          [
-            [0, 0, 0],
-            [1, 0, 0],
-          ],
-          CYAN,
-        ),
-      );
-      add(
-        "equilibrium",
-        beam(
-          [
-            [1, 0.22, -1],
-            [1, 0.22, 1],
-          ],
-          0x4b6f86,
-          0.5,
-        ),
-      );
-      o.velocity = new T.ArrowHelper(
-        new T.Vector3(1, 0, 0),
-        new T.Vector3(),
-        1,
-        GOLD,
-        0.2,
-        0.1,
-      );
-      r.add(o.velocity);
-    } else if (type === "pendulum") {
-      add("base", box(3, 0.2, 2.5, 0x19394d), [0, -0.65, 0]);
-      add("support", box(0.14, 5, 0.14, 0x3a596d), [0, 1.8, -0.65]);
-      add("top", box(1.8, 0.12, 1.4, 0x6e8e9c), [0, 4.2, 0]);
-      add("pivot", sphere(0.1, 0xd7e8ef), [0, 4, 0]);
-      add("bob", sphere(0.2 + 0.03 * Math.sqrt(p.mass), GOLD));
-      add("lengthLabel", label(`L = ${p.length.toFixed(2)} m`), [1.5, 3, 0]);
-      add(
-        "rod",
-        new T.Mesh(
-          new T.CylinderGeometry(0.018, 0.018, 1, 12),
-          material(0x99becb),
-        ),
-      );
-      add(
-        "trail",
-        beam(
-          [
-            [0, 0, 0],
-            [0, 0, 0],
-          ],
-          GOLD,
-          0.45,
-        ),
-      );
     } else if (type === "projectile") {
       add("ball", sphere(0.12, 0xb7a6ff));
       add(
@@ -973,6 +883,7 @@ export class SceneView {
       if (node.userData.role === "label") node.visible = true;
     });
     if (this.curriculum) this.curriculum.update(lab);
+    else if (this.precision) this.precision.update(lab);
     else if (this.advanced) this.advanced.update(lab);
     else if (type === "gravity") {
       let extent = p.distance * 1.35;
@@ -981,6 +892,12 @@ export class SceneView {
       extent = Math.max(extent, Math.hypot(s.x, s.y) * 1.1);
       const sc = 5 / extent,
         rad = centralRadius(p) * sc;
+      if (o.referenceScale !== sc) {
+        setPath(o.reference, o.referencePoints.map(([x, y]) => [x * sc, 1, -y * sc]));
+        o.reference.computeLineDistances();
+        o.referenceScale = sc;
+      }
+      o.reference.visible = lab.showTrail;
       o.planet.scale.setScalar(rad);
       o.atmosphere.scale.setScalar(rad);
       o.satellite.position.set(s.x * sc, 1, -s.y * sc);
@@ -1052,41 +969,6 @@ export class SceneView {
       o.radiusLabel.position.copy(o.satellite.position).multiplyScalar(0.5);
       o.radiusLabel.position.y = 1.16;
       o.radiusLabel.visible = Math.hypot(s.x, s.y) * sc > rad + 0.8;
-    } else if (type === "spring") {
-      const x = 1 + s.x * 3.5;
-      o.block.position.set(x, 0.65, 0);
-      const pts = [[-4.6, 0.65, 0]];
-      for (let i = 0; i <= 220; i++) {
-        const f = i / 220;
-        pts.push([
-          -4.4 + (x - 0.5 + 4.4) * f,
-          0.65 + 0.18 * Math.cos(f * Math.PI * 24),
-          0.18 * Math.sin(f * Math.PI * 24),
-        ]);
-      }
-      pts.push([x - 0.45, 0.65, 0]);
-      updateLine(o.coil, pts);
-      o.velocity.position.set(x, 1.45, 0);
-      o.velocity.setDirection(new T.Vector3(s.v < 0 ? -1 : 1, 0, 0));
-      o.velocity.setLength(
-        Math.max(0.001, Math.min(2, Math.abs(s.v) * 0.5)),
-        0.15,
-        0.08,
-      );
-      o.velocity.visible = lab.vectors && Math.abs(s.v) > 0.01;
-    } else if (type === "pendulum") {
-      const b = [
-        1.3 * p.length * Math.sin(s.theta),
-        4 - 1.3 * p.length * Math.cos(s.theta),
-        0,
-      ];
-      o.bob.position.set(...b);
-      rodBetween(o.rod, [0, 4, 0], b);
-      updateLine(
-        o.trail,
-        (lab.trail || []).map((q) => [1.3 * q.x, 4 + 1.3 * q.y, 0]),
-      );
-      o.trail.visible = lab.showTrail;
     } else if (type === "projectile") {
       const ref = projectileReference(p),
         sc = 9 / Math.max(10, ref.range, ref.maxHeight * 2),
@@ -1204,7 +1086,7 @@ export class SceneView {
       o.plate1.material.emissive.setHex(CYAN);
       o.plate1.material.emissiveIntensity = (q.voltage / p.voltage) * 0.6;
     }
-    if (!this.curriculum && !this.trackedLabels) {
+    if (!this.curriculum && !this.precision && !this.trackedLabels) {
       const specs =
         {
           spring: [["block", "Mass", [0, 0.85, 0]]],
@@ -1275,8 +1157,8 @@ export class SceneView {
     this.lastCameraFrame = performance.now();
     const cameraRadius =
       this.radius *
-      (["gravity", ...ADVANCED_IDS].includes(type) || this.curriculum
-        ? Math.max(1, 1.35 / this.camera.aspect)
+      (["gravity", ...ADVANCED_IDS].includes(type) || this.curriculum || this.precision
+        ? Math.max(1, (this.precision?.fitAspect || (type === "buoyancy" ? 1.05 : 1.35)) / this.camera.aspect)
         : 1);
     this.camera.position.set(
       this.target.x +
@@ -1286,7 +1168,12 @@ export class SceneView {
         cameraRadius * Math.sin(this.polar) * Math.cos(this.azimuth),
     );
     this.camera.lookAt(this.target);
+    this.grid.material.uniforms.opacity.value = this.grid.material.opacity;
     this.renderer.render(this.scene, this.camera);
+    if (!this.firstFrame) {
+      this.firstFrame = true;
+      this.canvas.setAttribute("aria-busy", "false");
+    }
   }
   dispose() {
     this.clear();
@@ -1302,6 +1189,7 @@ export class SceneView {
       this.handlers.pointerup,
     );
     this.renderer.dispose();
+    this.environmentTarget.dispose();
     this.renderer.forceContextLoss();
   }
 }

@@ -438,6 +438,13 @@ export class SceneView {
       return mesh;
     };
     if (Object.hasOwn(CURRICULUM_BUILDERS, type)) {
+      if (type === "buoyancy") {
+        this.target.set(0, 1.9, 0);
+        this.homeRadius = 10.5;
+        this.homePolar = 1.3;
+        this.homeAzimuth = -0.18;
+        this.home();
+      }
       this.curriculum = createCurriculumScene(type, p, r);
       return;
     }

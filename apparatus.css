@@ -1,0 +1,158 @@
+.buoyancy-reading {
+  background: #f8fdff;
+  border: 1px solid #c6dee8;
+  border-radius: 18px;
+  padding: 25px;
+  margin: 18px 0;
+  color: #163b50;
+}
+.expanded-model .scene-container {
+  height: clamp(340px, 48dvh, 580px);
+}
+.buoyancy-stage .scene-equation {
+  font-size: 20px;
+  bottom: 12px;
+  right: 14px;
+}
+.buoyancy-stage .scene-camera-hint {
+  font-size: 10px;
+  bottom: 14px;
+}
+.buoyancy-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.buoyancy-heading h2 {
+  font-size: clamp(24px, 2vw, 30px);
+  margin: 8px 0 20px;
+  line-height: 1.25;
+}
+.buoyancy-heading > span {
+  font:
+    600 15px ui-monospace,
+    monospace;
+  background: #e8f3f7;
+  padding: 12px;
+  border-radius: 9px;
+}
+.buoyancy-forces {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.force-card {
+  --force: #b87830;
+  padding: 16px;
+  background: white;
+  border: 1px solid #d8e6ec;
+  border-radius: 12px;
+  min-width: 0;
+}
+.force-card.cyan {
+  --force: #07897e;
+}
+.force-card.blue {
+  --force: #3978be;
+}
+.force-card.purple {
+  --force: #8660b8;
+}
+.force-card > span {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--force);
+}
+.force-card strong {
+  display: block;
+  font:
+    650 clamp(19px, 2vw, 27px) ui-monospace,
+    monospace;
+  margin: 9px 0 13px;
+  color: #123348;
+}
+.force-card i {
+  display: block;
+  height: 5px;
+  border-radius: 5px;
+  background: #e8eff3;
+  overflow: hidden;
+}
+.force-card b {
+  display: block;
+  height: 100%;
+  background: var(--force);
+  transition: width 0.12s linear;
+}
+.buoyancy-result {
+  font-size: 18px;
+  line-height: 1.7;
+  margin: 21px 0 14px;
+}
+.buoyancy-detail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  font:
+    14px/1.8 ui-monospace,
+    monospace;
+  border-top: 1px solid #d4e4eb;
+  padding-top: 14px;
+}
+.buoyancy-reading details {
+  margin-top: 17px;
+  font-size: 16px;
+  line-height: 1.8;
+}
+.buoyancy-reading summary {
+  font-weight: 650;
+  cursor: pointer;
+  color: #087884;
+  min-height: 32px;
+}
+.solar-atlas-link {
+  display: block;
+  margin: 18px 0;
+  padding: 24px 27px;
+  background: linear-gradient(120deg, #102b43, #164c5b);
+  color: #fff;
+  border-radius: 16px;
+  text-decoration: none;
+  border: 1px solid #5a9dba;
+}
+.solar-atlas-link strong {
+  display: block;
+  font-size: 25px;
+  line-height: 1.4;
+  margin: 6px 0;
+}
+.solar-atlas-link span {
+  display: block;
+  font-size: 17px;
+  line-height: 1.7;
+  color: #d3ebf4;
+}
+.solar-atlas-link:hover {
+  background: #1b5262;
+}
+@media (max-width: 700px) {
+  .buoyancy-reading {
+    padding: 18px;
+  }
+  .buoyancy-forces {
+    grid-template-columns: 1fr 1fr;
+  }
+  .buoyancy-heading > span {
+    font-size: 13px;
+  }
+  .buoyancy-result {
+    font-size: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .force-card b {
+    transition: none;
+  }
+}

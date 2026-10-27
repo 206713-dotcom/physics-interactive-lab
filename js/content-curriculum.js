@@ -44,7 +44,7 @@ const NOTES = {
     "Pressure and upthrust have different meanings.",
     "Density is mass divided by volume. A floating object displaces its own weight of liquid. A submerged object experiences upthrust equal to the weight of liquid displaced.",
     "Gauge pressure increases with vertical depth, not container shape. For two immiscible liquids, the less dense layer can lie above the denser layer.",
-    "Uniform densities, constant g = 9.81 N/kg and an incompressible liquid. Floating readouts are equilibrium values; a sinking block is shown submerged without integrating its descent. Surface tension and fluid drag are omitted.",
+    "An upright cube is released at rest with its top 2 cm below the surface of a 0.50 m liquid column. RK4 integrates vertical motion, using actual submerged volume, linear-plus-quadratic approximate drag (effective viscosity 0.10 Pa·s, Cd = 1.05), and inelastic contact with a permeable 5 mm support. Liquid can reach the underside. Constant g = 9.81 N/kg, fixed surface (large reservoir); no added mass, surface tension, fluid waves or sealed-bottom suction. Pressure-probe depth refers to a separate column of the same liquid.",
     "Ships, hydrometers, submarines and hydraulic depth measurements.",
     "Does a heavier object always sink?",
     "No. Average density relative to the liquid matters. A large hollow ship can float while a much lighter solid metal piece sinks.",

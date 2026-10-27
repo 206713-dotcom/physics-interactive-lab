@@ -26,10 +26,10 @@ export const SCENE_GUIDES = {
     "This is a static moment comparison. Beam rotation is not integrated. The separate tipping calculation is in the inspector.",
   ],
   buoyancy: [
-    "Compare the gold weight and cyan upthrust arrows.",
+    "Watch the released cube rise or sink. Gold is weight, cyan is upthrust, blue is drag and purple is the support force.",
     "Upthrust equals the weight of displaced liquid. A floating object displaces just enough liquid to balance its weight.",
     "Increase object density through the liquid density and compare the two forces.",
-    "A denser-than-liquid sample is shown fully immersed; its sinking motion is not integrated. Cube volume and tank depth are visually fitted.",
+    "The cube, depth ruler and 0.50 m liquid column share one length scale. Vertical motion is integrated from actual immersion, weight and approximate fluid drag. A permeable 5 mm support allows liquid underneath; contact is inelastic. The separate pressure probe does not change the tank depth.",
   ],
   energy: [
     "Watch the winch lift the gold load and compare the energy bars.",
@@ -242,10 +242,10 @@ export const SCENE_GUIDES = {
     "Sizes and separations are enlarged separately. Earth rotation is illustrative; seasonal daylight is calculated from latitude, day and axial tilt.",
   ],
   solarsystem: [
-    "The selected planet follows its circular orbit about the Sun.",
+    "Follow all eight planets around the Sun. The selected orbit is highlighted; open the full Solar Atlas for dated elliptical positions and interiors.",
     "For a fixed central mass, more distant circular orbits have longer periods and smaller speeds.",
     "Select Earth then Mars, comparing period and orbital speed.",
-    "Each orbit is fitted to the same display radius; compare distances numerically. Body and ring sizes are illustrative. Time is measured in Julian years.",
+    "This comparison lab uses independent circular orbits with one shared Julian-year clock. Display radii are logarithmically compressed and body sizes enlarged separately. The radius multiplier changes the selected orbit and its period. The full Solar Atlas uses JPL approximate elliptical orbits, with separate date controls.",
   ],
   stars: [
     "Compare the selected stages and the temperature-dependent main-sequence colour.",

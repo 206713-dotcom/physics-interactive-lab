@@ -60,10 +60,34 @@ export const PARAMETERS = {
     number("width", "Support width", "m"),
   ],
   buoyancy: [
-    number("density", "Object density", "kg/m³"),
-    number("fluid", "Liquid density", "kg/m³"),
-    number("volume", "Object volume", "L", 0.001),
-    number("depth", "Pressure probe depth", "m"),
+    number(
+      "density",
+      "Object density",
+      "kg/m³",
+      1,
+      "Denser than the liquid: sinks. Less dense: rises and floats. A change releases the cube again.",
+    ),
+    number(
+      "fluid",
+      "Liquid density",
+      "kg/m³",
+      1,
+      "A denser liquid supplies more upthrust for the same submerged volume.",
+    ),
+    number(
+      "volume",
+      "Object volume",
+      "L",
+      0.001,
+      "Volume changes both mass and maximum upthrust. The cube and tank share one length scale.",
+    ),
+    number(
+      "depth",
+      "Pressure probe depth",
+      "m",
+      1,
+      "Separate pressure column: this changes ρgh, not the depth of the 0.50 m motion tank.",
+    ),
   ],
   energy: [
     number("mass", "Lifted mass", "kg"),
@@ -438,6 +462,28 @@ export const WORK = {
   ],
   buoyancy: [
     W(
+      "depth",
+      "Centre depth below surface",
+      "m",
+      "d = H − y",
+      (p, q, n) => `0.500 − ${n(q.y)}`,
+    ),
+    W(
+      "v",
+      "Vertical velocity (up +)",
+      "m/s",
+      "v = dy/dt",
+      (p, q, n) => `Integrated velocity: ${n(q.v)}`,
+    ),
+    W(
+      "net",
+      "Resultant force (up +)",
+      "N",
+      "F = U + D + N − W",
+      (p, q, n) =>
+        `${q.upthrust.toFixed(3)} + (${q.drag.toFixed(3)}) + ${q.normal.toFixed(3)} − ${q.weight.toFixed(3)}`,
+    ),
+    W(
       "mass",
       "Object mass",
       "kg",
@@ -453,10 +499,42 @@ export const WORK = {
     ),
     W(
       "upthrust",
-      "Equilibrium upthrust or submerged value",
+      "Instantaneous upthrust",
       "N",
       "U = ρₗgVdisplaced",
       (p, q, n) => `${n(p.fluid)} × 9.81 × ${n(q.displaced)}`,
+    ),
+    W(
+      "drag",
+      "Fluid drag (up +)",
+      "N",
+      "D = −f(3πμLv + ½ρₗCdL²v|v|)",
+      (p, q, n) =>
+        `−${n(q.fraction)} × (3π × 0.1 × ${n(q.side)} × ${n(q.v)} + 0.5 × ${n(p.fluid)} × 1.05 × ${n(q.side)}² × ${n(q.v)} × |${n(q.v)}|)`,
+    ),
+    W(
+      "normal",
+      "Permeable support force",
+      "N",
+      "N = max(0, W − U) at rest on support",
+      (p, q, n) =>
+        q.normal
+          ? `max(0, ${n(q.weight)} − ${n(q.upthrust)})`
+          : "0 (no loaded contact)",
+    ),
+    W(
+      "a",
+      "Vertical acceleration",
+      "m/s²",
+      "a = F / m",
+      (p, q, n) => `${n(q.net)} / ${n(q.mass)}`,
+    ),
+    W(
+      "immersion",
+      "Currently immersed",
+      "%",
+      "f = Vdisplaced / V",
+      (p, q, n) => `${n(q.displaced)} / ${n(p.volume)} × 100`,
     ),
     W(
       "pressure",
@@ -1216,9 +1294,9 @@ const INFO = {
   buoyancy: [
     "Density, pressure & floating",
     "Mechanics",
-    "Compare weight and upthrust in a calibrated liquid tank.",
-    "p = ρgh",
-    "fluid",
+    "Release a cube, watch it rise or sink, and account for every vertical force.",
+    "ma = U + D + N − W",
+    null,
   ],
   energy: [
     "Energy, power & resources",
@@ -1523,11 +1601,15 @@ export const CURRICULUM_SIMULATIONS = Object.fromEntries(
             decimals:
               PRACTICAL_LABS[id] && r.unit === "m"
                 ? 4
-                : ["measurement", "lenses", "universe", "devices"].includes(id)
-                  ? 4
-                  : id === "expansion"
-                    ? 6
-                    : 2,
+                : id === "buoyancy"
+                  ? 3
+                  : ["measurement", "lenses", "universe", "devices"].includes(
+                        id,
+                      )
+                    ? 4
+                    : id === "expansion"
+                      ? 6
+                      : 2,
             note:
               r.formula.length > 65
                 ? "Live calculation · expand to see the working"
@@ -1757,6 +1839,18 @@ const SAMPLE_UNITS = {
     pressure: "Pa",
     fraction: "fraction",
     displaced: "m3",
+    y: "m",
+    v: "m_per_s",
+    a: "m_per_s2",
+    drag: "N",
+    normal: "N",
+    net: "N",
+    side: "m",
+    immersion: "percent",
+    equilibriumFraction: "fraction",
+    depth: "m",
+    status:
+      "status_code_0_support_1_sinking_2_rising_3_neutral_4_floating_5_down_6_up_7_rest",
   },
   energy: {
     height: "m",
@@ -1938,6 +2032,58 @@ export function curriculumCalculationSheet(type, s, p, n) {
         value: p[c.key],
         unit: parameterUnit(type, c),
       })),
+      ...(type === "buoyancy"
+        ? [
+            {
+              symbol: "y",
+              label: "Cube centre above tank floor",
+              value: q.y,
+              unit: "m",
+            },
+            {
+              symbol: "v",
+              label: "Vertical velocity (up +)",
+              value: q.v,
+              unit: "m/s",
+            },
+            {
+              symbol: "L",
+              label: "Cube side length",
+              value: q.side,
+              unit: "m",
+            },
+            {
+              symbol: "f",
+              label: "Submerged volume fraction",
+              value: q.fraction,
+              unit: "",
+            },
+            {
+              symbol: "g",
+              label: "Gravitational acceleration",
+              value: 9.81,
+              unit: "m/s²",
+            },
+            {
+              symbol: "H",
+              label: "Liquid depth in motion tank",
+              value: 0.5,
+              unit: "m",
+            },
+            {
+              symbol: "μ",
+              label: "Assumed effective viscosity",
+              value: 0.1,
+              unit: "Pa·s",
+            },
+            {
+              symbol: "Cd",
+              label: "Assumed drag coefficient",
+              value: 1.05,
+              unit: "",
+            },
+          ]
+        : []),
       {
         symbol: "t",
         label: "Elapsed simulation time",
@@ -1952,7 +2098,12 @@ export function curriculumCalculationSheet(type, s, p, n) {
       substitution: r.sub(p, q, n, s),
       value: q[r.key],
       unit: r.unit,
-      note: "Uses the current parameters. Null means the selected ideal model has no finite or physically permitted result.",
+      note:
+        q[r.key] === null
+          ? "This result is undefined for this setup. See the model assumptions."
+          : type === "buoyancy"
+            ? "Upward is positive. Forces and immersion use the current integrated position and velocity. Values are calculated before rounding."
+            : "Uses the current model state and parameters. Values are calculated before rounding for display.",
     })),
     note: "Calculated educational model; values are not experimental measurements. Parameter-sweep graphs hold all other settings fixed. See the lesson for approximations.",
   };

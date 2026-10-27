@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#071522" />
+    <title>Solar Atlas · Physics Interactive Lab</title>
+    <meta
+      name="description"
+      content="Explore 20 Solar System worlds, their interiors and orbital physics. Adapted from your Muon Atlas project."
+    />
+    <link rel="icon" href="./assets/favicon.svg" />
+    <link rel="stylesheet" href="./atlas/vendor/katex/katex.min.css" />
+    <link rel="stylesheet" href="./atlas/astronomy.css" />
+    <link rel="stylesheet" href="./atlas/host.css" />
+    <script type="module" src="./atlas/host.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#solar-detail">Skip to the field guide</a>
+    <header class="atlas-header">
+      <a href="./#/solarsystem" class="atlas-brand"
+        >PHYSICS <span>/ SOLAR ATLAS</span></a
+      >
+      <nav aria-label="Atlas navigation">
+        <button id="atlas-home">All worlds</button
+        ><button id="atlas-reset">Reset view</button
+        ><a href="./#/course">Back to the labs ↗</a>
+      </nav>
+    </header>
+    <main id="exploration-page">
+      <canvas
+        id="atlas-canvas"
+        tabindex="0"
+        aria-label="Interactive 3D Solar System. Drag to rotate, scroll or pinch to zoom. Select a planet from the world list. Arrow keys pan the view."
+      ></canvas>
+      <p id="atlas-loading" role="status">Preparing your Solar System…</p>
+    </main>
+    <noscript
+      >Enable JavaScript to explore the 3D Solar System.
+      <a href="./#/solarsystem">Return to the laboratory.</a></noscript
+    >
+  </body>
+</html>

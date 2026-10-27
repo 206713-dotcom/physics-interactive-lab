@@ -1,7 +1,7 @@
 import { readFile, access, readdir } from "node:fs/promises";
 import path from "node:path";
 import assert from "node:assert/strict";
-for (const document of ["index.html", "integration.html"]) {
+for (const document of ["index.html", "integration.html", "solar-atlas.html"]) {
   const html = await readFile(document, "utf8");
   for (const match of html.matchAll(/(?:src|href)="(\.\/[^"?#]+)"/g))
     await access(match[1]);
@@ -66,6 +66,15 @@ for (const file of [
   "js/scene-vectors.js",
   "js/render-vectors.js",
   "js/vector-studio.js",
+  "js/buoyancy-physics.js",
+  "js/buoyancy-studio.js",
+  "js/scene-buoyancy.js",
+  "apparatus.css",
+  "atlas/host.js",
+  "atlas/host.css",
+  "atlas/astronomy-math.js",
+  "atlas/assets/earth-blue-marble.png",
+  "atlas/vendor/katex/LICENSE.txt",
   "vectors.css",
   "js/render2d.js",
   "js/physics-extra.js",
@@ -81,17 +90,27 @@ for (const file of [
 ])
   await access(file);
 // Validate local module imports, including Three.js's own pinned core module.
-for (const directory of ["js", "vendor"]) {
-  for (const file of await readdir(directory)) {
-    if (!file.endsWith(".js")) continue;
-    const full = path.join(directory, file),
-      source = await readFile(full, "utf8");
+async function verifyDirectory(directory) {
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      await verifyDirectory(path.join(directory, entry.name));
+      continue;
+    }
+    const full = path.join(directory, entry.name);
+    if (!full.endsWith(".js") && !full.endsWith(".css")) continue;
+    const source = await readFile(full, "utf8");
     for (const match of source.matchAll(
       /(?:from\s*|import\s*\(\s*|import\s*)['"](\.{1,2}\/[^'"]+)['"]/g,
     ))
       await access(path.resolve(path.dirname(full), match[1]));
+    if (full.endsWith(".css"))
+      for (const match of source.matchAll(/url\(["']?([^"')]+)["']?\)/g))
+        if (!/^(?:data:|https?:|#)/.test(match[1]))
+          await access(path.resolve(path.dirname(full), match[1]));
   }
 }
+for (const directory of ["js", "vendor", "atlas"])
+  await verifyDirectory(directory);
 console.log(
-  "Static assets, local module imports, 57-lab source files, question bank, course map, Chart.js and Three.js verified.",
+  "Static assets, local imports and fonts, 57-lab sources, Solar Atlas, question bank, course map, Chart.js and Three.js verified.",
 );

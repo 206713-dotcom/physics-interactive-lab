@@ -1,5 +1,6 @@
 import { PALETTE as C, putRod } from "./scene-kit.js";
 import { createVectorApparatus } from "./scene-vectors.js";
+import { createBuoyancyApparatus } from "./scene-buoyancy.js";
 const TAU = Math.PI * 2;
 export const MECHANICAL_SCENES = {
   measurement(p, k) {
@@ -76,36 +77,7 @@ export const MECHANICAL_SCENES = {
     k.label("F × perpendicular distance", [0, 3.1, 0], "#89baff", 3.8);
     return () => {};
   },
-  buoyancy(p, k) {
-    k.stand(7, 4);
-    k.glass(4, 3, 2.6, [0, 1.5, 0]);
-    k.box(3.9, 2.1, 2.5, 0x2b9ebd, [0, 1.05, 0], {
-      transparent: true,
-      opacity: 0.24,
-      depthWrite: false,
-    });
-    const side = 0.8 * Math.cbrt(p.volume / 0.001),
-      fraction = Math.min(1, p.density / p.fluid),
-      height = 2.1 + side / 2 - fraction * side;
-    k.box(side, side, side, C.gold, [0, height, 0]);
-    const up = k.arrow([1, height, 0], [0, 1.2, 0], C.cyan),
-      down = k.arrow([-1, height, 0], [0, -1.2, 0], C.gold);
-    k.label("Weight", [-2, 3.6, 0], "#ffc584");
-    k.label("Upthrust", [2, 3.6, 0], "#64e8d1");
-    k.label("Displaced liquid supplies upthrust", [0, 4.3, 0], "#cfe6ef", 4.8);
-    return (s, q) => {
-      k.setArrow(
-        up,
-        [1, height, 0],
-        [0, (1.2 * q.upthrust) / Math.max(q.weight, q.upthrust), 0],
-      );
-      k.setArrow(
-        down,
-        [-1, height, 0],
-        [0, (-1.2 * q.weight) / Math.max(q.weight, q.upthrust), 0],
-      );
-    };
-  },
+  buoyancy: createBuoyancyApparatus,
   energy(p, k) {
     k.stand(7, 3);
     k.box(0.16, 4, 0.16, C.muted, [-2, 2, 0]);

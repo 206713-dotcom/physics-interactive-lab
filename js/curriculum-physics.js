@@ -8,6 +8,11 @@ import {
   stepPractical,
   samplePractical,
 } from "./practical-physics.js";
+import {
+  createBuoyancy,
+  stepBuoyancy,
+  buoyancySample,
+} from "./buoyancy-physics.js";
 export const C = 299792458,
   R = 8.314462618,
   K_B = 1.380649e-23;
@@ -260,6 +265,7 @@ export function createCurriculum(id, p = { ...DEFAULTS[id] }) {
   const params = { ...p },
     state = { t: 0 };
   if (PRACTICAL_IDS.includes(id)) return { params, state: createPractical(id) };
+  if (id === "buoyancy") return { params, state: createBuoyancy(p) };
   if (id === "radioactivity") {
     const rng = randomSequence(p.seed);
     state.decayTimes = Array.from(
@@ -273,6 +279,7 @@ export function stepCurriculum(id, s, p, h) {
   if (!Number.isFinite(h) || h <= 0 || h > 60)
     throw new RangeError("Invalid time step.");
   if (PRACTICAL_IDS.includes(id)) return stepPractical(id, s, p, h);
+  if (id === "buoyancy") return stepBuoyancy(s, p, h);
   return { ...s, t: s.t + h };
 }
 export const PLANETS = [
@@ -380,17 +387,7 @@ export function sampleCurriculum(id, s, p) {
       });
       break;
     case "buoyancy": {
-      const fraction = Math.min(1, p.density / p.fluid),
-        displaced = fraction * p.volume;
-      Object.assign(q, {
-        mass: p.density * p.volume,
-        weight: p.density * p.volume * 9.81,
-        upthrust: p.fluid * 9.81 * displaced,
-        capacity: p.fluid * 9.81 * p.volume,
-        pressure: p.fluid * 9.81 * p.depth,
-        fraction,
-        displaced,
-      });
+      Object.assign(q, buoyancySample(s, p));
       break;
     }
     case "energy": {

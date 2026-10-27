@@ -2,7 +2,7 @@
  * decay colours use the seeded decay event times, not invented detector hits. */
 import * as T from "../vendor/three.module.min.js";
 import { PALETTE as C, clamp, setPath } from "./scene-kit.js";
-import { PLANETS } from "./curriculum-physics.js";
+import { PLANETS, AU, G, SUN, YEAR } from "./curriculum-physics.js";
 import { planckSpectrum } from "./practical-physics.js";
 const TAU = Math.PI * 2;
 function starColor(temperature) {
@@ -94,15 +94,11 @@ export const SPACE_SCENES = {
     };
   },
   solarsystem(p, k) {
-    const planet = PLANETS[p.planet],
-      sun = k.ball(0.55, C.gold, [0, 1.5, 0], {
-        emissive: C.gold,
-        emissiveIntensity: 1,
-      });
-    const orbit = k.ring(3.5, C.muted, [0, 1.5, 0]);
-    const body = k.ball(
-      0.24,
-      [
+    k.ball(0.45, C.gold, [0, 1.7, 0], {
+      emissive: C.gold,
+      emissiveIntensity: 1.5,
+    });
+    const colors = [
         0xa6a5a0,
         0xd9b780,
         C.blue,
@@ -111,22 +107,51 @@ export const SPACE_SCENES = {
         0xead4a4,
         0x92d9dd,
         0x7b9bff,
-      ][p.planet],
-      [3.5, 1.5, 0],
-    );
-    if (p.planet === 5) {
-      const rings = k.ring(0.43, C.gold, [3.5, 1.5, 0]);
-      body.attach(rings);
-    }
-    k.label(planet[0] + " · circular orbit", [0, 4.4, 0], "#89baff", 4);
+      ],
+      radius = (i) =>
+        0.7 +
+        Math.log1p(PLANETS[i][1] * (i === p.planet ? p.scale : 1) * 2) * 0.9,
+      bodies = PLANETS.map((planet, i) => {
+        const r = radius(i),
+          selected = i === p.planet;
+        k.ring(
+          r,
+          selected ? C.cyan : C.muted,
+          [0, 1.7, 0],
+          "y",
+          selected ? 0.7 : 0.22,
+        );
+        const size = [0.075, 0.11, 0.12, 0.09, 0.25, 0.22, 0.16, 0.16][i],
+          body = k.ball(size, colors[i], [r, 1.7, 0], { roughness: 0.75 });
+        if (i === 5) {
+          const ring = k.ring(0.35, C.gold, [r, 1.7, 0]);
+          body.attach(ring);
+          ring.rotation.z = 0.45;
+        }
+        return body;
+      }),
+      label = k.label(
+        PLANETS[p.planet][0] + " · selected orbit",
+        [0, 4.3, 0],
+        "#cfe6ef",
+        4.5,
+      );
     k.label(
-      "1 simulation time unit = 1 Julian year",
-      [0, 0.2, 2],
+      "Eight planets · logarithmic distances",
+      [0, 0.2, 2.1],
       "#b7cedc",
-      5.4,
+      4.8,
     );
-    return (s, q) =>
-      body.position.set(3.5 * Math.cos(q.phase), 1.5, -3.5 * Math.sin(q.phase));
+    k.label("Body sizes enlarged separately", [0, -0.2, 2.1], "#b7cedc", 4.1);
+    return (s, q) => {
+      for (let i = 0; i < 8; i++) {
+        const r = radius(i),
+          aAU = PLANETS[i][1] * (i === p.planet ? p.scale : 1),
+          period = (TAU * Math.sqrt((aAU * AU) ** 3 / (G * SUN))) / YEAR,
+          phase = (TAU * s.t) / period + i * 0.9;
+        bodies[i].position.set(r * Math.cos(phase), 1.7, -r * Math.sin(phase));
+      }
+    };
   },
   stars(p, k) {
     const colors = [C.red, starColor(p.temperature), C.red, C.blue, C.purple],

@@ -29,7 +29,7 @@ export function visualState(previous, current, fraction) {
   const a = Math.max(0, Math.min(1, fraction));
   if (
     !previous ||
-    ["collided", "collisionCount", "hit", "landed"].some(
+    ["collided", "collisionCount", "hit", "landed", "grounded"].some(
       (k) => previous[k] !== current[k],
     )
   )

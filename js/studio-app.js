@@ -14,6 +14,7 @@ import { ExpandedView } from "./expanded-view.js";
 import { SCENE_GUIDES } from "./scene-guides.js";
 import { visualState } from "./visual-state.js";
 import { VectorStudio } from "./vector-studio.js";
+import { installBuoyancyStudio } from "./buoyancy-studio.js";
 import { experimentLink } from "./integration.js";
 import {
   createOrbit,
@@ -72,6 +73,7 @@ const icon = (n) =>
   `<svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[n]}</svg>`;
 let lab = null,
   vectorStudio = null,
+  buoyancyUpdate = null,
   expandedView = null,
   hero = null,
   view = null,
@@ -403,6 +405,15 @@ function labPage(type, query) {
     notes.append($("#stage-caption"));
   }
   installVisualGuide();
+  if (type === "buoyancy") {
+    $("#stage").classList.add("buoyancy-stage");
+    buoyancyUpdate = installBuoyancyStudio($("#stage"));
+  }
+  if (type === "solarsystem")
+    $("#stage").insertAdjacentHTML(
+      "beforebegin",
+      '<a class="solar-atlas-link" href="./solar-atlas.html"><small>FROM YOUR MUON ATLAS PROJECT</small><strong>Explore the full 3D Solar System ↗</strong><span>20 worlds · textured planets · moons · selectable interiors · orbital calculations · date controls</span></a>',
+    );
   if (type === "vectors") {
     vectorStudio = new VectorStudio({
       root: $(".lab-page"),
@@ -1113,6 +1124,7 @@ function updateReadouts() {
     s = lab.state;
   const metrics = d.metrics(s, p);
   vectorStudio?.update();
+  buoyancyUpdate?.(s, p);
   $("#metrics").innerHTML = metrics.map(metricMarkup).join("");
   const focus = metrics[0];
   if (focus && $("#guide-reading") && lab.type !== "vectors")
@@ -1417,6 +1429,7 @@ function route() {
   expandedView?.close();
   vectorStudio?.dispose();
   vectorStudio = null;
+  buoyancyUpdate = null;
   routeToken++;
   viewToken++;
   view?.dispose();

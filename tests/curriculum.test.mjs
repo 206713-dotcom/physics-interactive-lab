@@ -183,8 +183,9 @@ test("balanced moments and stability threshold use perpendicular lever arms", ()
 });
 test("floating equilibrium displaces its weight and liquid pressure scales with depth", () => {
   const q = sample("buoyancy");
-  close(q.weight, q.upthrust);
-  close(q.fraction, 0.6);
+  assert.ok(q.upthrust > q.weight, "fully immersed light cube initially rises");
+  close(q.equilibriumFraction, 0.6);
+  close(q.fraction, 1);
   close(
     sample("buoyancy", { depth: 2 }).pressure,
     2 * sample("buoyancy", { depth: 1 }).pressure,

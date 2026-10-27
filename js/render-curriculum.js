@@ -3,6 +3,7 @@ import * as P from "./curriculum-physics.js";
 import { PRACTICAL_IDS } from "./practical-physics.js";
 import { drawPractical, practicalThumbnail } from "./render-practical.js";
 import { drawVectorDiagram } from "./render-vectors.js";
+import { BUOYANCY_STATUS } from "./buoyancy-physics.js";
 const TAU = Math.PI * 2,
   CYAN = "#6be5d4",
   GOLD = "#ffc580",
@@ -424,44 +425,75 @@ export function drawCurriculum(canvas, lab) {
       break;
     }
     case "buoyancy": {
-      title("Hydrostatics tank", "Equilibrium floating / submerged comparison");
-      rect(150, 85, 450, 280, "#91baff12", BLUE, 3);
-      rect(152, 170, 446, 192, "#62c6f32b", null, 0);
-      for (let x = 152; x < 596; x += 6)
-        line(
-          [
-            [x, 170 + 2 * Math.sin(x / 22 + t)],
-            [x + 6, 170 + 2 * Math.sin((x + 6) / 22 + t)],
-          ],
-          BLUE,
-          1,
-        );
-      const side = 100,
-        yy = q.fraction < 1 ? 170 - (1 - q.fraction) * side : 250;
-      rect(310, yy, side, side, "#ffc58060", GOLD, 5);
-      const max = Math.max(q.weight, q.upthrust, 1);
-      arrow(360, yy + 50, 0, (q.weight / max) * 95, GOLD);
-      arrow(360, yy + 50, 0, (-q.upthrust / max) * 95, CYAN);
-      text("W", 405, yy + 120, GOLD, 19);
-      text("U", 405, yy - 25, CYAN, 19);
-      const py = 182 + (p.depth / 5) * 160;
-      circle(570, py, 6, PURPLE);
+      title(
+        "Release. Rise. Sink.",
+        "Actual vertical motion · upward is positive",
+      );
+      const floor = 355,
+        water = 120,
+        sc = (floor - water) / 0.5,
+        side = q.side * sc,
+        yy = floor - q.y * sc,
+        max = Math.max(q.weight, q.capacity, 1e-9),
+        unit = 82 / max;
+      rect(175, 88, 330, 270, "#91baff08", BLUE, 2);
+      rect(177, water, 326, floor - water, "#62c6f31c", null, 0);
       line(
         [
-          [578, py],
-          [650, py],
+          [177, water],
+          [503, water],
         ],
-        PURPLE,
+        CYAN,
+        2,
       );
-      text(`${fmt(q.pressure)} Pa`, 660, py + 5, PURPLE, 20);
-      text("gauge pressure", 660, py + 29, MUTED, 15);
+      for (let i = 0; i <= 5; i++) {
+        const y = water + (i * (floor - water)) / 5;
+        line(
+          [
+            [175, y],
+            [185, y],
+          ],
+          WHITE,
+          2,
+        );
+        text((i / 10).toFixed(1) + " m", 162, y + 5, MUTED, 15, "right");
+      }
+      for (let x = 180; x < 503; x += 14)
+        line(
+          [
+            [x, floor],
+            [x + 6, floor - 5],
+          ],
+          MUTED,
+          2,
+        );
+      rect(340 - side / 2, yy - side / 2, side, side, "#dba15a", GOLD, 2);
+      rect(
+        340 - side / 2,
+        yy - side * 0.28,
+        side,
+        side * 0.1,
+        "#935d2b",
+        null,
+        0,
+      );
+      arrow(315 - side / 2, yy, 0, q.weight * unit, GOLD, 4);
+      arrow(365 + side / 2, yy, 0, -q.upthrust * unit, CYAN, 4);
+      arrow(395 + side / 2, yy, 0, -q.drag * unit, BLUE, 3);
+      if (q.normal) arrow(340, floor, 0, -q.normal * unit, PURPLE, 4);
+      text(BUOYANCY_STATUS[q.status], 550, 141, WHITE, 22);
+      text("W = " + fmt(q.weight) + " N", 550, 184, GOLD, 20);
+      text("U = " + fmt(q.upthrust) + " N", 550, 218, CYAN, 20);
+      text("Drag = " + fmt(q.drag) + " N", 550, 252, BLUE, 18);
+      text("Support = " + fmt(q.normal) + " N", 550, 284, PURPLE, 18);
+      text("Net = " + fmt(q.net) + " N", 550, 323, WHITE, 20);
       foot(
-        q.fraction < 1
-          ? `Floats · ${fmt(q.fraction * 100, 1)}% submerged`
-          : p.density === p.fluid
-            ? "Neutral density · fully submerged"
-            : "Sinks · net downward force",
-        `ρobject = ${p.density} kg/m³`,
+        fmt(q.immersion, 1) + "% immersed · v = " + fmt(q.v, 3) + " m/s",
+        "Probe: " +
+          fmt(q.pressure) +
+          " Pa at " +
+          p.depth +
+          " m (separate column)",
       );
       break;
     }

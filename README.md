@@ -10,6 +10,20 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 ## What is in the laboratory?
 
+### Version 6.2: actual buoyancy dynamics & the Muon Atlas Solar System
+
+**Dense cubes now sink instead of hanging at the surface.** The upright cube is released at rest with its top 2 cm below the liquid. Its submerged volume changes with its integrated position. Weight, Archimedes upthrust, approximate fluid drag and permeable-support contact determine acceleration. RK4 substeps are bounded by hydrostatic stiffness and drag relaxation. The 15 kg / 1 L case in water-density liquid rests with 147.15 N weight, 9.81 N upthrust and 137.34 N support force. The pressure probe is a separate column; it does not change the 0.50 m motion tank.
+
+The 3D tank and 2D diagram use the same physical state and one length scale. A force dashboard explains the current motion, force bars share a common scale, and graphs record actual centre depth, vertical velocity and resultant force over time. The expanded inspector includes position, velocity, submerged fraction, cube side, tank depth and drag constants. All expanded models now have a taller animation area.
+
+The drag law is a stated teaching approximation: `D = −f(3πμLv + ½ρfluid Cd L²v|v|)`, with effective viscosity 0.10 Pa·s and Cd = 1.05. It represents a viscous liquid, not a calibrated water experiment. The fixed surface represents a large reservoir. The upright-cube model omits added mass, surface tension and fluid waves. A permeable 5 mm support allows liquid underneath; contact is inelastic. [Archimedes reference](https://openstax.org/books/university-physics-volume-1/pages/14-4-archimedes-principle-and-buoyancy).
+
+**[Open the full Solar Atlas](https://206713-dotcom.github.io/physics-interactive-lab/solar-atlas.html)**, imported from the owner's Muography / Muon Atlas project. It includes the actual 20-world explorer: textured planets, rings, selected moons, interior cutaways with separable shells, altitude / escape-speed calculations, satellite orbits and energy-balance experiments. The original JPL approximate planetary model supports dates from 2000–2049 here; Earth denotes the Earth–Moon barycentre. Distances are logarithmically compressed, bodies enlarged independently, and interior boundaries / spin / moon placement schematic. [Source provenance and licences](atlas/PROVENANCE.md). The simpler comparison lab now also shows all eight planets on its shared year clock.
+
+The project serves the Earth map, Three.js, KaTeX and WOFF2 fonts locally. No runtime CDN is required. A device without WebGL can use the existing Solar System 2D laboratory. Share a focused world with `solar-atlas.html?body=earth`, or embed the full explorer with a normal iframe pointing to `solar-atlas.html` (recommended height 850 px).
+
+**177 automated tests** cover the existing models plus sinking, floating convergence, neutral suspension, drag direction, contact force balance, parameter-corner stability, integration convergence, scene/state agreement, the Kepler solver, orbital bounds, inverse-square gravity, escape speed, light delay, thermal balance and interior-shell volume accounting. `npm run check` also verifies nested module imports, local fonts and relative HTML asset paths.
+
 ### Version 6.1: a hands-on vector workbench
 
 The vector laboratory now has **draggable A/B tips in both 3D and 2D**, with head-to-tail, parallelogram and component constructions. A live resultant, direction and substituted component equations stay alongside the diagram. Coordinate ticks and arrows share one fitted force scale; zero resultants explicitly have no defined direction. Numeric inputs provide precise values; dragging snaps to 0.1 N and 1°. The supported model still has A along +x and B at 0–180°.

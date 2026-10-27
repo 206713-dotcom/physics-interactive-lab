@@ -100,7 +100,7 @@ export function createDetailedMechanics(type, p, root, options = {}) {
           bars[i].scale.y = Math.max(0.001, value / e0 * 1.3);
           bars[i].position.y = 0.12 + bars[i].scale.y / 2;
         });
-        if (s.t < last || s.t - last >= 0.1) {
+        if (!lab.running || s.t < last || s.t - last >= 0.1) {
           k.setLabel(xLabel, "x = " + s.x.toFixed(2) + " m", "#c3a6ff", 1.7);
           k.setLabel(vLabel, "v = " + s.v.toFixed(2) + " m/s", "#ffc584", 2.5);
           k.setLabel(fLabel, "−kx = " + (-p.k * s.x).toFixed(2) + " N", "#64e8d1", 3);
@@ -161,7 +161,7 @@ export function createDetailedMechanics(type, p, root, options = {}) {
       }
       setPath(angle, pts);
       thetaLabel.position.set(1.1 * Math.sin(theta / 2), 4.1 - 1.1 * Math.cos(theta / 2), 0.2);
-      if (s.t < last || s.t - last >= 0.1) {
+      if (!lab.running || s.t < last || s.t - last >= 0.1) {
         k.setLabel(thetaLabel, "θ = " + (theta * 180 / Math.PI).toFixed(1) + "°", "#64e8d1", 1.7);
         last = s.t;
       }

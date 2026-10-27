@@ -76,6 +76,25 @@ test("pendulum link and trail use one fitted scale for all supported lengths and
   }
 });
 
+test("pausing between label refreshes shows the exact current spring and pendulum step", () => {
+  for (const type of ["spring", "pendulum"]) {
+    const d = SIMULATIONS[type], run = d.create(d.defaults), root = new T.Group(),
+      scene = createDetailedMechanics(type, run.params, root, { labels: false });
+    scene.update({ ...run, running: true });
+    // The pause occurs less than 0.1 simulated seconds after the first label.
+    let state = run.state;
+    for (let i = 0; i < 12; i++) state = d.step(state, run.params, 1 / 240);
+    scene.update({ ...run, state, running: false });
+    const labels = scene.kit.annotations.map((o) => o.userData.text);
+    if (type === "spring") {
+      assert.ok(labels.includes("x = " + state.x.toFixed(2) + " m"));
+      assert.ok(labels.includes("v = " + state.v.toFixed(2) + " m/s"));
+      assert.ok(labels.includes("−kx = " + (-run.params.k * state.x).toFixed(2) + " N"));
+    } else assert.ok(labels.includes("θ = " + (state.theta * 180 / Math.PI).toFixed(1) + "°"));
+    clean(root);
+  }
+});
+
 test("decorative tank finish keeps its true waterline and cube size at both volume limits", () => {
   for (const volume of [0.0002, 0.005]) {
     const d = SIMULATIONS.buoyancy, run = d.create({ ...d.defaults, volume }), root = new T.Group(),

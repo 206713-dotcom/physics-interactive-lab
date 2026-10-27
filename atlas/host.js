@@ -3,6 +3,7 @@
 import * as T from "../vendor/three.module.min.js";
 import { OrbitControls } from "../vendor/OrbitControls.js";
 import { createAstronomy } from "./astronomy.js";
+import { getProfile, syllabusLink } from "../js/learning-paths.js";
 const canvas = document.getElementById("atlas-canvas"),
   loading = document.getElementById("atlas-loading");
 try {
@@ -59,6 +60,45 @@ try {
     },
   });
   atlas.setActive(true);
+  // The detailed world explorer keeps its visual model while changing its
+  // learning lens, just like the companion Solar System laboratory.
+  const requestedLevel = new URLSearchParams(location.search).get("level"),
+    learningPanel = document.createElement("details");
+  let learningLevel = ["igcse", "alevel"].includes(requestedLevel)
+    ? requestedLevel
+    : "enrichment";
+  learningPanel.className = "atlas-learning-panel";
+  document.querySelector(".solar-desk-heading").after(learningPanel);
+  function renderLearningLens() {
+    const profile = getProfile("solarsystem", learningLevel),
+      cycle =
+        new URLSearchParams(location.search).get("cycle") === "next"
+          ? "next"
+          : "current";
+    learningPanel.innerHTML = `<summary>Learning focus: ${learningLevel === "igcse" ? "IGCSE 0625" : learningLevel === "alevel" ? "A2 9702" : "World exploration"}</summary><div role="group" aria-label="Solar Atlas learning level">${[
+      ["igcse", "IGCSE"],
+      ["alevel", "A2"],
+      ["enrichment", "Extra detail"],
+    ]
+      .map(
+        ([key, label]) =>
+          `<button data-atlas-level="${key}" aria-pressed="${key === learningLevel}">${label}</button>`,
+      )
+      .join(
+        "",
+      )}</div><p>${learningLevel === "enrichment" ? "Planetary interiors, moon catalogues, painted surfaces and the extended calculations are additional exploration. Select IGCSE or A2 for a curriculum focus." : profile.focus + ". " + profile.goals.join(". ") + "."}</p>${learningLevel === "enrichment" ? "" : `<p>${profile.refs.map((ref) => `<a href="${syllabusLink(learningLevel, ref, cycle)}" target="_blank" rel="noopener">§${ref} ↗</a>`).join(" · ")}</p><a href="./#/solarsystem?level=${learningLevel}&cycle=${cycle}">Open the focused experiment & investigation ↗</a>`}<p class="solar-small">The view contains more detail than the selected syllabus requires. Switching focus preserves the current world and physical date.</p>`;
+    learningPanel.querySelectorAll("[data-atlas-level]").forEach(
+      (button) =>
+        (button.onclick = () => {
+          learningLevel = button.dataset.atlasLevel;
+          const url = new URL(location.href);
+          url.searchParams.set("level", learningLevel);
+          history.replaceState(null, "", url);
+          renderLearningLens();
+        }),
+    );
+  }
+  renderLearningLens();
   document.getElementById("atlas-home").onclick = () => atlas.overview();
   document.getElementById("atlas-reset").onclick = () => atlas.reset();
   const resize = () => {

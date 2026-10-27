@@ -10,6 +10,14 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 ## What is in the laboratory?
 
+### Version 7: Cambridge learning modes
+
+**[Choose a learning path](https://206713-dotcom.github.io/physics-interactive-lab/#/syllabus)** for Cambridge IGCSE 0625, AS 9702, A2 9702 or enrichment. The 57 physics engines now have **91 teaching profiles**: 40 IGCSE Extended profiles, 48 AS/A Level profiles and three enrichment profiles. Shared models have a level selector that changes objectives, the suggested investigation, a worked question and the highlighted live calculations. Switching preserves the current physical state; “Load recommended setup” explicitly starts a fresh paused experiment. The original resources remain available in a labelled full-model section.
+
+IGCSE means **Core + Supplement (Extended)**. SHM and capacitor-discharge mathematics are A2; Young modulus and projectile components are AS; binary-star, three-body and double-pendulum studios are enrichment. Qualitative IGCSE field and radiation activities do not imply that their extra numerical equations must be learned for 0625. The section map lists missing references and makes no claim of complete outcome-level coverage.
+
+Mappings were checked against the official **0625 2026–2028 version 2**, **9702 2025–2027 version 1** and **9702 2028–2030 version 1** PDFs. A syllabus-edition selector opens the appropriate source pages. Shared and embedded setups preserve the selected level and edition. See [the alignment record and model map](SYLLABUS-ALIGNMENT.md) for all classifications, scope notes, sources and practical-work limitations.
+
 ### Version 6.2: actual buoyancy dynamics & the Muon Atlas Solar System
 
 **Dense cubes now sink instead of hanging at the surface.** The upright cube is released at rest with its top 2 cm below the liquid. Its submerged volume changes with its integrated position. Weight, Archimedes upthrust, approximate fluid drag and permeable-support contact determine acceleration. RK4 substeps are bounded by hydrostatic stiffness and drag relaxation. The 15 kg / 1 L case in water-density liquid rests with 147.15 N weight, 9.81 N upthrust and 137.34 N support force. The pressure probe is a separate column; it does not change the 0.50 m motion tank.

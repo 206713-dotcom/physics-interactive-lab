@@ -1,4 +1,5 @@
 import { SIMULATIONS } from "./simulations.js";
+import { resolveMode } from "./learning-paths.js";
 
 const attribute = (text) =>
   String(text).replace(
@@ -22,6 +23,8 @@ export function experimentLink({
   view = "3d",
   graph,
   embed = false,
+  studyMode,
+  syllabusCycle,
 }) {
   if (!Object.hasOwn(SIMULATIONS, model))
     throw new RangeError("Unknown simulation");
@@ -37,6 +40,9 @@ export function experimentLink({
   });
   if (definition.graphs.some((item) => item.id === graph))
     query.set("graph", graph);
+  if (studyMode) query.set("level", resolveMode(model, studyMode));
+  if (syllabusCycle)
+    query.set("cycle", syllabusCycle === "next" ? "next" : "current");
   url.hash = `/${model}?${query}`;
   return url.href;
 }

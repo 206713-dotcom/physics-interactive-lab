@@ -1,5 +1,6 @@
 import { calculationSheet, calculationNumber } from "./calculations.js";
 import { mathHTML, setMath } from "./math-display.js";
+import { getProfile, MODE_NAMES } from "./learning-paths.js";
 
 const sheetTimeUnit = (sheet) =>
   sheet.variables.find((value) => value.symbol === "t")?.unit || "s";
@@ -80,6 +81,9 @@ export class ExpandedView {
     this.time = root.querySelector(".calculation-time");
     this.footnote = root.querySelector(".calculation-footnote");
     this.choice = root.querySelector("#calculation-choice");
+    this.modeNote = document.createElement("p");
+    this.modeNote.className = "calculation-level-scope";
+    root.querySelector(".calculation-heading").append(this.modeNote);
     this.choice.value = this.selectedId;
     this.resultNodes = Object.fromEntries(
       [
@@ -175,8 +179,22 @@ export class ExpandedView {
     parent.append(node);
   }
   refresh() {
-    const { type, state, params, running, ended } = this.getSnapshot(),
+    const { type, state, params, running, ended, studyMode } =
+        this.getSnapshot(),
       sheet = calculationSheet(type, state, params);
+    if (studyMode !== this.lastStudyMode) {
+      const profile = getProfile(type, studyMode),
+        preferred = profile?.calculations.find((key) =>
+          sheet.calculations.some((c) => c.id === key),
+        );
+      if (preferred) {
+        this.selectedId = preferred;
+        this.choice.value = preferred;
+      }
+      this.modeNote.textContent = `${MODE_NAMES[studyMode] || "Full model"} focus. Additional calculations remain available; some go beyond the selected syllabus depth.`;
+      this.root.dataset.studyMode = studyMode || "";
+      this.lastStudyMode = studyMode;
+    }
     // Text-only updates preserve selection and focus; no integration runs here.
     sheet.variables.forEach((value, i) =>
       setMath(this.variableNodes[i], quantity(value.value, value.unit)),

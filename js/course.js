@@ -1,5 +1,6 @@
 import { COURSE, COURSE_SCAN } from "./course-map.js";
 import { SIMULATIONS } from "./simulations.js";
+import { availableModes, resolveMode } from "./learning-paths.js";
 export const COURSE_AREAS = [
   "Motion, forces & energy",
   "Thermal physics",
@@ -26,7 +27,7 @@ export function renderCourse(container) {
       )
         .map(
           (l) =>
-            `<article class="course-lesson" data-course-search="${escape((l.title + " " + l.topic + " " + l.models.map((m) => SIMULATIONS[m].title).join(" ")).toLowerCase())}"><div><span class="course-lesson-meta">YEAR ${l.year} · ${l.review ? "REVISION & REVIEW" : "LESSON EXPLORATION"}</span><h3>${escape(l.title)}</h3><a class="course-source" href="${l.url}" target="_blank" rel="noopener">Open original FocusPhysics lesson ↗</a></div><div class="course-model-links">${l.models.map((id) => `<a href="#/${id}" style="--model-accent:${SIMULATIONS[id].color}"><span aria-hidden="true">◉</span>${SIMULATIONS[id].short}<span aria-hidden="true">↗</span></a>`).join("")}</div></article>`,
+            `<article class="course-lesson" data-course-search="${escape((l.title + " " + l.topic + " " + l.models.map((m) => SIMULATIONS[m].title).join(" ")).toLowerCase())}"><div><span class="course-lesson-meta">YEAR ${l.year} · ${l.review ? "REVISION & REVIEW" : "LESSON EXPLORATION"}</span><h3>${escape(l.title)}</h3><a class="course-source" href="${l.url}" target="_blank" rel="noopener">Open original FocusPhysics lesson ↗</a></div><div class="course-model-links">${l.models.map((id) => `<a href="#/${id}?level=${resolveMode(id, "igcse")}" style="--model-accent:${SIMULATIONS[id].color}"><span aria-hidden="true">◉</span>${SIMULATIONS[id].short}${availableModes(id).includes("igcse") ? "" : " · progression"}<span aria-hidden="true">↗</span></a>`).join("")}</div></article>`,
         )
         .join("")}</div></section>`,
   ).join(
@@ -37,12 +38,20 @@ export function renderCourse(container) {
     `<section class="new-lab-strip"><div class="eyebrow">NEW PRACTICAL LABORATORIES</div><h2>More ways to test the physics.</h2><div>${Object.entries(
       SIMULATIONS,
     )
-      .filter(([, d]) => d.isNew && d.level === "IGCSE 0625")
-      .map(([id, d]) => `<a href="#/${id}">${escape(d.short)} ↗</a>`)
+      .filter(([id, d]) => d.isNew && availableModes(id).includes("igcse"))
+      .map(
+        ([id, d]) => `<a href="#/${id}?level=igcse">${escape(d.short)} ↗</a>`,
+      )
       .join(
         "",
       )}</div><p><a href="#/questions">Also new: 312 original A Level questions, in 26 topic groups ↗</a></p></section>`,
   );
+  container
+    .querySelector(".course-hero")
+    .insertAdjacentHTML(
+      "beforebegin",
+      '<nav class="course-level-gateway" aria-label="Choose a Cambridge course"><strong>Studying a different level?</strong><a href="#/syllabus?track=igcse">IGCSE learning paths</a><a href="#/syllabus?track=as">AS Level</a><a href="#/syllabus?track=a2">A2 Level</a><a href="#/syllabus?track=enrichment">Enrichment</a></nav>',
+    );
   container.querySelector("#course-search").oninput = (e) => {
     const query = e.target.value.trim().toLowerCase();
     let count = 0;

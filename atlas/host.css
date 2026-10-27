@@ -581,3 +581,41 @@ em {
     display: none;
   }
 }
+
+.atlas-learning-panel {
+  margin: 16px 0;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 1.8;
+  pointer-events: auto;
+}
+.atlas-learning-panel summary {
+  font-weight: 650;
+  color: var(--cyan);
+  cursor: pointer;
+}
+.atlas-learning-panel [role="group"] {
+  display: flex;
+  gap: 5px;
+  margin: 13px 0;
+}
+.atlas-learning-panel button {
+  flex: 1;
+  padding: 7px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 13px;
+}
+.atlas-learning-panel [aria-pressed="true"] {
+  color: var(--bg);
+  background: var(--cyan);
+}
+.solar-desk .atlas-learning-panel p {
+  font-size: 14px;
+  line-height: 1.8;
+  margin: 12px 0;
+}
+.atlas-learning-panel a {
+  font-size: 13px;
+}

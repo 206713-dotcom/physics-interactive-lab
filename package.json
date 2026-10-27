@@ -6,6 +6,7 @@
   "description": "57 browser-based physics laboratories and 312 original A Level questions with worked solutions, book references and a FocusPhysics IGCSE course map.",
   "scripts": {
     "dev": "node scripts/serve.mjs",
+    "refresh-assets": "node scripts/refresh-assets.mjs",
     "test": "node --test tests/*.test.mjs",
     "check": "node scripts/check.mjs"
   },

@@ -1,6 +1,15 @@
 import { readFile, access, readdir } from "node:fs/promises";
 import path from "node:path";
 import assert from "node:assert/strict";
+const { version } = JSON.parse(await readFile("package.json", "utf8"));
+const entryHTML = await readFile("index.html", "utf8"),
+  mapSource = entryHTML.match(/<script type="importmap" id="lab-module-map">([\s\S]*?)<\/script>/);
+assert.ok(mapSource, "The lab needs its versioned local import map.");
+const { imports } = JSON.parse(mapSource[1]);
+for (const name of (await readdir("js")).filter((name) => name.endsWith(".js")))
+  assert.equal(imports[`./js/${name}`], `./js/${name}?v=${version}`, "Run npm run refresh-assets after a version/module change.");
+assert.ok(entryHTML.includes(`./js/app.js?v=${version}`));
+assert.ok(entryHTML.includes(`./cinematic.css?v=${version}`));
 for (const document of ["index.html", "integration.html", "solar-atlas.html"]) {
   const html = await readFile(document, "utf8");
   for (const match of html.matchAll(/(?:src|href)="(\.\/[^"?#]+)"/g))

@@ -18,6 +18,8 @@ Floating/sinking has a clear open-top tank, separate glass panes, a calibrated d
 
 The gravity studio shares the Atlas's local NASA Blue Marble texture and procedural cloud shell. The solid trail still contains Verlet samples. A separate, dashed analytic Kepler reference stops at the central surface or six release distances; it is not simulation history. Appearance, spacecraft size, atmosphere and camera motion do not affect the SI physics. Dedicated geometry tests check fixed buffers, exact displacement/length transforms, waterline, volume and the reference conic.
 
+Release assets use a local import map to keep independently cached modules on the same version. After adding a module or changing `package.json`'s version, run `npm run refresh-assets` and commit `index.html`. The static check enforces this; no build server or CDN is needed at runtime.
+
 ### Version 7: Cambridge learning modes
 
 **[Choose a learning path](https://206713-dotcom.github.io/physics-interactive-lab/#/syllabus)** for Cambridge IGCSE 0625, AS 9702, A2 9702 or enrichment. The 57 physics engines now have **91 teaching profiles**: 40 IGCSE Extended profiles, 48 AS/A Level profiles and three enrichment profiles. Shared models have a level selector that changes objectives, the suggested investigation, a worked question and the highlighted live calculations. Switching preserves the current physical state; “Load recommended setup” explicitly starts a fresh paused experiment. The original resources remain available in a labelled full-model section.

@@ -10,6 +10,18 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 ## What is in the laboratory?
 
+### Version 10: particle chambers, magnetic fields & acoustic motion
+
+Three existing laboratories now have detailed apparatus and clearer visual explanations. **Charged particles** move through a framed field chamber with tangent velocity and perpendicular force arrows, dot/cross field symbols and an analytic orbit guide. Zero-field flight moves across a fixed scale instead of jumping to the edge. Both axes use the same position scale, fitted once per setup. The observation clock covers two cyclotron periods, capped at 40 μs, or 20 ns for zero-field flight, then pauses. It takes approximately eight real seconds at 1× for curved motion or four for straight flight; the actual SI clock rate is displayed. The time step resolves at least 600 samples per orbit. A shared half-angle/sinc expression preserves tiny curvature near zero field. Particle size and vector lengths are illustrative; the uniform, nonrelativistic Lorentz model omits radiation losses.
+
+**Magnetism** has a solid copper winding, coil former, terminals, supports, conventional-current markers, closed schematic field loops and N/S labels that reverse with current. Straight-wire mode shows the right-hand-rule field and a reference probe at 5 cm. Zero current removes field arrows, current markers and pole labels. Numerical readings remain `B = μ₀NI/L` or `B = μ₀I/(2πr)` using the selected values. The drawn turn count, field-line spacing, arrow lengths and marker speed are qualitative; end effects are omitted.
+
+**Sound** has a moving speaker cone, a tracked air parcel, compression/rarefaction colours, a metre ruler and a relative-pressure curve. The fixed 2 m window uses the actual wavelength `λ = c/f` throughout the 50–2000 Hz range; spatial cycles are no longer capped for display. The source reading, pressure graph and spatial phase use the same physical clock. Parcel positions oscillate around fixed rest coordinates; displacement is schematic, with a bounded spatial gradient so neighbours cannot cross. Positive relative pressure coincides with compression. The slow-motion clock and air parcels are illustrative; pressure is not calibrated in Pa. Echo time is calculated separately for the chosen reflector distance; reflections are not animated in this travelling-wave view.
+
+The 2D companions use the same sound wavelength, pressure/displacement phase and fixed particle observation scale. Zero current also removes the 2D magnetic field and pole labels.
+
+**209 automated tests** include the fixed straight-flight scale, electron/proton clock resolution, weak-field bounds, trajectory agreement, perpendicular force and constant energy, field reversal/zero-current behaviour, the right-hand rule, sound propagation delay, exact spatial wavelength, compression phase and tracked-parcel motion. Perspective defaults are tailored to each apparatus while manual camera settings survive parameter edits. All 57 existing models remain available in 3D and 2D.
+
 ### Version 9: optics, wave superposition & capacitor benches
 
 Four existing laboratories have been rebuilt around detailed apparatus. **Thin lenses** now have shaped converging/diverging glass, machined mounts, two principal rays, focal markers, a real-image screen and dashed virtual back projections. Horizontal distances share a fitted scale; heights share a separate scale that preserves signed magnification. At focus the outgoing rays are parallel. Images beyond six times the larger object/focal distance are explicitly labelled off the bench instead of being drawn at a false position.

@@ -391,6 +391,14 @@ export class SceneView {
         if (newModel) this.home();
       }
       this.curriculum = createCurriculumScene(type, p, r);
+      if (this.curriculum.camera) {
+        const camera = this.curriculum.camera;
+        this.target.set(...camera.target);
+        this.homeRadius = camera.radius;
+        this.homePolar = camera.polar;
+        this.homeAzimuth = camera.azimuth;
+        if (newModel) this.home();
+      }
       return;
     }
     if (["spring", "pendulum", "refraction", "waves", "circuits"].includes(type)) {
@@ -953,7 +961,7 @@ export class SceneView {
     const cameraRadius =
       this.radius *
       (["gravity", ...ADVANCED_IDS].includes(type) || this.curriculum || this.precision
-        ? Math.max(1, (this.precision?.fitAspect || (type === "buoyancy" ? 1.05 : type === "lenses" ? 1.55 : 1.35)) / this.camera.aspect)
+        ? Math.max(1, (this.curriculum?.camera?.fitAspect || this.precision?.fitAspect || (type === "buoyancy" ? 1.05 : type === "lenses" ? 1.55 : 1.35)) / this.camera.aspect)
         : 1);
     this.camera.position.set(
       this.target.x +

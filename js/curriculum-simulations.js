@@ -1,4 +1,5 @@
 import * as P from "./curriculum-physics.js";
+import { chargedTiming } from "./field-geometry.js";
 import {
   PRACTICAL_LABS,
   PRACTICAL_PARAMETERS,
@@ -1769,6 +1770,13 @@ Object.assign(CURRICULUM_SIMULATIONS.induction, {
   ],
 });
 Object.assign(CURRICULUM_SIMULATIONS.charged, {
+  // Resolve the same fixed observation window for light/heavy and neutral particles.
+  // Time-series windows use ns; integration and the solver always use SI seconds.
+  rateFor: (p) => chargedTiming(p).rate,
+  hFor: (p) => chargedTiming(p).step,
+  sampleEvery: (p) => chargedTiming(p).sampleEvery,
+  window: (p) => chargedTiming(p).duration / 1e-9,
+  ended: (s, p) => s.t >= chargedTiming(p).duration ? "Observation window complete" : null,
   graphs: [
     dynamicGraph("trajectory", "Beam path", ["y"], "m", {
       phaseX: "x",

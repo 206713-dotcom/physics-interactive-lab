@@ -7,6 +7,7 @@ import {
   createPractical,
   stepPractical,
   samplePractical,
+  particlePosition,
 } from "./practical-physics.js";
 import {
   createBuoyancy,
@@ -569,8 +570,8 @@ export function sampleCurriculum(id, s, p) {
         omega = (-charge * p.field) / p.mass,
         phase = omega * t,
         radius = omega === 0 ? null : p.speed / Math.abs(omega),
-        x = omega === 0 ? p.speed * t : (p.speed / omega) * Math.sin(phase),
-        y = omega === 0 ? 0 : (p.speed / omega) * (1 - Math.cos(phase));
+        // The half-angle/sinc form retains tiny curvature near B = 0.
+        { x, y } = particlePosition({ speed: p.speed, omega }, t);
       Object.assign(q, {
         force: Math.abs(charge * p.speed * p.field),
         radius,

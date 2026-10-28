@@ -24,6 +24,7 @@ export function createCurriculumScene(type, params, root, options = {}) {
     kit,
     liveParams: !!built.liveParams,
     interaction: built.interaction,
+    camera: built.camera,
     update(lab) {
       animate(
         lab.state,

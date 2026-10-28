@@ -2,6 +2,8 @@
  * illustrative current-direction overlay, never a measurement of drift speed. */
 import * as T from "../vendor/three.module.min.js";
 import { PALETTE as C, clamp, setPath } from "./scene-kit.js";
+import { createParticleChamber } from "./scene-particle-chamber.js";
+import { createMagnetismApparatus } from "./scene-magnetism.js";
 import {
   radiationReferences,
   particlePosition,
@@ -196,85 +198,10 @@ export const ELECTRIC_SCENES = {
     };
   },
   magnetism(p, k) {
-    board(k);
-    if (p.mode === 0) {
-      const coil = k.spring(-2, 1.8, 0, 4, C.gold, 0.7, 18);
-      coil.rotation.z = -Math.PI / 2;
-      for (let j = 0; j < 5; j++) {
-        const z = (j - 2) * 0.25;
-        k.arrow(
-          [p.current < 0 ? 1.6 : -1.6, 1.8, z],
-          [3.2 * Math.sign(p.current), 0, 0],
-          C.cyan,
-        );
-      }
-      for (const z of [-1, 1])
-        k.line(
-          Array.from({ length: 121 }, (_, i) => {
-            const a = (i / 120) * TAU;
-            return [
-              3.2 * Math.cos(a),
-              1.8 + 0.7 * Math.sin(a),
-              z * Math.sin(a),
-            ];
-          }),
-          C.cyan,
-          0.35,
-        );
-      k.label("Field inside the solenoid", [0, 3.8, 0], "#64e8d1", 4);
-    } else {
-      k.cylinder(0.07, 3.5, C.gold, [0, 1.8, 0]);
-      for (let j = 1; j < 5; j++) {
-        const ring = k.ring(j * 0.55, C.cyan, [0, 1.8, 0]);
-        ring.visible = p.current !== 0;
-      }
-      k.arrow([1.1, 1.8, 0.3], [0, 0, -0.6 * Math.sign(p.current)], C.cyan);
-      k.arrow([0, 0.5, 0], [0, 2.5 * Math.sign(p.current || 1), 0], C.gold);
-      k.label("Circular field around a wire", [0, 4.2, 0], "#64e8d1", 4.2);
-    }
-    return () => {};
+    return createMagnetismApparatus(p, k);
   },
   charged(p, k) {
-    chamber(k, Math.sign(p.field));
-    const path = wire(k, [], C.cyan),
-      dot = k.ball(0.12, C.gold, [-3, 2, 0]);
-    k.label(
-      "Magnetic force is perpendicular to v",
-      [0, 4.7, 0],
-      "#cfe6ef",
-      5.3,
-    );
-    const force = k.arrow([0, 2, 0], [0, 1, 0], C.purple);
-    return (s, q) => {
-      const omega = (-p.charge * 1.602176634e-19 * p.field) / p.mass,
-        scale = omega ? 2 / q.radius : 6 / Math.max(p.speed * s.t, 1e-12),
-        pt = (t) =>
-          omega
-            ? [
-                (p.speed / omega) * Math.sin(omega * t) * scale,
-                2 +
-                  ((p.speed / omega) * (1 - Math.cos(omega * t)) -
-                    p.speed / omega) *
-                    scale,
-                0,
-              ]
-            : [p.speed * t * scale - 3, 2, 0];
-      const pos = pt(s.t);
-      dot.position.set(...pos);
-      setPath(
-        path,
-        Array.from({ length: 201 }, (_, i) => pt((s.t * i) / 200)),
-      );
-      const a = q.phase,
-        sign = Math.sign(p.charge * p.field);
-      k.setArrow(
-        force,
-        pos,
-        p.field
-          ? [sign * Math.sin(a) * 0.7, -sign * Math.cos(a) * 0.7, 0]
-          : [0, 0, 0],
-      );
-    };
+    return createParticleChamber(p, k);
   },
   radiation(p, k) {
     chamber(k, Math.sign(p.field));

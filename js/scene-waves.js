@@ -2,6 +2,7 @@
  * carrier oscillations are deliberately slowed so their structure is visible. */
 import { PALETTE as C, clamp, setPath } from "./scene-kit.js";
 import { createLensApparatus } from "./scene-optical-bench.js";
+import { createSoundApparatus } from "./scene-sound.js";
 const TAU = 2 * Math.PI,
   rad = (x) => (x * Math.PI) / 180;
 function bench(k) {
@@ -94,29 +95,7 @@ export const WAVE_SCENES = {
     };
   },
   sound(p, k) {
-    bench(k);
-    k.box(0.6, 2, 1.7, C.muted, [-4, 1, 0]);
-    const cone = k.cylinder(0.65, 0.2, C.dark, [-3.6, 1, 0]);
-    cone.rotation.z = Math.PI / 2;
-    const dots = k.instances(180, 0.055, C.cyan);
-    k.label("Air moves back and forth", [0, 3.7, 0], "#64e8d1", 3.8);
-    k.arrow([-2, 2.8, 0], [4, 0, 0], C.gold);
-    return (s, q) => {
-      const cycles = clamp(8 / q.wavelength, 0.5, 9),
-        phase = TAU * p.frequency * s.t;
-      for (let i = 0; i < 180; i++) {
-        const u = (i % 30) / 29,
-          x = -3 + u * 6;
-        const dx = p.amplitude * 0.17 * Math.sin(u * cycles * TAU - phase);
-        k.instance(dots, i, [
-          x + dx,
-          0.4 + Math.floor(i / 60) * 0.45,
-          ((Math.floor(i / 30) % 2) - 0.5) * 0.8,
-        ]);
-      }
-      k.finishInstances(dots);
-      cone.position.x = -3.6 + q.pressure * 0.04;
-    };
+    return createSoundApparatus(p, k);
   },
   resonance(p, k) {
     bench(k);

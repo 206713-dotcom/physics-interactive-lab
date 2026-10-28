@@ -4,6 +4,8 @@ import { PRACTICAL_IDS } from "./practical-physics.js";
 import { drawPractical, practicalThumbnail } from "./render-practical.js";
 import { drawVectorDiagram } from "./render-vectors.js";
 import { BUOYANCY_STATUS } from "./buoyancy-physics.js";
+import { chargedLayout, soundLayout } from "./field-geometry.js";
+const chargedViews = new WeakMap();
 const TAU = Math.PI * 2,
   CYAN = "#6be5d4",
   GOLD = "#ffc580",
@@ -1107,25 +1109,29 @@ export function drawCurriculum(canvas, lab) {
     case "sound": {
       title(
         "Longitudinal sound wave",
-        "Visible wave motion slowed; waveform uses real simulated time",
+        "Fixed 2 m window · slowed clock · schematic parcel displacement",
       );
-      for (let i = 0; i < 105; i++) {
-        const base = 65 + i * 6.8,
-          displacement =
-            10 *
-            p.amplitude *
-            Math.sin((i / 105) * TAU * 5 - TAU * p.frequency * t);
+      const columns = soundLayout(p, t, 0).columns;
+      for (let i = 0; i < columns; i++) {
+        const x = 2 * i / (columns - 1), sample = soundLayout(p, t, x),
+          at = 70 + x * 345 + sample.displacement * 100;
+        c.globalAlpha = 0.35 + 0.65 * Math.abs(sample.pressure / p.amplitude);
         line(
           [
-            [base + displacement, 105],
-            [base + displacement, 200],
+            [at, 105],
+            [at, 200],
           ],
-          i % 5 === 0 ? CYAN : "#6be5d455",
-          i % 5 === 0 ? 2 : 1,
+          sample.pressure >= 0 ? GOLD : BLUE,
+          1.5,
         );
       }
-      text("Compressions and rarefactions", 420, 232, CYAN, 20, "center");
-      sine(70, 315, 690, 40 * p.amplitude, 5, TAU * p.frequency * t, BLUE);
+      c.globalAlpha = 1;
+      const trackedX = 415 + soundLayout(p, t, 1).displacement * 100;
+      line([[415, 95], [415, 210]], "#c4a3ff66", 1);
+      circle(trackedX, 150, 7, PURPLE, true);
+      text("Gold: compression · blue: rarefaction · purple: one parcel", 420, 239, WHITE, 18, "center");
+      for (const x of [0, 1, 2]) text(x + " m", 70 + x * 345, 273, MUTED, 16, "center");
+      line(Array.from({ length: 401 }, (_, i) => [70 + 690 * i / 400, 330 - 40 * soundLayout(p, t, 2 * i / 400).pressure]), CYAN, 2);
       text("Relative pressure", 70, 384, MUTED, 17);
       foot(
         `${p.frequency} Hz · λ = ${fmt(q.wavelength)} m`,
@@ -1320,7 +1326,7 @@ export function drawCurriculum(canvas, lab) {
           c.lineWidth = 2;
           c.stroke();
         }
-        for (let i = 0; i < 5; i++) {
+        if (p.current !== 0) for (let i = 0; i < 5; i++) {
           const yy = 190 + i * 20;
           arrow(
             p.current >= 0 ? 180 : 650,
@@ -1331,23 +1337,25 @@ export function drawCurriculum(canvas, lab) {
             1.5,
           );
         }
-        for (let r = 0; r < 3; r++) {
+        if (p.current !== 0) for (let r = 0; r < 3; r++) {
           c.beginPath();
           c.ellipse(420, 235, 280 + r * 28, 100 + r * 23, 0, 0, TAU);
           c.strokeStyle = "#91baff66";
           c.lineWidth = 1.5;
           c.stroke();
         }
-        text(p.current >= 0 ? "S" : "N", 155, 238, BLUE, 30, "center");
-        text(p.current >= 0 ? "N" : "S", 685, 238, GOLD, 30, "center");
+        if (p.current !== 0) {
+          text(p.current > 0 ? "S" : "N", 155, 238, BLUE, 30, "center");
+          text(p.current > 0 ? "N" : "S", 685, 238, GOLD, 30, "center");
+        } else text("I = 0: no magnetic field", 420, 350, WHITE, 22, "center");
       } else {
         circle(420, 235, 15, GOLD);
-        for (let r = 50; r < 180; r += 35) {
+        if (p.current !== 0) for (let r = 50; r < 180; r += 35) {
           arc(420, 235, r, 0, TAU, CYAN, 1.5);
           arrow(420 + r, 235, 0, p.current >= 0 ? -22 : 22, CYAN, 2);
         }
         text(
-          p.current >= 0 ? "• Current out of page" : "× Current into page",
+          p.current === 0 ? "I = 0: no magnetic field" : p.current > 0 ? "• Current out of page" : "× Current into page",
           420,
           75,
           GOLD,
@@ -1364,32 +1372,24 @@ export function drawCurriculum(canvas, lab) {
     case "charged": {
       title(
         "Magnetic beam chamber",
-        "Uniform field perpendicular to the screen",
+        p.field === 0 ? "B = 0 · fixed straight-flight window" : "Uniform field · one fixed position scale per setup",
       );
-      for (let x = 110; x < 750; x += 65)
+      if (p.field !== 0) for (let x = 110; x < 750; x += 65)
         for (let y = 100; y < 390; y += 55) {
           text(p.field >= 0 ? "•" : "×", x, y, "#91baff55", 20, "center");
         }
-      const radius = q.radius || 0.01,
-        sc = 130 / radius,
-        sign = p.charge * p.field > 0 ? -1 : 1,
-        cy = 235,
-        originX = 300;
-      if (q.radius !== null) {
-        arc(originX, cy, 130, 0, TAU, "#6be5d455");
-        const originY = cy + sign * 130,
-          x = originX + q.x * sc,
-          y = originY - q.y * sc;
-        circle(x, y, 9, GOLD, true);
-        arrow(x, y, (originX - x) * 0.45, (cy - y) * 0.45, PURPLE);
-        text(`r = ${fmt(radius)} m`, 625, 200, WHITE, 23, "center");
-        text("Force always perpendicular to v", 625, 240, MUTED, 17, "center");
-      } else {
-        arrow(130, 235, 550, 0, CYAN);
-        circle(130 + ((t * p.speed * 100) % 550), 235, 9, GOLD);
-        text("B = 0: straight trajectory", 420, 340, WHITE, 23, "center");
+      if (!chargedViews.has(p)) chargedViews.set(p, chargedLayout(p));
+      const layout = chargedViews.get(p), point = (time) => {
+        const a = layout.point(time); return [420 + a[0] * 88, 235 - (a[1] - 2.35) * 88];
+      }, [x, y] = point(t), sign = Math.sign(p.charge * p.field);
+      line(Array.from({ length: 241 }, (_, i) => point(t * i / 240)), CYAN, 2);
+      circle(...point(0), 3, WHITE, true);
+      circle(x, y, 9, GOLD, true);
+      if (lab.vectors !== false) {
+        arrow(x, y, 48 * Math.cos(q.phase), -48 * Math.sin(q.phase), GOLD, 3);
+        if (q.force) arrow(x, y, sign * Math.sin(q.phase) * 40, sign * Math.cos(q.phase) * 40, PURPLE, 3);
       }
-      foot(`K = ${fmt(q.kinetic)} J (constant)`, `F = ${fmt(q.force)} N`);
+      foot(`K = ${fmt(q.kinetic)} J (constant)`, q.radius === null ? "F = 0 N · no circular radius" : `r = ${fmt(q.radius)} m · |F| = ${fmt(q.force)} N`);
       break;
     }
     case "induction": {

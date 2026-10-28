@@ -134,10 +134,10 @@ export const SCENE_GUIDES = {
     "The ray plane is physical; mirror thickness is illustrative. This view focuses on reflection angles; image distance is calculated separately.",
   ],
   lenses: [
-    "Cyan is the object; purple is the image; gold rays show the ray construction.",
+    "Cyan is the object and purple is the image. Follow two solid principal rays through the shaped lens. Dashed purple lines are back projections, not light travelling backwards.",
     "The thin-lens equation gives image distance. Negative image distance means a virtual image on the object side.",
     "Move the object through the focal point and compare real and virtual images.",
-    "Horizontal distances share one fitted scale. Object heights are enlarged; faint purple back projections locate virtual images.",
+    "Horizontal distances and focal points share one fitted scale. Vertical heights share a separate enlarged scale, preserving image/object height ratio. A very distant image is labelled beyond the bench rather than placed at a false position. Lens shape and direction markers are illustrative; the calculation is an ideal thin lens, not ray tracing through curved glass.",
   ],
   dispersion: [
     "Follow the ray as it crosses from air into glass.",
@@ -296,10 +296,10 @@ export const SCENE_GUIDES = {
     "Contact is an ideal instantaneous event, not a deformation model. Bodies and track are illustrative.",
   ],
   waves: [
-    "Compare the incident, reflected and resultant displacements along the medium.",
+    "Blue is the incident wave, gold is the counter-propagating wave, and cyan is their sum. The probe and pale beads move vertically while keeping the same horizontal position.",
     "Superposition adds displacement at each position. Counter-propagating waves can form standing waves.",
     "Compare fixed and free reflection, then identify nodes in the resultant.",
-    "Transverse displacement is enlarged; the plotted spatial curve supplies calibrated coordinates.",
+    "All three sampled strings share one horizontal scale of one scene unit per metre and a vertical enlargement of 1.5 scene units per metre. They illustrate three mathematical curves, not three coupled strings. The end frames mark an observation window, not additional boundary conditions. Probe displacement comes from the exact same wave function as the graph.",
   ],
   interference: [
     "Follow the two sources and compare bright and dark regions.",
@@ -308,16 +308,16 @@ export const SCENE_GUIDES = {
     "Wavefronts and brightness are illustrative. The numeric far-field interference and diffraction model determines the graph.",
   ],
   refraction: [
-    "Compare incident and refracted rays with the normal at the interface.",
+    "Follow the bright beam across the boundary and read both angles from the dashed normal. Reflected and transmitted percentages follow the lossless Fresnel model. Total internal reflection removes the transmitted beam.",
     "Snell law relates the two angles. Beyond the critical angle, transmission is replaced by total internal reflection.",
     "Launch from the higher-index medium and increase the angle through the critical angle.",
-    "Rays stay in one plane. Wavefront timing and object thickness are display adjustments.",
+    "Rays stay in their physical plane. Block shape, index-dependent tint and boundary thickness are illustrative; tint is not density or absorption. Direction markers are slowed, with relative speed proportional to 1/n; their phase and count are not photon measurements. Faint beams have boosted visibility, so read the labelled percentages rather than screen brightness for power fractions.",
   ],
   circuits: [
-    "Watch capacitor charge build up or discharge through the resistor.",
+    "Watch charge markers accumulate on the separated capacitor plates. The gold current-direction markers travel along the conductors and stop short of the dielectric. Discharging isolates the source and reverses current through the resistor.",
     "The RC time constant τ = RC controls the exponential change. Current decreases as the voltage difference across the resistor falls.",
     "Double resistance and compare the time needed to reach the same fraction of final charge.",
-    "Carriers indicate current direction schematically. Their number and speed are not physical charge-density or drift measurements.",
+    "Component sizes, plate gap and marker counts are schematic. The positive and negative counts share a voltage-fraction scale; purple arrows show qualitative field direction. Current-marker speed is scaled per setup, decays with |I|/|I₀| and is hidden below 0.01% of its initial value. No conduction through the capacitor dielectric is implied. Voltage, charge, energy and current retain the ideal RC equations.",
   ],
   fields: [
     "Follow field direction and compare the probe reading.",

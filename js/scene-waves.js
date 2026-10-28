@@ -1,6 +1,7 @@
 /** Optical benches and acoustic apparatus. Ray geometry is calculated, while
  * carrier oscillations are deliberately slowed so their structure is visible. */
 import { PALETTE as C, clamp, setPath } from "./scene-kit.js";
+import { createLensApparatus } from "./scene-optical-bench.js";
 const TAU = 2 * Math.PI,
   rad = (x) => (x * Math.PI) / 180;
 function bench(k) {
@@ -187,74 +188,7 @@ export const WAVE_SCENES = {
     k.label("Angle in = angle out", [-1, 4.2, 0], "#ffc584", 3.8);
     return () => {};
   },
-  lenses(p, k) {
-    bench(k);
-    const u = p.object,
-      f = p.kind * p.focal,
-      v = Math.abs(u - f) < 1e-10 ? null : (f * u) / (u - f),
-      m = v === null ? null : -v / u,
-      sc = 3.4 / Math.max(u, Math.abs(v ?? 0), Math.abs(f) * 2),
-      H =
-        clamp((p.height / 0.04) * 0.75, 0.15, 1.5) /
-        Math.max(1, Math.abs(m ?? 1)),
-      ox = -u * sc,
-      axis = 1.5;
-    plate(k, 0);
-    k.arrow([ox, axis, 0], [0, H, 0], C.cyan);
-    k.line(
-      [
-        [-4.4, axis, 0],
-        [4.4, axis, 0],
-      ],
-      C.muted,
-      0.5,
-    );
-    for (const x of [-Math.abs(f) * sc, Math.abs(f) * sc])
-      k.ball(0.045, C.white, [x, axis, 0]);
-    k.label(
-      p.kind > 0 ? "Converging lens" : "Diverging lens",
-      [0, 4.3, 0],
-      "#89baff",
-      3.6,
-    );
-    const rayEnd = 3.8;
-    for (const center of [false, true]) {
-      const at = center ? axis : axis + H,
-        slope = center ? -H / (u * sc) : -H / (f * sc);
-      const endX = v !== null && v > 0 ? v * sc : rayEnd;
-      const rawY = at + slope * endX,
-        endY = clamp(rawY, -1, 4),
-        drawX = rawY === endY ? endX : (endY - at) / slope;
-      k.line(
-        [
-          [ox, axis + H, 0],
-          [0, at, 0],
-          [drawX, endY, 0],
-        ],
-        C.gold,
-      );
-      if (v !== null && v < 0)
-        k.line(
-          [
-            [0, at, 0],
-            [v * sc, axis + m * H, 0],
-          ],
-          C.purple,
-          0.4,
-        );
-    }
-    if (v !== null) {
-      k.arrow([v * sc, axis, 0], [0, m * H, 0], C.purple);
-      k.label(
-        v > 0 ? "Real image" : "Virtual image",
-        [v * sc, 3.4, 0],
-        "#c3a6ff",
-        2.3,
-      );
-    } else
-      k.label("At focus: emergent rays parallel", [0, 3.4, 0], "#ffc584", 4.8);
-    return () => {};
-  },
+  lenses: createLensApparatus,
   dispersion(p, k) {
     bench(k);
     k.glass(4.3, 3.2, 2.6, [2.2, 1.6, 0]);

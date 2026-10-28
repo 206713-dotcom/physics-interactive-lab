@@ -1,4 +1,4 @@
-import { calculationSheet, calculationNumber } from "./calculations.js";
+import { calculationSheet, calculationNumber, calculationOutcome } from "./calculations.js";
 import { mathHTML, setMath } from "./math-display.js";
 import { getProfile, MODE_NAMES } from "./learning-paths.js";
 
@@ -222,7 +222,7 @@ export class ExpandedView {
     setText(nodes.h3, item.title);
     setMath(nodes[".calculation-formula"], item.formula);
     setMath(nodes[".calculation-substitution"], item.substitution);
-    setMath(nodes[".calculation-result"], quantity(item.value, item.unit));
+    setMath(nodes[".calculation-result"], calculationOutcome(type, item));
     setText(nodes[".calculation-note"], item.note);
     nodes[".calculation-note"].hidden = !item.note;
     this.overview.forEach((button, index) => {
@@ -230,7 +230,7 @@ export class ExpandedView {
       button.hidden = entry.id === this.selectedId;
       setMath(
         button.querySelector("strong"),
-        quantity(entry.value, entry.unit),
+        calculationOutcome(type, entry),
       );
     });
     setText(
@@ -260,7 +260,7 @@ export class ExpandedView {
     const { type, state, params } = this.getSnapshot(),
       sheet = calculationSheet(type, state, params),
       item = sheet.calculations.find((entry) => entry.id === this.selectedId);
-    const text = `${item.title}\n${type === "vectors" ? "Static vector setup" : `t = ${calculationNumber(sheet.time)} ${sheetTimeUnit(sheet)}`}\n${item.formula}\n${item.substitution}\n= ${quantity(item.value, item.unit)}\n${item.note}\n\nValues used:\n${sheet.variables.map((value) => `${value.symbol} (${value.label}) = ${quantity(value.value, value.unit)}`).join("\n")}\n\n${sheet.note}`;
+    const text = `${item.title}\n${type === "vectors" ? "Static vector setup" : `t = ${calculationNumber(sheet.time)} ${sheetTimeUnit(sheet)}`}\n${item.formula}\n${item.substitution}\n= ${calculationOutcome(type, item)}\n${item.note}\n\nValues used:\n${sheet.variables.map((value) => `${value.symbol} (${value.label}) = ${quantity(value.value, value.unit)}`).join("\n")}\n\n${sheet.note}`;
     const status = this.root.querySelector(".copy-working-status");
     try {
       await navigator.clipboard.writeText(text);

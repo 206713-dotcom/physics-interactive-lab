@@ -16,6 +16,16 @@ export function calculationNumber(value) {
     ? value.toExponential(3)
     : Number(value.toPrecision(4)).toString();
 }
+/** Explain physical non-results without substituting a fabricated number.
+ * Finite values retain their original precision and units. */
+export function calculationOutcome(type, item) {
+  if (item.value === null) {
+    if (type === "lenses") return item.id === "image-0" ? "Image at infinity" : "No finite image";
+    if (type === "refraction" && item.id === "angle") return "No transmitted ray (TIR)";
+    if (type === "refraction" && item.id === "critical") return "No critical angle for this direction";
+  }
+  return `${calculationNumber(item.value)}${item.value !== null && item.unit ? " " + item.unit : ""}`;
+}
 const n = calculationNumber;
 // Equivalent phase in [−π, π] keeps the displayed sine substitution meaningful
 // after many cycles, instead of rounding a very large angle by whole radians.

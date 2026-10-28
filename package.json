@@ -1,6 +1,6 @@
 {
   "name": "physics-interactive-lab",
-  "version": "8.0.1",
+  "version": "9.0.0",
   "private": true,
   "type": "module",
   "description": "57 browser-based physics laboratories and 312 original A Level questions with worked solutions, book references and a FocusPhysics IGCSE course map.",

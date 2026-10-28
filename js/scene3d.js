@@ -12,13 +12,13 @@ import { roundedBox, studioEnvironment, studioGrid } from "./scene-finish.js";
 import { createDetailedMechanics } from "./scene-precision.js";
 import { cloudShell } from "../atlas/visual-detail.js";
 import { orbitalReference } from "./orbital-reference.js";
+import { createRefractionApparatus } from "./scene-optical-bench.js";
+import { createWaveBench } from "./scene-wave-bench.js";
+import { createRCBench } from "./scene-rc-bench.js";
 import { centralRadius, orbitAcceleration } from "./physics.js";
 import {
-  waveAt,
   fieldLines,
   fieldAt,
-  refractionInfo,
-  circuitAt,
   interferenceAt,
   DEG,
   projectileReference,
@@ -84,10 +84,6 @@ function beam(points, color, opacity = 1) {
 }
 function updateLine(line, points) {
   setPath(line, points);
-}
-function ribbonGeometry() {
-  const g = new T.PlaneGeometry(8, 1.5, 160, 1);
-  return g;
 }
 function label(value, color = "#a9c8d9") {
   const canvas = document.createElement("canvas");
@@ -358,6 +354,7 @@ export class SceneView {
     this.objects = {};
   }
   build(type, p) {
+    const newModel = this.type !== type;
     this.clear();
     this.type = type;
     this.key = JSON.stringify(p);
@@ -371,7 +368,7 @@ export class SceneView {
     const r = this.root,
       o = this.objects;
     this.floor.position.y =
-      { gravity: -3.5, fields: -4.6, waves: -2, refraction: -2.5 }[type] ??
+      { gravity: -3.5, fields: -4.6 }[type] ??
       -0.38;
     this.grid.position.y = this.floor.position.y + 0.02;
     // A spatial reference in the orbital plane, not a ground beneath the planet.
@@ -391,18 +388,21 @@ export class SceneView {
         this.homeRadius = 10.4;
         this.homePolar = 1.24;
         this.homeAzimuth = -0.25;
-        this.home();
+        if (newModel) this.home();
       }
       this.curriculum = createCurriculumScene(type, p, r);
       return;
     }
-    if (["spring", "pendulum"].includes(type)) {
-      this.precision = createDetailedMechanics(type, p, r);
+    if (["spring", "pendulum", "refraction", "waves", "circuits"].includes(type)) {
+      this.precision = type === "refraction" ? createRefractionApparatus(p, r, wavelengthRGB(p.wavelength * 1e9))
+        : type === "waves" ? createWaveBench(p, r)
+        : type === "circuits" ? createRCBench(p, r)
+        : createDetailedMechanics(type, p, r);
       this.target.set(...this.precision.target);
       this.homeRadius = this.precision.radius;
-      this.homePolar = type === "spring" ? 1.05 : 1.48;
-      this.homeAzimuth = type === "spring" ? -0.25 : -0.1;
-      this.home();
+      this.homePolar = this.precision.polar ?? (type === "spring" ? 1.05 : 1.48);
+      this.homeAzimuth = this.precision.azimuth ?? (type === "spring" ? -0.25 : -0.1);
+      if (newModel) this.home();
       return;
     }
     if (ADVANCED_IDS.includes(type)) {
@@ -617,55 +617,6 @@ export class SceneView {
         0.1,
       );
       r.add(o.va, o.vb);
-    } else if (type === "waves") {
-      const mesh = add(
-        "ribbon",
-        new T.Mesh(
-          ribbonGeometry(),
-          new T.MeshStandardMaterial({
-            color: CYAN,
-            transparent: true,
-            opacity: 0.5,
-            side: T.DoubleSide,
-            metalness: 0.25,
-            roughness: 0.28,
-          }),
-        ),
-      );
-      mesh.castShadow = true;
-      add(
-        "incident",
-        beam(
-          [
-            [0, 0, 0],
-            [0, 0, 0],
-          ],
-          BLUE,
-          0.85,
-        ),
-      );
-      add(
-        "reflected",
-        beam(
-          [
-            [0, 0, 0],
-            [0, 0, 0],
-          ],
-          GOLD,
-          0.85,
-        ),
-      );
-      add(
-        "result",
-        beam(
-          [
-            [0, 0, 0],
-            [0, 0, 0],
-          ],
-          CYAN,
-        ),
-      );
-      add("probe", sphere(0.1, 0xffffff));
     } else if (type === "interference") {
       const col = wavelengthRGB(p.wavelength * 1e9);
       o.opticalColor = col;
@@ -714,106 +665,6 @@ export class SceneView {
           r.add(ring);
           o.rings.push({ ring, i, z: source ? -0.45 : 0.45 });
         }
-    } else if (type === "refraction") {
-      const q = refractionInfo(p),
-        col = wavelengthRGB(p.wavelength * 1e9);
-      o.opticalColor = col;
-      const glass = add("glass", box(8, 2.4, 3, 0x2d90bd), [0, 0.2, 0]);
-      glass.material = new T.MeshPhysicalMaterial({
-        color: 0x378ab5,
-        transparent: true,
-        opacity: 0.24,
-        roughness: 0.15,
-        metalness: 0.15,
-        side: T.DoubleSide,
-      });
-      add(
-        "medium1",
-        label(`MEDIUM 1 · n = ${p.n1.toFixed(2)}`),
-        [-2.8, 3.5, 0],
-      );
-      add(
-        "medium2",
-        label(`MEDIUM 2 · n = ${p.n2.toFixed(2)}`),
-        [-2.8, 0.2, 0.2],
-      );
-      add(
-        "normal",
-        beam(
-          [
-            [0, -1.2, 0],
-            [0, 4.5, 0],
-          ],
-          0x688da2,
-          0.6,
-        ),
-      );
-      const i = p.angle * DEG,
-        c = [0, 1.4, 0],
-        a = [-3 * Math.sin(i), 1.4 + 3 * Math.cos(i), 0],
-        b = [3 * Math.sin(i), 1.4 + 3 * Math.cos(i), 0];
-      add("incoming", beam([a, c], col));
-      o.paths = [[a, c]];
-      if (q.reflectance > 1e-8) {
-        add("reflection", beam([c, b], col, Math.max(0.2, q.reflectance)));
-        o.paths.push([c, b]);
-      }
-      if (!q.tir && q.reflectance < 1 - 1e-8) {
-        const rr = q.refracted * DEG,
-          d = [3 * Math.sin(rr), 1.4 - 3 * Math.cos(rr), 0];
-        add("transmitted", beam([c, d], col));
-        o.paths.push([c, d]);
-      }
-      o.pulses = o.paths.map((path, i) => add("pulse" + i, sphere(0.065, col)));
-    } else if (type === "circuits") {
-      const path = [
-        [3, 1.5, 0],
-        [3, 2.8, 0],
-        [1, 2.8, 0],
-        [-1, 2.8, 0],
-        [-3, 2.8, 0],
-        [-3, 0.1, 0],
-        [3, 0.1, 0],
-        [3, 1.2, 0],
-      ];
-      add("wire", beam(path, 0x60899d));
-      o.path = path;
-      const zig = [];
-      for (let i = 0; i <= 16; i++)
-        zig.push([
-          -1 + i / 8,
-          2.8 + (i === 0 || i === 16 ? 0 : i % 2 ? 0.18 : -0.18),
-          0,
-        ]);
-      add("resistor", beam(zig, GOLD));
-      add("plate1", box(0.9, 0.08, 1.0, CYAN), [3, 1.5, 0]);
-      add("plate2", box(0.9, 0.08, 1.0, 0xff8aaa), [3, 1.2, 0]);
-      add("battery", box(0.5, 1.1, 0.6, p.discharge ? 0x344657 : 0x57a5b8), [
-        p.discharge ? -4.2 : -3,
-        1.5,
-        0,
-      ]);
-      add(
-        "resistanceLabel",
-        label(`${p.resistance.toLocaleString()} Ω`),
-        [0, 3.4, 0],
-      );
-      add(
-        "capacitanceLabel",
-        label(`${(p.capacitance * 1e6).toFixed(0)} µF`),
-        [3.8, 1.4, 0],
-      );
-      if (p.discharge)
-        add("sourceLabel", label("SOURCE DISCONNECTED"), [-4.2, 0.5, 0]);
-      o.dots = Array.from({ length: 16 }, (_, i) =>
-        add("current" + i, sphere(0.045, GOLD)),
-      );
-      const glow = add("chargeGlow", box(0.86, 0.25, 0.9, CYAN), [3, 1.35, 0]);
-      glow.material = new T.MeshBasicMaterial({
-        color: CYAN,
-        transparent: true,
-        opacity: 0,
-      });
     } else if (type === "fields") {
       const lines = fieldLines(p);
       for (const l of lines)
@@ -1016,33 +867,6 @@ export class SceneView {
         o[key].setLength(Math.max(0.01, Math.abs(v) * 0.5), 0.15, 0.08);
         o[key].visible = lab.vectors && Math.abs(v) > 0.001;
       }
-    } else if (type === "waves") {
-      const pos = o.ribbon.geometry.attributes.position;
-      for (let i = 0; i < pos.count; i++) {
-        const x = pos.getX(i);
-        pos.setY(i, 1.1 + waveAt(x + 4, s.t, p).resultant * 2);
-        pos.setZ(i, i < 161 ? -0.65 : 0.65);
-      }
-      pos.needsUpdate = true;
-      o.ribbon.geometry.computeVertexNormals();
-      const a = [],
-        b = [],
-        sum = [];
-      for (let i = 0; i <= 160; i++) {
-        const x = i / 20,
-          q = waveAt(x, s.t, p);
-        a.push([x - 4, 1.1 + q.incident * 2, -1]);
-        b.push([x - 4, 1.1 + q.reflected * 2, 1]);
-        sum.push([x - 4, 1.1 + q.resultant * 2, 0]);
-      }
-      updateLine(o.incident, a);
-      updateLine(o.reflected, b);
-      updateLine(o.result, sum);
-      o.probe.position.set(
-        p.probe - 4,
-        1.1 + waveAt(p.probe, s.t, p).resultant * 2,
-        0,
-      );
     } else if (type === "interference") {
       for (const { ring, i, z } of o.rings) {
         const f = (s.t * 0.28 + i / 7) % 1;
@@ -1050,41 +874,12 @@ export class SceneView {
         ring.scale.setScalar(0.5 + f * 2.8);
         ring.material.opacity = (1 - f) * 0.35;
       }
-    } else if (type === "refraction") {
-      o.paths.forEach(([a, b], i) => {
-        const f = (s.t * 0.5 + (i === 0 ? 0 : 0.2)) % 1;
-        o.pulses[i].position.set(...a.map((v, k) => v + (b[k] - v) * f));
-      });
     } else if (type === "fields") {
       const f = fieldAt(p.probeX, p.probeY, p);
       o.fieldArrow.position.copy(o.probe.position);
       o.fieldArrow.visible = lab.vectors && f.valid && f.magnitude > 1e-8;
       if (o.fieldArrow.visible)
         o.fieldArrow.setDirection(new T.Vector3(f.ex, f.ey, 0).normalize());
-    } else if (type === "circuits") {
-      const q = circuitAt(s.t, p),
-        phase =
-          (p.discharge ? 1 : -1) * q.tau * 1.3 * (1 - Math.exp(-s.t / q.tau));
-      const lengths = o.path
-          .slice(1)
-          .map((b, i) =>
-            new T.Vector3(...b).distanceTo(new T.Vector3(...o.path[i])),
-          ),
-        total = lengths.reduce((a, b) => a + b, 0);
-      o.dots.forEach((dot, i) => {
-        let d = ((((i / 16 + phase) % 1) + 1) % 1) * total,
-          j = 0;
-        while (j < lengths.length - 1 && d > lengths[j]) d -= lengths[j++];
-        const a = o.path[j],
-          b = o.path[j + 1],
-          f = d / lengths[j];
-        dot.position.set(...a.map((v, k) => v + (b[k] - v) * f));
-        dot.material.emissive.setHex(GOLD);
-        dot.material.emissiveIntensity = 0.3;
-      });
-      o.chargeGlow.material.opacity = (0.3 * q.voltage) / p.voltage;
-      o.plate1.material.emissive.setHex(CYAN);
-      o.plate1.material.emissiveIntensity = (q.voltage / p.voltage) * 0.6;
     }
     if (!this.curriculum && !this.precision && !this.trackedLabels) {
       const specs =
@@ -1158,7 +953,7 @@ export class SceneView {
     const cameraRadius =
       this.radius *
       (["gravity", ...ADVANCED_IDS].includes(type) || this.curriculum || this.precision
-        ? Math.max(1, (this.precision?.fitAspect || (type === "buoyancy" ? 1.05 : 1.35)) / this.camera.aspect)
+        ? Math.max(1, (this.precision?.fitAspect || (type === "buoyancy" ? 1.05 : type === "lenses" ? 1.55 : 1.35)) / this.camera.aspect)
         : 1);
     this.camera.position.set(
       this.target.x +

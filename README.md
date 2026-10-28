@@ -10,6 +10,16 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 ## What is in the laboratory?
 
+### Version 9: optics, wave superposition & capacitor benches
+
+Four existing laboratories have been rebuilt around detailed apparatus. **Thin lenses** now have shaped converging/diverging glass, machined mounts, two principal rays, focal markers, a real-image screen and dashed virtual back projections. Horizontal distances share a fitted scale; heights share a separate scale that preserves signed magnification. At focus the outgoing rays are parallel. Images beyond six times the larger object/focal distance are explicitly labelled off the bench instead of being drawn at a false position.
+
+The calculation inspector describes non-results explicitly: “Image at infinity” at focus and “No transmitted ray (TIR)” above the critical angle. It retains null numeric results and the original physical equations. Camera presets and manual zoom stay in place when editing parameters in the rebuilt scenes.
+
+**Refraction** now shows a transparent boundary, angle arcs, a dashed normal and the actual reflected/transmitted Fresnel power fractions. TIR removes the transmitted beam; equal refractive indices remove the reflected beam. Ray brightness is boosted for visibility and direction-marker timing is schematic; read the percentages for power. **Superposition** has three solid sampled strings, a common horizontal scale, fixed-x medium beads and a probe displaying the signed addition of both displacements. The three curves are a mathematical comparison, not coupled strings or extra boundary conditions.
+
+**RC charging/discharging** now has an isolated source in discharge mode, a visible resistor and separated capacitor plates. Current-direction markers follow the conductors without crossing the dielectric and reverse correctly on discharge. Charge markers share a voltage-fraction scale; purple arrows show qualitative field direction. The SI circuit equations are unchanged. New tests check lens ray intersections, off-bench/focus cases, Snell geometry/TIR, fixed-position wave motion, current paths/directions and stable apparatus across supported parameter endpoints.
+
 ### Version 8: detailed 3D apparatus & Atlas-style studio
 
 The shared renderer now uses bevelled apparatus, a prefiltered studio-light environment, softer shadows, higher-resolution edges, a fading work surface and smooth camera transitions. Star fields are confined to astronomical scenes. Expanded experiments use an Atlas-style dark surround, a larger canvas and a **Scene focus** control; laptop users switch between Parameters and Calculations instead of squeezing the animation between three panels.

@@ -2100,7 +2100,9 @@ export function curriculumCalculationSheet(type, s, p, n) {
       unit: r.unit,
       note:
         q[r.key] === null
-          ? "This result is undefined for this setup. See the model assumptions."
+          ? type === "lenses"
+            ? "At focus, outgoing rays are parallel. There is no finite image distance, magnification or image height."
+            : "This result is undefined for this setup. See the model assumptions."
           : type === "buoyancy"
             ? "Upward is positive. Forces and immersion use the current integrated position and velocity. Values are calculated before rounding."
             : "Uses the current model state and parameters. Values are calculated before rounding for display.",

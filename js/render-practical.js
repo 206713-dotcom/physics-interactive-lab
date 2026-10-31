@@ -4,6 +4,7 @@ import {
   particlePosition,
   LAMP_AMBIENT,
 } from "./practical-physics.js";
+import { temperatureHeight } from "./thermal-geometry.js";
 const C = "#6be5d4",
   G = "#ffc580",
   B = "#91baff",
@@ -591,11 +592,17 @@ export function drawPractical(lab, kit) {
       }
       rect(265, 95, 15, 240, "#ffffff0b", W, 7);
       const fraction = (q.temperature - p.ambient) / (p.initial - p.ambient);
-      rect(270, 300 - 170 * fraction, 5, 25 + 170 * fraction, G, null, 2);
+      const gauge = (temperature) => 325 - (temperatureHeight(temperature,0,160,0,210));
+      rect(270, gauge(q.temperature), 5, 325-gauge(q.temperature), G, null, 2);
       circle(272, 325, 13, G);
+      for(const temperature of [0,40,80,120,160]) {
+        const y=gauge(temperature);
+        line([[282,y],[294,y]],W,1); text(String(temperature),300,y+5,M,15);
+      }
+      arrow(356,gauge(p.ambient),-60,0,C,2);
       for (let i = 0; i < 4; i++) {
         const x = 195 + i * 50;
-        arrow(x, 180, 0, -20 - 45 * fraction, G, 2);
+        arrow(x, 180, 0, -65 * fraction, G, 2);
       }
       text(`${fmt(q.temperature)} °C`, 535, 150, W, 40);
       text(`Ambient ${p.ambient} °C`, 535, 195, B, 21);

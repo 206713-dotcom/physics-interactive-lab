@@ -1,5 +1,6 @@
 import * as P from "./curriculum-physics.js";
 import { chargedTiming } from "./field-geometry.js";
+import { heatingWindow, coolingClock } from "./thermal-geometry.js";
 import {
   PRACTICAL_LABS,
   PRACTICAL_PARAMETERS,
@@ -2028,6 +2029,35 @@ for (const [id, practical] of Object.entries(PRACTICAL_LABS)) {
           p.mode ? "Thermistor temperature / °C" : "Illuminance / lux"),
     );
 }
+// Analytic models: a bounded teaching window avoids minutes of waiting at
+// extreme parameter choices. SI time remains explicit in the stage caption.
+function boundedThermalStep(id, duration) {
+  return (s,p,h) => {
+    const stop=duration(p), remaining=stop-s.t;
+    if(remaining<=0) return s;
+    const next=P.stepCurriculum(id,s,p,Math.min(h,remaining));
+    return remaining<=h || stop-next.t<stop*1e-12 ? {...next,t:stop} : next;
+  };
+}
+Object.assign(CURRICULUM_SIMULATIONS.calorimetry, {
+  step: boundedThermalStep("calorimetry",heatingWindow),
+  rateFor: (p) => heatingWindow(p) / 45,
+  hFor: (p) => heatingWindow(p) / 9000,
+  sampleEvery: (p) => heatingWindow(p) / 600,
+  window: (p) => heatingWindow(p),
+  ended: (s,p) => s.t >= heatingWindow(p) ? "Observation temperature reached" : null,
+});
+Object.assign(CURRICULUM_SIMULATIONS.cooling, {
+  step: boundedThermalStep("cooling",(p)=>coolingClock(p)*5),
+  rateFor: (p) => coolingClock(p) / 10,
+  hFor: (p) => coolingClock(p) / 1000,
+  sampleEvery: (p) => coolingClock(p) / 120,
+  window: (p) => coolingClock(p) * 5,
+  ended: (s,p) => s.t >= coolingClock(p) * 5 ? "Five time constants reached" : null,
+});
+CURRICULUM_SIMULATIONS.gasprocess.ended = (s) => s.t >= 6 ? "Process complete" : null;
+CURRICULUM_SIMULATIONS.gasprocess.step = boundedThermalStep("gasprocess",()=>6);
+
 export function curriculumCalculationSheet(type, s, p, n) {
   const q = P.sampleCurriculum(type, s, p);
   return {

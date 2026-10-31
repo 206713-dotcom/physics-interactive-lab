@@ -74,6 +74,8 @@ for (const file of [
   "js/scene-particle-chamber.js",
   "js/scene-magnetism.js",
   "js/scene-sound.js",
+  "js/thermal-geometry.js",
+  "js/scene-thermal-benches.js",
   "js/orbital-reference.js",
   "cinematic.css",
   "js/scene-curriculum.js",

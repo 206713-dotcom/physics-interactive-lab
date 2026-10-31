@@ -665,9 +665,13 @@ function bindControls() {
     const range = $(`#${d.key}-slider`),
       number = $(`#${d.key}-number`);
     range.oninput = () => commit(Number(range.value), true);
+    let numericEdited = false;
+    number.oninput = () => { numericEdited = true; };
     const numeric = () => {
       const raw = number.value === "" ? NaN : Number(number.value);
       if (raw * (d.factor || 1) !== lab.params[d.key]) commit(raw);
+      else if (numericEdited) $("#control-error").textContent = "";
+      numericEdited = false;
     };
     number.onchange = numeric;
     number.onblur = numeric;

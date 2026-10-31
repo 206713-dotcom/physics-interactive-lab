@@ -5,6 +5,7 @@ import { drawPractical, practicalThumbnail } from "./render-practical.js";
 import { drawVectorDiagram } from "./render-vectors.js";
 import { BUOYANCY_STATUS } from "./buoyancy-physics.js";
 import { chargedLayout, soundLayout } from "./field-geometry.js";
+import { phaseInventory } from "./thermal-geometry.js";
 const chargedViews = new WeakMap();
 const TAU = Math.PI * 2,
   CYAN = "#6be5d4",
@@ -645,28 +646,16 @@ export function drawCurriculum(canvas, lab) {
           : "Water at 1 atmosphere · insulated",
       );
       rect(260, 95, 260, 240, "#91baff16", BLUE, 3);
-      const phase =
-        q.temperature < 0
-          ? "ICE"
-          : q.temperature === 0 && q.melt < 1
-            ? "MELTING"
-            : q.temperature < 100
-              ? "LIQUID"
-              : q.boil < 1
-                ? "BOILING"
-                : "STEAM";
+      const inventory=phaseInventory(p,q), phase=inventory.name;
       const col =
         q.temperature < 0 ? BLUE : q.temperature > 100 ? PURPLE : CYAN;
-      rect(265, 190, 250, 140, col + "35", null, 2);
-      for (let i = 0; i < 36; i++) {
-        const xx = 282 + (i % 6) * 40,
-          yy =
-            q.temperature < 0
-              ? 210 + Math.floor(i / 6) * 20
-              : 210 + Math.floor(i / 6) * 20 + 6 * Math.sin(t * 0.8 + i);
-        circle(xx, yy, 4, col);
-        if (q.temperature === 100 && q.boil > 0)
-          arc(xx, 250 - ((t * 12 + i * 9) % 100), 5, 0, TAU, "#e7f5ff55");
+      if(p.mode) rect(295,185,190,140,"#ffc58044",GOLD,5);
+      else {
+        const liquidHeight=140*inventory.liquid, cubeSize=64*Math.cbrt(inventory.solid);
+        if(inventory.liquid>0) rect(265,330-liquidHeight,250,liquidHeight,"#6be5d435",CYAN,2);
+        if(inventory.solid>0) for(let i=0;i<4;i++) rect(330+(i%2)*cubeSize,330-liquidHeight-(Math.floor(i/2)+1)*cubeSize,Math.max(.1,cubeSize-2),Math.max(.1,cubeSize-2),"#b8e7ef66",BLUE,3);
+        for(let i=0;i<Math.round(30*inventory.vapour);i++)
+          circle(280+(i*37)%220,110+((i*19+t*2)%(200-liquidHeight)),3,PURPLE);
       }
       line(
         [
@@ -685,10 +674,12 @@ export function drawCurriculum(canvas, lab) {
       );
       text("ELECTRIC HEATER", 390, 367, GOLD, 15, "center");
       text(`${fmt(q.temperature, 1)} °C`, 650, 180, WHITE, 35, "center");
-      text(p.mode ? "SINGLE PHASE" : phase, 650, 222, col, 20, "center");
+      text(phase, 650, 222, col, 18, "center");
       text(`${fmt(q.energy / 1000)} kJ input`, 650, 262, MUTED, 20, "center");
+      if(!p.mode) for(const [i,label,value] of [[0,"Ice",inventory.solid],[1,"Liquid",inventory.liquid],[2,"Vapour",inventory.vapour]])
+        text(`${label}: ${(value*100).toFixed(1)}% mass`,650,297+i*29,[BLUE,CYAN,PURPLE][i],17,"center");
       foot(
-        "Plateaus transfer latent energy without raising temperature.",
+        p.mode?"Constant c · no phase change modelled":"Phase volumes illustrative · latent heat gives plateaux",
         `${p.mass} kg · ${p.power} W`,
       );
       break;

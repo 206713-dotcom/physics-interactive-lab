@@ -1,9 +1,8 @@
 import { PALETTE as C, clamp } from "./scene-kit.js";
 import * as T from "../vendor/three.module.min.js";
+import { createGasProcessBench, createCalorimeterBench, createCoolingBench } from "./scene-thermal-benches.js";
 const warm = new T.Color(C.gold),
   cold = new T.Color(C.blue);
-const tempColor = (t, lo = 20, hi = 150) =>
-  cold.clone().lerp(warm, clamp((t - lo) / (hi - lo), 0, 1));
 function tank(k) {
   k.stand(7, 4);
   k.glass(3.6, 3.2, 2.5, [0, 1.6, 0]);
@@ -73,43 +72,7 @@ export const THERMAL_SCENES = {
     };
   },
   calorimetry(p, k) {
-    tank(k);
-    const liquid = k.box(3.3, 1.8, 2.2, C.blue, [0, 1.05, 0], {
-        transparent: true,
-        opacity: 0.55,
-      }),
-      ice = [];
-    for (let i = 0; i < 8; i++)
-      ice.push(
-        k.box(
-          0.55,
-          0.55,
-          0.55,
-          0xb8e7ef,
-          [
-            ((i % 2) - 0.5) * 1.25,
-            1.5 + Math.floor(i / 4) * 0.5,
-            ((Math.floor(i / 2) % 2) - 0.5) * 1.2,
-          ],
-          { roughness: 0.15 },
-        ),
-      );
-    const cloud = particles(k, 28);
-    k.cylinder(1, 0.2, C.red, [0, -0.15, 0]);
-    k.label("Energy enters from the heater", [0, 4.2, 0], "#ff9d91", 4.3);
-    return (s, q) => {
-      const water = p.mode === 0;
-      liquid.visible = !water || q.melt > 0;
-      liquid.scale.y = water ? Math.max(0.01, q.melt * (1 - q.boil)) : 1;
-      liquid.position.y = 0.15 + 0.9 * liquid.scale.y;
-      liquid.material.color.copy(tempColor(q.temperature, 0, 100));
-      for (const o of ice) {
-        o.visible = water && q.melt < 1;
-        o.scale.setScalar(Math.max(0.01, 1 - q.melt));
-      }
-      cloud.dots.visible = water && q.boil > 0;
-      if (cloud.dots.visible) cloud.update(s.t, 373, 2);
-    };
+    return createCalorimeterBench(p, k);
   },
   heat(p, k) {
     k.stand(9, 4);
@@ -159,56 +122,10 @@ export const THERMAL_SCENES = {
     };
   },
   cooling(p, k) {
-    tank(k);
-    const body = k.box(2.4, 1.8, 1.6, C.gold, [0, 1.1, 0], { metalness: 0.1 }),
-      thermo = k.cylinder(0.09, 2.8, C.white, [1.8, 1.5, 0]),
-      column = k.cylinder(0.06, 1, C.red, [1.8, 1, 0]);
-    const arrows = [-1, 0, 1].map((x) =>
-      k.arrow([x, 2.4, 0], [0, 0.8, 0], C.gold),
-    );
-    k.label("Object loses thermal energy", [0, 4.2, 0], "#ffc584", 4.2);
-    return (s, q) => {
-      const f = (q.temperature - p.ambient) / (p.initial - p.ambient);
-      body.material.color.copy(tempColor(q.temperature, p.ambient, p.initial));
-      column.scale.y = 0.3 + f * 2;
-      column.position.y = 0.15 + column.scale.y / 2;
-      arrows.forEach((a, i) => k.setArrow(a, [i - 1, 2.4, 0], [0, f * 0.9, 0]));
-    };
+    return createCoolingBench(p, k);
   },
   gasprocess(p, k) {
-    k.stand(7, 4);
-    k.cylinder(1.5, 3.6, 0x8bc4dc, [0, 1.8, 0], {
-      transparent: true,
-      opacity: 0.12,
-      depthWrite: false,
-    });
-    const piston = k.cylinder(1.5, 0.18, C.muted, [0, 2, 0]),
-      gas = k.cylinder(1.43, 1, C.cyan, [0, 1, 0], {
-        transparent: true,
-        opacity: 0.25,
-      }),
-      rod = k.cylinder(0.08, 1, C.white, [0, 3, 0]),
-      cloud = particles(k, 50);
-    k.label(
-      [
-        "ISOTHERMAL · temperature fixed",
-        "ISOBARIC · pressure fixed",
-        "ADIABATIC · no heat transfer",
-      ][p.mode],
-      [0, 4.8, 0],
-      "#cfe6ef",
-      4.8,
-    );
-    return (s, q) => {
-      const height = (2.9 * q.ratio) / Math.max(1, p.ratio);
-      piston.position.y = height + 0.2;
-      gas.scale.y = height;
-      gas.position.y = 0.2 + height / 2;
-      gas.material.color.copy(tempColor(q.temperature, 150, 600));
-      rod.position.y = piston.position.y + 0.6;
-      cloud.update(s.t, q.temperature, 2);
-      cloud.dots.scale.y = height / 3;
-    };
+    return createGasProcessBench(p, k);
   },
   filament(p, k) {
     k.stand(7, 4);

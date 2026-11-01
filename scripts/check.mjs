@@ -11,6 +11,7 @@ for (const name of (await readdir("js")).filter((name) => name.endsWith(".js")))
 assert.ok(entryHTML.includes(`./js/app.js?v=${version}`));
 assert.ok(entryHTML.includes(`./cinematic.css?v=${version}`));
 assert.ok(entryHTML.includes(`./design.css?v=${version}`));
+assert.ok(entryHTML.includes(`./consolidated.css?v=${version}`));
 for (const document of ["index.html", "integration.html", "solar-atlas.html"]) {
   const html = await readFile(document, "utf8");
   for (const match of html.matchAll(/(?:src|href)="(\.\/[^"?#]+)"/g))
@@ -68,6 +69,8 @@ for (const file of [
   "js/scene-precision.js",
   "js/catalogue-art.js",
   "js/presentation-studio.js",
+  "js/study-policy.js",
+  "consolidated.css",
   "design.css",
   "assets/fonts/Manrope-variable.ttf",
   "assets/fonts/Manrope-OFL.txt",

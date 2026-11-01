@@ -4,11 +4,21 @@
 
 [Open the live laboratory](https://206713-dotcom.github.io/physics-interactive-lab/) · [Browse the source](https://github.com/206713-dotcom/physics-interactive-lab) · [Automated checks](https://github.com/206713-dotcom/physics-interactive-lab/actions)
 
-A browser-only laboratory for IGCSE, A Level and extension exploration. The [IGCSE course navigator](https://206713-dotcom.github.io/physics-interactive-lab/#/course) maps 78 FocusPhysics lesson pages to interactive experiments. All **57 laboratories have WebGL 3D apparatus and a 2D diagram**. Each experiment includes **three guided investigations, five worked questions, learning objectives, equations, assumptions and applications**: 171 investigations and 285 questions. The separate [A Level practice room](https://206713-dotcom.github.io/physics-interactive-lab/#/questions) adds 312 original questions in 26 groups, for **597 questions across the project**.
+A browser-only laboratory for IGCSE, A Level and extension exploration. The [IGCSE course navigator](https://206713-dotcom.github.io/physics-interactive-lab/#/course) maps 78 FocusPhysics lesson pages to interactive experiments. All **57 laboratories have WebGL 3D apparatus and a 2D diagram**. The full-model resources include **three guided investigations, five worked questions, learning objectives, equations, assumptions and applications** per experiment (IGCSE mode shows a smaller selected activity): 171 investigations and 285 questions. The separate [A Level practice room](https://206713-dotcom.github.io/physics-interactive-lab/#/questions) adds 312 original questions in 26 groups, for **597 questions across the project**.
 
 This is an independent student prototype and a proposed contribution to [FocusPhysics](https://focusphysics.com), not an official or endorsed FocusPhysics integration.
 
 ## What is in the laboratory?
+
+### Version 15: one consolidated laboratory
+
+No laboratories or question sets were added. All 57 existing models now share the same readable HTML instrument panel, larger controls, consistent diagram viewer and focused explanation. Duplicate featured collections, promotional panels, repeated live-value blocks and the second animation walkthrough have been removed. The library starts with **40 IGCSE-focused activities**, grouped by Cambridge's six subject areas; AS, A2 and enrichment remain separate filters. The original 78 FocusPhysics lesson links and the A Level question bank are retained.
+
+The IGCSE mode is now a **restricted teaching interface**, rather than a label over the full advanced model. It exposes selected controls and graphs, fixes out-of-scope parameters, validates shared setups, and uses named choices for materials, insulation, charge signs and field direction. The inspector shows the activity's learning goals, a relevant relationship and only appropriate worked calculations. For example, pendulum timing uses total time divided by the number of oscillations, with 5–20° releases; it does not show the analytic SHM period. Gas pressure is a calculated model reading without requiring the ideal-gas or RMS-speed derivations. Cooling's exponential solution, Faraday's rotating-coil equation and Kepler's period derivation remain in the full model, outside the IGCSE worked steps. Scene text is filtered at the same level in both 2D and 3D; rulers, ray geometry and model-specific visual-scale notes remain.
+
+Checked against the official [Cambridge 0625 2026–2028 syllabus](https://www.cambridgeinternational.org/Images/697209-2026-2028-syllabus.pdf) and [version 2 update, December 2025](https://www.cambridgeinternational.org/Images/748914-2026-2028-syllabus-update.pdf) on **1 November 2026**. Core and Supplement are distinguished where a selected activity includes Supplement outcomes. These are selected learning activities, not a claim of complete syllabus coverage or Cambridge endorsement. Original solver equations, numerical integration and SI state are unchanged. AS / A Level and enrichment keep their full parameter and calculation sets.
+
+**251 automated tests** cover the physical models plus all 40 IGCSE starting setups, every visible control endpoint and named choice, hidden-parameter locks, invalid inputs, friendly-unit conversion, level-specific equations, authoritative readings and preservation of the complete higher-level models. Browser verification opens all 57 labs in both 3D and 2D and checks the expanded inspectors and responsive layouts.
 
 ### Version 14: a clearer visual laboratory
 

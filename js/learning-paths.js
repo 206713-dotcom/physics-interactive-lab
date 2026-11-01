@@ -23,7 +23,7 @@ export const SYLLABUS_SOURCES = {
     url: "https://www.cambridgeinternational.org/Images/744626-2028-2030-syllabus.pdf",
   },
 };
-export const CHECKED_DATE = "2026-10-27";
+export const CHECKED_DATE = "2026-11-01";
 export const MODE_NAMES = {
   igcse: "IGCSE",
   alevel: "AS / A Level",
@@ -1261,6 +1261,15 @@ export const LEARNING_PATHS = {
 // Keep qualitative IGCSE profiles free from a misleading required-equation focus.
 for (const id of ["radiation", "charged", "stars", "expansion", "lenses"])
   LEARNING_PATHS[id].igcse.calculations = [];
+// Beginner tasks refer only to the course controls, with familiar language.
+LEARNING_PATHS.expansion.igcse.task = 'Compare aluminium and steel bars with the same starting length and temperature rise. Which expands more?';
+LEARNING_PATHS.cooling.igcse.task = 'Keep the initial and surrounding temperatures fixed. Compare well-insulated and poorly-insulated objects.';
+LEARNING_PATHS.motion.igcse.task = 'Select falling motion with some air resistance. Compare the early acceleration with the eventual constant speed.';
+LEARNING_PATHS.hooke.igcse.task = 'Double the load on the single spring and compare its extension on the load–extension graph.';
+// Measurement, not a derivation of SHM, is the 0625 pendulum outcome.
+LEARNING_PATHS.pendulum.igcse.calculations = [];
+LEARNING_PATHS.pendulum.igcse.scope = 'Count complete swings and divide the elapsed time by that count. Use small release angles; no pendulum period formula is required here.';
+LEARNING_PATHS.pendulum.igcse.answer = 'Choose a fixed point and count complete returns in the same direction. Timing several swings reduces the effect of reaction time; divide the elapsed time by the number of swings.';
 const enrichment = {
   binary: [
     "Binary orbits and a common centre of mass",

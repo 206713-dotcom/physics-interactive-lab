@@ -172,7 +172,7 @@ export class VectorStudio {
         progress <= 0.2 ? 0 : progress <= 0.55 ? 1 : progress <= 0.8 ? 2 : 3,
       method = lab.vectorMethod || "triangle";
     const set = (id, value) => {
-      if (this.nodes[id].textContent !== value)
+      if (this.nodes[id] && this.nodes[id].textContent !== value)
         this.nodes[id].textContent = value;
     };
     const phases = VECTOR_PHASES.map((row) => [...row]);

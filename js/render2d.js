@@ -1,3 +1,4 @@
+import { sceneLabelAllowed } from './study-policy.js';
 /** Orthographic diagram mode and an automatic fallback for browsers without WebGL. */
 import { drawOrbit } from "./canvas.js";
 import * as E from "./physics-extra.js";
@@ -8,6 +9,17 @@ import { drawCurriculum } from "./render-curriculum.js";
 import { projectileLayout, projectilePreview } from "./kinematics-display.js";
 import { drawOscillation } from './render-oscillations.js';
 export function draw2D(canvas, lab) {
+  const context = canvas.getContext('2d'), original = context.fillText;
+  if (lab.studyMode !== 'igcse') return drawDiagram(canvas,lab);
+  // A scoped text filter, restored even on error. No path or physical coordinate
+  // changes, and no prototype changes affecting charts or other canvases.
+  context.fillText = function(text,...args) {
+    if (sceneLabelAllowed(lab.type,lab.studyMode,String(text))) return original.call(this,text,...args);
+  };
+  try { return drawDiagram(canvas,lab); }
+  finally { context.fillText = original; }
+}
+function drawDiagram(canvas, lab) {
   if (CURRICULUM_IDS.includes(lab.type)) {
     drawCurriculum(canvas, lab);
     return;

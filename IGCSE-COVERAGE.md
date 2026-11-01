@@ -4,6 +4,14 @@ Inspected 24 October 2026: [FocusPhysics 0625 checklist](https://focusphysics.co
 
 The lab now has 57 working models (44 scientific instruments and 13 original studios). Every lesson below has a model entry point, original teaching notes, worked calculations and questions. **A lesson mapping means an exploration supporting that lesson, not that every one of its syllabus statements is independently simulated.** Safety, resource choices, stellar evolution and particle arrangements include explicitly qualitative material. Simulations do not replace hands-on practical work or the teacher’s notes. Original slides and resources remain linked on FocusPhysics; they are not republished.
 
+## Course scope after consolidation (1 November 2026)
+
+The library defaults to 40 explicitly scoped IGCSE activities, grouped into the six official Cambridge subject areas. The other 17 full models remain available through AS / A Level or enrichment. A lesson mapping below can therefore include a progression model; the live course map now places those links inside **Further study**, apart from the IGCSE activities. It does not label SHM, projectile equations or inverse-square gravitational calculations as required 0625 work.
+
+IGCSE controls and worked steps are governed by `js/study-policy.js`, with section references and original teaching profiles in `js/learning-paths.js`. Shared links cannot enable hidden advanced parameters. Selected numerical readings may come from a more detailed physical solver without requiring students to learn that solver's derivation. Pendulum timing, particle models, thermal expansion, lenses, magnetic deflection and stellar stages include qualitative or measurement activities. Only suitable graphs and calculations are exposed. The original resources remain linked; the A Level question bank is separate.
+
+Sources: [0625 syllabus, 2026–2028](https://www.cambridgeinternational.org/Images/697209-2026-2028-syllabus.pdf), [official version 2 update](https://www.cambridgeinternational.org/Images/748914-2026-2028-syllabus-update.pdf). The update confirms version 2 was published in December 2025 and changed a web link, not the subject content. These activities support selected outcomes, not all assessment objectives or required practical experience.
+
 ## 1 Motion, forces and energy
 
 | FocusPhysics lesson                                                                                                                                                       | Working models                                                                                                                                                                                                                                                                                                                                                                                     | Coverage                                 |

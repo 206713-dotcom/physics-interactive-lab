@@ -231,7 +231,7 @@ export function drawOscillation(canvas, lab) {
         pivot[0] + length * Math.sin(a),
         pivot[1] + length * Math.cos(a),
       ],
-      at = pt(s.theta);
+      at = pt(s.theta), angleLimit = lab.studyMode === "igcse" ? 30 : 120;
     c.fillStyle = "#a5bfce35";
     c.beginPath();
     c.ellipse(450, 473, 265, 15, 0, 0, 2 * Math.PI);
@@ -245,14 +245,14 @@ export function drawOscillation(canvas, lab) {
     line([[450, 179], pivot], "#759baa", 3);
     line([pivot, [pivot[0], pivot[1] + length]], "#a9bdc8", 1, [4, 6]);
     line(
-      Array.from({ length: 121 }, (_, i) => {
-        const a = ((-120 + i * 2) * Math.PI) / 180;
+      Array.from({ length: angleLimit + 1 }, (_, i) => {
+        const a = ((-angleLimit + i * 2) * Math.PI) / 180;
         return [pivot[0] + 194 * Math.sin(a), pivot[1] + 194 * Math.cos(a)];
       }),
       "#b5cbd6",
       1.4,
     );
-    for (let deg = -120; deg <= 120; deg += 10) {
+    for (let deg = -angleLimit; deg <= angleLimit; deg += 10) {
       const a = (deg * Math.PI) / 180,
         r1 = 188,
         r2 = deg % 30 === 0 ? 199 : 194;

@@ -1,7 +1,8 @@
 /** Shared application shell for the simulation catalogue. Rendering never advances physics. */
 import { SIMULATIONS, CATEGORIES, spatialRows } from "./simulations.js";
-import { catalogueArt, homeHero } from "./catalogue-art.js";
+import { catalogueArt } from "./catalogue-art.js";
 import { installPresentationStudio } from "./presentation-studio.js";
+import { studyParams, studyControl, studyGraphs, IGCSE_AREAS, igcseArea } from "./study-policy.js";
 import { LESSONS as ORIGINAL_LESSONS } from "./content.js";
 import { EXTRA_LESSONS } from "./content-extra.js";
 import { ADVANCED_LESSONS } from "./content-advanced.js";
@@ -170,11 +171,11 @@ function thumbnail(id) {
 }
 function card(id, preferredMode) {
   const d = SIMULATIONS[id];
-  return `<a class="simulation-card" href="#/${id}?level=${resolveMode(id, typeof preferredMode === "string" ? (preferredMode === "as" || preferredMode === "a2" ? "alevel" : preferredMode) : null)}" style="--accent:${d.color}"><div class="card-art">${catalogueArt(id,thumbnail(id))}<span class="art-label">${d.category.toUpperCase()}</span><span class="card-dimension">${d.diagramOnly ? "INTERACTIVE DIAGRAM" : icon("cube") + " 3D + 2D"}</span></div><div class="card-body"><div class="card-meta">${levelBadges(id)}${d.isNew ? '<span class="new-lab-badge">NEW</span>' : ""}</div><h3>${d.short}</h3><p>${d.summary}</p><div class="card-bottom"><span class="card-equation">${d.formula}</span><span>Explore ${icon("arrow")}</span></div></div></a>`;
+  return `<a class="simulation-card" href="#/${id}?level=${resolveMode(id, typeof preferredMode === "string" ? (preferredMode === "as" || preferredMode === "a2" ? "alevel" : preferredMode) : null)}" style="--accent:${d.color}"><div class="card-art">${catalogueArt(id,thumbnail(id))}<span class="art-label">${d.category.toUpperCase()}</span><span class="card-dimension">${d.diagramOnly ? "INTERACTIVE DIAGRAM" : icon("cube") + " 3D + 2D"}</span></div><div class="card-body"><div class="card-meta">${preferredMode === "igcse" ? "CAMBRIDGE IGCSE · 0625" : levelBadges(id)}${d.isNew ? '<span class="new-lab-badge">NEW</span>' : ""}</div><h3>${d.short}</h3><p>${d.summary}</p><div class="card-bottom"><span class="card-equation">${preferredMode === "igcse" ? esc(getProfile(id,"igcse").focus) : d.formula}</span><span>Explore ${icon("arrow")}</span></div></div></a>`;
 }
 function home() {
   $("#main").innerHTML =
-    `${homeHero(LAB_COUNT, LAB_COUNT*5+QUESTION_GROUPS.reduce((sum,g)=>sum+g.questions.length,0), icon)}<div class="page-width"><section id="simulations" class="catalogue"><div class="section-heading"><div><div class="eyebrow">FOLLOW YOUR CURIOSITY</div><h2>Find your next discovery.</h2><p>Explore the collection. Choose a question, change a variable, see what happens.</p></div><label class="library-search"><span aria-hidden="true">⌕</span><input type="search" id="search" aria-label="Search simulations" placeholder="Find an experiment…"></label></div><div class="catalogue-tools"><div class="category-filters" aria-label="Filter simulations">${CATEGORIES.map((c, i) => `<button class="${i === 0 ? "active" : ""}" data-category="${c}" aria-pressed="${i === 0}">${c}</button>`).join("")}</div><span id="result-count">${LAB_COUNT} experiments</span></div><div class="simulation-grid" id="cards">${Object.keys(SIMULATIONS).map(card).join("")}</div><p id="empty-results" hidden>No experiments match that search. Try a topic such as waves, light or motion.</p></section><section class="method-band"><div><div class="eyebrow">MORE THAN AN ANIMATION</div><h3>A little curiosity.<br>A deeper understanding.</h3></div>${[
+    `<section class="library-intro page-width"><div><span class="eyebrow">PHYSICS INTERACTIVE LAB</span><h1>See the physics.<br><em>Understand the idea.</em></h1><p>One lab at a time. Clear controls, live model values and a diagram you can explore.</p></div><aside><span>START WITH YOUR COURSE</span><strong>Cambridge IGCSE</strong><p>0625 · 2026–2028<br>Core + Supplement, clearly scoped.</p><a href="#/course">Find your FocusPhysics lesson ↗</a></aside></section><div class="page-width"><section id="simulations" class="catalogue"><div class="section-heading"><div><div class="eyebrow">YOUR PHYSICS LABORATORY</div><h2>One collection. A clearer way to learn.</h2><p>Choose a topic. Set up one experiment. Explain what you see.</p></div><label class="library-search"><span aria-hidden="true">⌕</span><input type="search" id="search" aria-label="Search simulations" placeholder="Find an experiment…"></label></div><div class="catalogue-tools"><div class="category-filters" aria-label="Filter simulations">${CATEGORIES.map((c, i) => `<button class="${i === 0 ? "active" : ""}" data-category="${c}" aria-pressed="${i === 0}">${c}</button>`).join("")}</div><span id="result-count">${LAB_COUNT} experiments</span></div><div class="simulation-grid" id="cards">${Object.keys(SIMULATIONS).map(card).join("")}</div><p id="empty-results" hidden>No experiments match that search. Try a topic such as waves, light or motion.</p></section><section class="method-band"><div><div class="eyebrow">MORE THAN AN ANIMATION</div><h3>A little curiosity.<br>A deeper understanding.</h3></div>${[
       [
         "01",
         "Predict it.",
@@ -206,15 +207,11 @@ function home() {
     "beforebegin",
     '<section class="curriculum-banner question-banner"><div><div class="eyebrow">NEW · 312 ORIGINAL QUESTIONS · 26 TOPIC GROUPS</div><h2>Turn your experiments into understanding.</h2><p>A Level calculations, explanations, hints and worked solutions. Save your progress and print a practice set.</p></div><a class="button" href="#/questions">Enter the practice room ↗</a></section>',
   );
-  const featured=document.createElement('section');
-  featured.className='featured-experiments';
-  featured.innerHTML=`<div class="section-heading"><div><div class="eyebrow">A GOOD PLACE TO BEGIN</div><h2>Small experiments. Big ideas.</h2></div><a class="text-link" href="#simulations">Browse all ${LAB_COUNT} ${icon('arrow')}</a></div><div class="featured-grid">${['spring','pendulum','gravity','waves'].map(id=>card(id)).join('')}</div>`;
-  $('.hero').after(featured);
   const learningHub=document.createElement('section');learningHub.className='learning-hub';
   $('.catalogue').after(learningHub);
   $$('.curriculum-banner').forEach(b=>learningHub.append(b));
-  $('.curriculum-banner .eyebrow').textContent='IGCSE · YOUR COURSE, CONNECTED';
-  $('.question-banner .eyebrow').textContent='A LEVEL · PRACTICE WITH PURPOSE';
+  $('.curriculum-banner .eyebrow').textContent='IGCSE · ORIGINAL LESSONS';
+  $('.question-banner .eyebrow').textContent='AS / A LEVEL · SEPARATE PRACTICE';
   let category = "All experiments";
   $(".catalogue-tools").insertAdjacentHTML(
     "afterbegin",
@@ -224,7 +221,7 @@ function home() {
     const q = $("#search").value.toLowerCase().trim(),
       entries = Object.entries(SIMULATIONS).filter(
         ([id, d]) =>
-          (category === "All experiments" || d.category === category) &&
+          (category === "All experiments" || d.category === category || igcseArea(id) === category) &&
           ($("#library-level").value === "all" ||
             (availableModes(id).includes(
               ["as", "a2"].includes($("#library-level").value)
@@ -244,8 +241,21 @@ function home() {
       `${entries.length} experiment${entries.length === 1 ? "" : "s"}`;
     $("#empty-results").hidden = entries.length > 0;
   };
+  const categories = () => {
+    category = 'All experiments';
+    const names = $('#library-level').value === 'igcse' ? ['All experiments',...IGCSE_AREAS] : CATEGORIES;
+    $('.category-filters').innerHTML = names.map((name,i) => `<button data-category="${name}" class="${i===0?'active':''}" aria-pressed="${i===0}">${name}</button>`).join('');
+    $$('[data-category]').forEach(b => b.onclick = () => {
+      category=b.dataset.category;
+      $$('[data-category]').forEach(btn => {btn.classList.toggle('active',btn===b);btn.setAttribute('aria-pressed',String(btn===b));});
+      filter();
+    });
+    filter();
+  };
+  $("#library-level").value = "igcse";
+  categories();
   $("#search").oninput = filter;
-  $("#library-level").onchange = filter;
+  $("#library-level").onchange = categories;
   $$("[data-category]").forEach(
     (b) =>
       (b.onclick = () => {
@@ -257,40 +267,8 @@ function home() {
         filter();
       }),
   );
-  const params = { ...ORBIT_DEFAULTS, velocity: circularSpeed(ORBIT_DEFAULTS) };
-  hero = {
-    type: "gravity",
-    ...createOrbit(params),
-    trail: [],
-    showTrail: true,
-    vectors: true,
-    showLabels: true,
-    guideStep: 0,
-  };
-  const token = routeToken;
-  import("./scene3d.js")
-    .then(({ SceneView }) => {
-      if (token !== routeToken || !$("#hero-canvas")) return;
-      try {
-        heroView = new SceneView($("#hero-canvas"));
-        heroView.azimuth = -0.5;
-        heroView.polar = 0.9;
-        heroView.radius = 9.8;
-        heroView.homeRadius = 9.8;
-        heroView.homePolar = 1.0;
-        heroView.homeAzimuth = -0.35;
-      } catch {
-        $("#hero-canvas").hidden = true;
-        $("#hero-fallback").hidden = false;
-      }
-    })
-    .catch(() => {
-      if (token === routeToken) {
-        $("#hero-canvas").hidden = true;
-        $("#hero-fallback").hidden = false;
-      }
-    });
 }
+
 function controlMarkup(d, p) {
   if (d.options)
     return `<div class="control"><label class="control-label" for="${d.key}-select">${d.label}</label><select class="parameter-select" id="${d.key}-select" aria-label="${d.label}">${d.options.map(([v, label]) => `<option value="${v}" ${Number(v) === p[d.key] ? "selected" : ""}>${label}</option>`).join("")}</select><p class="control-hint">${d.hint}</p></div>`;
@@ -305,17 +283,18 @@ function labPage(type, query) {
       query.get("level") || stored("physics-study-mode", null),
     ),
     syllabusCycle = query.get("cycle") === "next" ? "next" : "current";
-  let params = { ...d.defaults, ...getProfile(type, studyMode).setup },
-    invalid = false;
-  for (const key of Object.keys(params))
-    if (query.has(key))
-      params[key] = query.get(key) === "" ? NaN : Number(query.get(key));
+  let params, invalid = false;
+  const requested = {};
+  for (const key of Object.keys(d.defaults))
+    if (query.has(key)) requested[key] = query.get(key) === '' ? NaN : Number(query.get(key));
   try {
+    params = studyParams(type,studyMode,d,requested);
     d.create(params);
   } catch {
-    params = { ...d.defaults };
+    params = studyParams(type,studyMode,d);
     invalid = true;
   }
+  const courseGraphs = studyGraphs(type,studyMode,d);
   lab = {
     type,
     studyMode,
@@ -329,13 +308,13 @@ function labPage(type, query) {
     history: [],
     trail: [],
     showTrail: true,
-    vectors: true,
+    vectors: !(type === "pendulum" && studyMode === "igcse"),
     showLabels: true,
     cleanPresentation: true,
     projectileFrame: query.get("frame")==="vacuum"?"vacuum":"actual",
     oscillationVectors: ["motion","forces"].includes(query.get("indicators"))?query.get("indicators"):type==="spring"?"forces":"motion",
-    smallAngleReference:query.get("compare")==="1",
-    vectorMethod: ["triangle", "parallelogram", "components"].includes(
+    smallAngleReference:studyMode !== "igcse" && query.get("compare")==="1",
+    vectorMethod: (studyMode === "igcse" ? ["triangle", "parallelogram"] : ["triangle", "parallelogram", "components"]).includes(
       query.get("method"),
     )
       ? query.get("method")
@@ -343,12 +322,10 @@ function labPage(type, query) {
     vectorProgress: 1,
     vectorGrid: query.get("grid") !== "0",
     vectorAngle: query.get("angleMarker") !== "0",
-    vectorComponents: query.get("components") === "1",
-    graph: d.graphs.some((g) => g.id === query.get("graph"))
+    vectorComponents: studyMode !== "igcse" && query.get("components") === "1",
+    graph: courseGraphs.some((g) => g.id === query.get("graph"))
       ? query.get("graph")
-      : (type === "vectors"
-          ? d.graphs.find((g) => g.keys.includes("resultant"))?.id
-          : null) || d.graphs[0].id,
+      : courseGraphs[0]?.id || d.graphs[0].id,
     nextSample: 0,
     lastUI: -1,
     ended: null,
@@ -362,7 +339,7 @@ function labPage(type, query) {
   };
   if (!Array.isArray(lab.notebook)) lab.notebook = [];
   $("#main").innerHTML =
-    `<div class="page-width lab-page"><div class="breadcrumb"><a href="#/">The laboratory</a><span>/</span><span>${d.category}</span><span>/</span><span>${d.short}</span></div><div class="lab-title-row"><div><div class="eyebrow"><span class="subject-dot" style="background:${d.color}"></span>${d.category.toUpperCase()} <span class="pill">${levelBadges(type)}</span></div><h1>${d.title}</h1><p>${d.summary}</p></div><div class="toolbar-buttons"><button class="small-button" id="share">${icon("share")} Share setup</button><button class="small-button" id="export">${icon("download")} Export data</button></div></div><div class="lab-grid"><aside class="panel controls" aria-label="Simulation parameters"><div class="controls-heading"><h2>Your experiment</h2><span>01 / SET UP</span></div>${d.controls.map((c) => controlMarkup(c, params)).join("")}<p id="control-error" class="control-error" role="alert"></p><div class="preset-block"><h3 class="panel-label">Start with a scenario</h3><div class="preset-row">${d.presets.map(([name], i) => `<button class="preset-button" data-preset="${i}" aria-pressed="false">${name}</button>`).join("")}</div></div><p class="control-footnote">A parameter change starts a fresh run.<br>All graphs use the calculated state.</p><button class="model-shortcut" id="model-shortcut">See the physics behind it ↓</button></aside><div class="workspace"><section class="stage" id="stage" aria-label="Interactive simulation studio"><div class="stage-top"><span class="running-status"><span class="status-dot"></span><span id="run-status">RUNNING</span></span><div class="stage-views" aria-label="View mode"><button data-view="3d" aria-pressed="true">${icon("cube")} 3D</button><button data-view="2d" aria-pressed="false">2D diagram</button><button id="fullscreen" aria-label="Fullscreen simulation">${icon("expand")}</button></div></div><div class="camera-toolbar" id="camera-toolbar" aria-label="3D camera presets"><div><button data-camera="perspective" aria-pressed="true">Perspective</button><button data-camera="front" aria-pressed="false">Front</button><button data-camera="above" aria-pressed="false">Above</button></div><label><input type="checkbox" id="scene-labels" checked> Labels</label></div><div class="scene-container"><canvas id="scene-3d" tabindex="0" role="img" aria-label="Interactive 3D ${d.short}. Drag to rotate, scroll to zoom. Arrow keys rotate, plus and minus zoom, zero resets the camera."></canvas><canvas id="simulation" role="img" aria-label="Calibrated 2D ${d.short} diagram" hidden></canvas><div class="scene-camera-hint" id="camera-hint">DRAG TO ROTATE <span>·</span> SCROLL TO ZOOM</div><div class="scene-equation">${d.formula}</div><button class="camera-reset" id="camera-reset" aria-label="Reset 3D camera">${icon("reset")}</button></div><div class="transport"><button id="play" class="play-button">${icon("pause")} Pause</button><button id="step" class="reset-button" aria-label="Advance one frame">${icon("step")} Step</button><button id="reset" class="reset-button">${icon("reset")} Reset</button><span id="time-readout" class="time-readout"></span><label class="speed-select">Speed <select id="speed" aria-label="Simulation speed"><option value=".25">0.25×</option><option value=".5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label></div></section><p class="stage-caption" id="stage-caption">${d.caption}</p><div class="live-metrics" id="metrics"></div><section class="panel graph-panel" aria-label="Live graphs"><div class="graph-header"><div><span class="section-kicker">02 / OBSERVE</span><h2>Follow the evidence.</h2></div><div class="segmented" aria-label="Graph selection">${d.graphs.map((g) => `<button data-graph="${g.id}" aria-pressed="${g.id === lab.graph}" class="${g.id === lab.graph ? "active" : ""}">${g.label}</button>`).join("")}</div></div><div class="stage-options"><label><input id="vectors" type="checkbox" checked> Vectors / indicators</label>${["gravity", "pendulum", "projectile", ...ADVANCED_IDS].includes(type) ? '<label><input id="trail" type="checkbox" checked> Motion trail</label>' : ""}<span id="graph-mode-label"></span></div><div id="plots"></div><div class="energy-summary" id="energy-summary"></div><p class="graph-note" id="graph-note"></p></section><div class="insight-strip"><span>TRY THIS</span><p>${d.insight}</p><button id="record" class="small-button">${icon("record")} Record reading</button></div><details class="notebook panel"><summary>Your lab notebook <span id="notebook-count">0 readings</span></summary><div id="notebook-content"></div></details></div></div><section class="lesson-area" id="lesson-area"><div class="lesson-intro"><span class="section-kicker">03 / UNDERSTAND</span><h2>Make the connection.</h2></div><div class="lesson-tabs" role="tablist" aria-label="Learning resources">${[
+    `<div class="page-width lab-page"><div class="breadcrumb"><a href="#/">The laboratory</a><span>/</span><span>${d.category}</span><span>/</span><span>${d.short}</span></div><div class="lab-title-row"><div><div class="eyebrow"><span class="subject-dot" style="background:${d.color}"></span>${d.category.toUpperCase()} <span class="pill">${levelBadges(type)}</span></div><h1>${d.title}</h1><p>${d.summary}</p></div><div class="toolbar-buttons"><button class="small-button" id="share">${icon("share")} Share setup</button><button class="small-button" id="export">${icon("download")} Export data</button></div></div><div class="lab-grid"><aside class="panel controls" aria-label="Simulation parameters"><div class="controls-heading"><h2>Your experiment</h2><span>01 / SET UP</span></div>${d.controls.map((c) => controlMarkup(studyControl(type,studyMode,c), params)).join("")}<p id="control-error" class="control-error" role="alert"></p><div class="preset-block"><h3 class="panel-label">Start with a scenario</h3><div class="preset-row">${d.presets.map(([name], i) => `<button class="preset-button" data-preset="${i}" aria-pressed="false">${name}</button>`).join("")}</div></div><p class="control-footnote">A parameter change starts a fresh run.<br>All graphs use the calculated state.</p><button class="model-shortcut" id="model-shortcut">See the physics behind it ↓</button></aside><div class="workspace"><section class="stage" id="stage" aria-label="Interactive simulation studio"><div class="stage-top"><span class="running-status"><span class="status-dot"></span><span id="run-status">RUNNING</span></span><div class="stage-views" aria-label="View mode"><button data-view="3d" aria-pressed="true">${icon("cube")} 3D</button><button data-view="2d" aria-pressed="false">2D diagram</button><button id="fullscreen" aria-label="Fullscreen simulation">${icon("expand")}</button></div></div><div class="camera-toolbar" id="camera-toolbar" aria-label="3D camera presets"><div><button data-camera="perspective" aria-pressed="true">Perspective</button><button data-camera="front" aria-pressed="false">Front</button><button data-camera="above" aria-pressed="false">Above</button></div><label><input type="checkbox" id="scene-labels" checked> Labels</label></div><div class="scene-container"><canvas id="scene-3d" tabindex="0" role="img" aria-label="Interactive 3D ${d.short}. Drag to rotate, scroll to zoom. Arrow keys rotate, plus and minus zoom, zero resets the camera."></canvas><canvas id="simulation" role="img" aria-label="Calibrated 2D ${d.short} diagram" hidden></canvas><div class="scene-camera-hint" id="camera-hint">DRAG TO ROTATE <span>·</span> SCROLL TO ZOOM</div><div class="scene-equation">${d.formula}</div><button class="camera-reset" id="camera-reset" aria-label="Reset 3D camera">${icon("reset")}</button></div><div class="transport"><button id="play" class="play-button">${icon("pause")} Pause</button><button id="step" class="reset-button" aria-label="Advance one frame">${icon("step")} Step</button><button id="reset" class="reset-button">${icon("reset")} Reset</button><span id="time-readout" class="time-readout"></span><label class="speed-select">Speed <select id="speed" aria-label="Simulation speed"><option value=".25">0.25×</option><option value=".5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label></div></section><p class="stage-caption" id="stage-caption">${d.caption}</p><div class="live-metrics" id="metrics"></div><section class="panel graph-panel" aria-label="Live graphs"><div class="graph-header"><div><span class="section-kicker">02 / OBSERVE</span><h2>Follow the evidence.</h2></div><div class="segmented" aria-label="Graph selection">${d.graphs.map((g) => `<button data-graph="${g.id}" aria-pressed="${g.id === lab.graph}" class="${g.id === lab.graph ? "active" : ""}">${g.label}</button>`).join("")}</div></div><div class="stage-options"><label><input id="vectors" type="checkbox" checked> Vectors / indicators</label>${["gravity", "pendulum", "projectile", ...ADVANCED_IDS].includes(type) ? '<label><input id="trail" type="checkbox" checked> Motion trail</label>' : ""}<span id="graph-mode-label"></span></div><div id="plots"></div><div class="energy-summary" id="energy-summary"></div><p class="graph-note" id="graph-note"></p></section><div class="insight-strip"><span>TRY THIS</span><p>${d.insight}</p><button id="record" class="small-button">${icon("record")} Record reading</button></div><details class="notebook panel"><summary>Your lab notebook <span id="notebook-count">0 readings</span></summary><div id="notebook-content"></div></details></div></div><section class="lesson-area" id="lesson-area"><div class="lesson-intro"><span class="section-kicker">03 / UNDERSTAND</span><h2>Make the connection.</h2></div><div class="lesson-tabs" role="tablist" aria-label="Learning resources">${[
       ["learn", "Understand the physics"],
       ["experiments", "Guided experiments"],
       ["questions", "Test your understanding"],
@@ -398,7 +375,7 @@ function labPage(type, query) {
   $(".lab-page").dataset.model = type;
   const mappedLessons = relatedLessons(type);
   const practiceGroup = QUESTION_GROUPS.find((group) => group.model === type);
-  if (practiceGroup)
+  if (practiceGroup && studyMode !== "igcse")
     $(".lab-title-row").insertAdjacentHTML(
       "afterend",
       `<aside class="lesson-course-links"><a href="#/questions?topic=${practiceGroup.id}">Practise ${esc(practiceGroup.title.toLowerCase())} · 12 A Level questions with worked answers ↗</a></aside>`,
@@ -457,9 +434,10 @@ function labPage(type, query) {
     $("#metrics").after(notes);
     notes.append($("#stage-caption"));
   }
-  installVisualGuide();
+  // The course focus replaces the duplicated three-step walkthrough.
+
   presentationStudio=installPresentationStudio($("#stage"),type);
-  if(["spring","pendulum"].includes(type)) {
+  if(["spring","pendulum"].includes(type) && studyMode !== "igcse") {
     const tools=document.createElement("div");
     tools.className="oscillation-tools";tools.setAttribute("aria-label","Oscillation indicators");
     tools.innerHTML='<div aria-label="Vector interpretation"><button data-oscillation-vectors="motion">Motion vectors</button><button data-oscillation-vectors="forces">Force diagram</button></div>'+(type==='pendulum'?'<label><input type="checkbox" id="small-angle-reference"> Small-angle reference</label>':'');
@@ -523,6 +501,35 @@ function labPage(type, query) {
     $('[data-camera="above"]').textContent = "Isometric";
     $(".controls-heading h2").textContent = "Your vectors";
   }
+  $(".lab-page").classList.add('consolidated-lab');
+  $(".scene-equation").textContent = getProfile(type,studyMode).equation;
+  $("#metrics").hidden = true;
+  $('.graph-header').append($('#record'));
+  $('.notebook').hidden = !courseGraphs.length;
+  $("#energy-summary").hidden = studyMode === 'igcse';
+  $$("[data-graph]").forEach(b => b.hidden = !courseGraphs.some(g => g.id === b.dataset.graph));
+  $(".graph-panel").hidden = !courseGraphs.length;
+  if (studyMode === 'igcse') {
+    $(".lab-title-row h1").textContent = type === 'pendulum' ? 'Pendulum timing' : d.short;
+    $(".lab-title-row p").textContent = getProfile(type,studyMode).focus;
+    $('#vectors').checked = lab.vectors;
+    if (type === 'pendulum') $('#vectors').closest('label').hidden = true;
+    $(".insight-strip p").textContent = getProfile(type,studyMode).task;
+    $(".next-experiments").querySelectorAll('a').forEach(a => {
+      const id = a.hash.slice(2).split('?')[0];
+      if (id && SIMULATIONS[id] && !availableModes(id).includes('igcse')) a.hidden = true;
+      else if (id) a.hash = `#/${id}?level=igcse`;
+    });
+  }
+  // Original school resources remain available, below the experiment.
+  const links = $$('.lesson-course-links');
+  if (links.length) {
+    const resources = document.createElement('details');
+    resources.className = 'school-resources';
+    resources.innerHTML = '<summary>Original lessons & resources ↗</summary>';
+    links.forEach(node => resources.append(node));
+    $('#lesson-area').after(resources);
+  }
   sample();
   createCharts();
   updateReadouts();
@@ -585,7 +592,8 @@ function arrangeOrbitWorkbench() {
   analysis.after(notebookRow);
 }
 function syncInputs() {
-  for (const d of lab.definition.controls) {
+  for (const raw of lab.definition.controls) {
+    const d = studyControl(lab.type,lab.studyMode,raw);
     if (d.options) {
       $(`#${d.key}-select`).value = String(lab.params[d.key]);
       continue;
@@ -598,25 +606,11 @@ function syncInputs() {
   }
 }
 function setStudyMode(mode) {
-  lab.studyMode = resolveMode(lab.type, mode);
-  $(".lab-page").dataset.learningMode = lab.studyMode;
-  save("physics-study-mode", lab.studyMode);
-  learningStudio.setMode(lab.studyMode);
-  if (lab.type === "solarsystem")
-    $(".solar-atlas-link").href =
-      "./solar-atlas.html?level=" +
-      lab.studyMode +
-      "&cycle=" +
-      lab.syllabusCycle;
-  const hash = location.hash.split("?"),
-    args = new URLSearchParams(hash[1] || "");
-  args.set("level", lab.studyMode);
-  args.set("cycle", lab.syllabusCycle);
-  history.replaceState(null, "", hash[0] + "?" + args);
-  showLesson(
-    $('[data-lesson][aria-selected="true"]')?.dataset.lesson || "learn",
-  );
-  expandedView?.refresh();
+  const next = resolveMode(lab.type, mode);
+  if (next === lab.studyMode) return;
+  save('physics-study-mode',next);
+  // A new course gets its own safe starting setup and its own set of controls.
+  location.hash = `#/${lab.type}?level=${next}&cycle=${lab.syllabusCycle}&view=${lab.view}`;
 }
 function loadLearningSetup() {
   reset({
@@ -629,6 +623,7 @@ function loadLearningSetup() {
   toast("Recommended setup loaded and paused. Make a prediction, then resume.");
 }
 function reset(params = lab.params, { deferUI = false } = {}) {
+  params = studyParams(lab.type,lab.studyMode,lab.definition,params);
   const model = lab.definition.create(params);
   Object.assign(lab, model, {
     accumulator: 0,
@@ -696,9 +691,10 @@ function loadPreset(index) {
   syncPlay();
 }
 function bindControls() {
-  for (const d of lab.definition.controls) {
+  for (const raw of lab.definition.controls) {
+    const d = studyControl(lab.type,lab.studyMode,raw);
     const commit = (raw, slider = false) => {
-      const value = d.log ? (slider ? 10 ** raw : raw) : raw * (d.factor || 1);
+      const value = d.options ? raw : d.log ? (slider ? 10 ** raw : raw) : raw * (d.factor || 1);
       try {
         reset({ ...lab.params, [d.key]: value });
         $("#control-error").textContent = "";
@@ -837,7 +833,7 @@ function bindControls() {
   };
   const calculationLaunch = document.createElement("button");
   calculationLaunch.className = "small-button calculation-launch";
-  calculationLaunch.innerHTML = `${icon("expand")} Live calculations`;
+  calculationLaunch.innerHTML = `${icon("expand")} ${lab.studyMode === "igcse" ? "Model & explanation" : "Live calculations"}`;
   calculationLaunch.title =
     "Open the model, variables and worked calculations together";
   calculationLaunch.onclick = () => expandButton.click();
@@ -1067,6 +1063,10 @@ function selectedGraph() {
 function createCharts() {
   charts.forEach((c) => c.chart.destroy());
   charts = [];
+  if (!studyGraphs(lab.type,lab.studyMode,lab.definition).length) {
+    $("#plots").innerHTML = "";
+    return;
+  }
   if (!window.Chart) {
     $("#plots").innerHTML =
       "<p>Reload this page to restore the graph library.</p>";
@@ -1239,25 +1239,6 @@ function updateCharts() {
   }
   lab.graphDirty = false;
 }
-function installVisualGuide() {
-  const guide = SCENE_GUIDES[lab.type];
-  if (!guide) return;
-  const section = document.createElement("section");
-  section.className = "visual-guide";
-  section.setAttribute("aria-label", "Understand this animation");
-  section.innerHTML = `<div class="visual-guide-heading"><div><span class="section-kicker">READ THE MODEL</span><h2>See it. Understand it.</h2></div><span id="guide-reading"></span></div><div class="guide-steps" role="group" aria-label="Animation walkthrough">${["What to watch", "Why it happens", "Try a change"].map((text, i) => `<button data-guide="${i}" aria-pressed="${i === 0}"><span>0${i + 1}</span>${text}</button>`).join("")}</div><p id="guide-copy">${esc(guide[0])}</p><details class="visual-scale"><summary>How to read the visual scale</summary><p>${esc(guide[3])}</p></details>`;
-  $("#stage-caption").before(section);
-  section.querySelectorAll("[data-guide]").forEach(
-    (b) =>
-      (b.onclick = () => {
-        lab.guideStep = Number(b.dataset.guide);
-        $("#guide-copy").textContent = guide[lab.guideStep];
-        section
-          .querySelectorAll("[data-guide]")
-          .forEach((o) => o.setAttribute("aria-pressed", String(o === b)));
-      }),
-  );
-}
 function metricMarkup(m) {
   return `<div class="metric"><div class="metric-label">${esc(m.label)}</div><div class="metric-value">${esc(fmt(m.value, m.decimals ?? 2))}<span>${esc(m.unit)}</span></div><div class="metric-note">${esc(m.note || "")}</div></div>`;
 }
@@ -1342,6 +1323,14 @@ function updateReadouts() {
   $("#stage-caption").textContent =
     d.caption +
     (d.rateFor ? ` · 1× = ${fmt(rate, 3)} simulated s / real s` : "");
+  if (lab.studyMode === 'igcse') {
+    $('#stage-caption').textContent = SCENE_GUIDES[lab.type]?.[3] || 'Calculated model. Apparatus appearance is illustrative; use the labelled numerical values.';
+    $('#graph-note').textContent = 'Calculated model values. Change one variable, compare the graph, then explain the trend.';
+    if (lab.type === 'gases') {
+      $('.graph-panel').hidden = p.state !== 2;
+      $('#volume-slider').closest('.control').hidden = p.state !== 2;
+    }
+  }
   expandedView?.refresh();
   if (embedded) $("#embed-open").href = setupLink();
 }

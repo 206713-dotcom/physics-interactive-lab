@@ -1,3 +1,4 @@
+import { sceneLabelAllowed } from './study-policy.js';
 /** Real WebGL scenes. Geometry follows the same state as graphs and the 2D view.
  * No physics is integrated here. Pointer/keyboard camera controls are visual only. */
 import * as T from "../vendor/three.module.min.js";
@@ -103,6 +104,7 @@ function label(value, color = "#a9c8d9") {
   );
   sprite.scale.set(2.5, 0.47, 1);
   sprite.userData.role = "label";
+  sprite.userData.text = value;
   return sprite;
 }
 
@@ -359,7 +361,7 @@ export class SceneView {
     this.root.clear();
     this.objects = {};
   }
-  build(type, p) {
+  build(type, p, studyMode) {
     const newModel = this.type !== type;
     this.clear();
     this.type = type;
@@ -415,7 +417,7 @@ export class SceneView {
         : type === "circuits" ? createRCBench(p, r)
         : type === "projectile" ? createProjectileBench(p, r)
         : type === "collisions" ? createCollisionBench(p, r)
-        : createDetailedMechanics(type, p, r);
+        : createDetailedMechanics(type, p, r, { studyMode });
       this.target.set(...this.precision.target);
       this.homeRadius = this.precision.radius;
       this.homePolar = this.precision.polar ?? (type === "spring" ? 1.05 : 1.48);
@@ -679,7 +681,7 @@ export class SceneView {
       this.type !== type ||
       (this.key !== key && !this.curriculum?.liveParams)
     )
-      this.build(type, p);
+      this.build(type, p, lab.studyMode);
     else this.key = key;
     const o = this.objects;
     // Restore label visibility before each model applies its own conditions
@@ -818,10 +820,10 @@ export class SceneView {
       item.label.position
         .copy(item.mesh.position)
         .add(new T.Vector3(...item.offset));
-    if (lab.showLabels === false)
-      this.root.traverse((node) => {
-        if (node.userData.role === "label") node.visible = false;
-      });
+    this.root.traverse(node => {
+      if (node.userData.role === 'label' && (lab.showLabels === false ||
+          !sceneLabelAllowed(lab.type,lab.studyMode,node.userData.text))) node.visible = false;
+    });
     const w = this.canvas.clientWidth,
       h = this.canvas.clientHeight;
     if (this.w !== w || this.h !== h) {

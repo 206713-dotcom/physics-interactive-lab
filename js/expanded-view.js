@@ -1,5 +1,6 @@
 import { calculationSheet, calculationNumber, calculationOutcome } from "./calculations.js";
 import { mathHTML, setMath } from "./math-display.js";
+import { studySheet, syllabusDepth } from "./study-policy.js";
 import { getProfile, MODE_NAMES } from "./learning-paths.js";
 
 const sheetTimeUnit = (sheet) =>
@@ -81,6 +82,9 @@ export class ExpandedView {
     this.time = root.querySelector(".calculation-time");
     this.footnote = root.querySelector(".calculation-footnote");
     this.choice = root.querySelector("#calculation-choice");
+    this.brief = document.createElement('section');
+    this.brief.className='inspector-study-brief';
+    root.querySelector('.calculation-heading').after(this.brief);
     this.modeNote = document.createElement("p");
     this.modeNote.className = "calculation-level-scope";
     this.footnote.before(this.modeNote);
@@ -197,42 +201,59 @@ export class ExpandedView {
   refresh() {
     const { type, state, params, running, ended, studyMode } =
         this.getSnapshot(),
-      sheet = calculationSheet(type, state, params);
+      full = calculationSheet(type,state,params),
+      sheet = studySheet(type,state,params,studyMode);
     if (studyMode !== this.lastStudyMode) {
-      const profile = getProfile(type, studyMode),
-        preferred = profile?.calculations.find((key) =>
-          sheet.calculations.some((c) => c.id === key),
-        );
-      if (preferred) {
-        this.selectedId = preferred;
-        this.choice.value = preferred;
+      const profile = getProfile(type,studyMode),
+        preferred = profile?.calculations.find(key => sheet.calculations.some(c => c.id === key));
+      this.selectedId = preferred || sheet.calculations[0]?.id;
+      this.choice.value = this.selectedId || '';
+      const igcse = studyMode === 'igcse';
+      this.brief.hidden = !igcse;
+      this.root.querySelector('.calculation-heading .expanded-eyebrow').textContent = igcse ? 'YOUR LEARNING FOCUS' : 'LIVE CALCULATIONS';
+      this.brief.innerHTML = igcse ? `<span class="section-kicker">0625 · ${syllabusDepth(type)}</span><h3>${mathHTML(profile.focus)}</h3><p class="focus-equation">${mathHTML(profile.equation)}</p><ul>${profile.goals.map(g=>`<li>${mathHTML(g)}</li>`).join('')}</ul><p><strong>Try this.</strong> ${mathHTML(profile.task)}</p><details><summary>${mathHTML(profile.question)}</summary><p>${mathHTML(profile.answer)}</p></details>` : '';
+      this.root.querySelector('.calculation-variables').hidden = !sheet.variables.length;
+      this.root.querySelector('.calculation-overview h3').textContent = igcse ? 'Related results' : 'Other calculations';
+      this.root.querySelector('.calculation-heading h2').textContent = igcse ? 'Understand the idea.' : 'Follow the physics.';
+      this.root.querySelector('.calculation-heading p').textContent = igcse ? 'One model. A focused IGCSE explanation.' : 'Every value, connected to the model.';
+      this.root.querySelector('[data-inspector="calculations"]').textContent = igcse ? 'Explanation' : 'Calculations';
+      this.modeNote.textContent = igcse ? 'Core and Supplement outcomes are identified in the lesson. Advanced derivations are hidden in this mode.' : `${MODE_NAMES[studyMode]} · full model calculations`;
+      for (const option of this.choice.options) {
+        option.hidden = !sheet.calculations.some(c=>c.id===option.value);
+        option.disabled = option.hidden;
       }
-      this.modeNote.textContent = `${MODE_NAMES[studyMode] || "Full model"} focus. Additional calculations remain available; some go beyond the selected syllabus depth.`;
       this.root.dataset.studyMode = studyMode || "";
       this.lastStudyMode = studyMode;
     }
     // Text-only updates preserve selection and focus; no integration runs here.
-    sheet.variables.forEach((value, i) =>
-      setMath(this.variableNodes[i], quantity(value.value, value.unit)),
-    );
-    const item = sheet.calculations.find(
-      (entry) => entry.id === this.selectedId,
-    );
-    const nodes = this.resultNodes;
-    setText(nodes.h3, item.title);
-    setMath(nodes[".calculation-formula"], item.formula);
-    setMath(nodes[".calculation-substitution"], item.substitution);
-    setMath(nodes[".calculation-result"], calculationOutcome(type, item));
-    setText(nodes[".calculation-note"], item.note);
-    nodes[".calculation-note"].hidden = !item.note;
-    this.overview.forEach((button, index) => {
-      const entry = sheet.calculations[index];
-      button.hidden = entry.id === this.selectedId;
-      setMath(
-        button.querySelector("strong"),
-        calculationOutcome(type, entry),
-      );
+    full.variables.forEach((original,i) => {
+      const value = sheet.variables.find(v=>v.symbol===original.symbol), node = this.variableNodes[i];
+      node.parentElement.hidden = !value;
+      if (value) {
+        setMath(node,quantity(value.value,value.unit));
+        setText(node.parentElement.querySelector('dt span'),value.label);
+      }
     });
+    const item = sheet.calculations.find(entry => entry.id === this.selectedId);
+    this.root.querySelector('.worked-calculation').hidden = !item;
+    this.choice.hidden = sheet.calculations.length < 2;
+    this.root.querySelector('.calculation-choice-label').hidden = this.choice.hidden;
+    this.root.querySelector('.copy-working').hidden = !item;
+    if (item) {
+      const nodes = this.resultNodes;
+      setText(nodes.h3,item.title);
+      setMath(nodes['.calculation-formula'],item.formula);
+      setMath(nodes['.calculation-substitution'],item.substitution);
+      setMath(nodes['.calculation-result'],calculationOutcome(type,item));
+      setText(nodes['.calculation-note'],item.note);
+      nodes['.calculation-note'].hidden = !item.note;
+    }
+    this.overview.forEach(button => {
+      const entry = sheet.calculations.find(c=>c.id===button.dataset.calculation);
+      button.hidden = !entry || entry.id === this.selectedId;
+      if (entry) setMath(button.querySelector('strong'),calculationOutcome(type,entry));
+    });
+    this.root.querySelector('.calculation-overview').hidden = sheet.calculations.length < 2;
     setText(
       this.time,
       `${running ? "LIVE" : "PAUSED"} · t = ${calculationNumber(sheet.time)} ${sheetTimeUnit(sheet)}`,
@@ -257,9 +278,10 @@ export class ExpandedView {
       this.root.querySelector(".expanded-full-link").href = this.fullURL();
   }
   async copy() {
-    const { type, state, params } = this.getSnapshot(),
-      sheet = calculationSheet(type, state, params),
+    const { type, state, params, studyMode } = this.getSnapshot(),
+      sheet = studySheet(type,state,params,studyMode),
       item = sheet.calculations.find((entry) => entry.id === this.selectedId);
+    if (!item) return;
     const text = `${item.title}\n${type === "vectors" ? "Static vector setup" : `t = ${calculationNumber(sheet.time)} ${sheetTimeUnit(sheet)}`}\n${item.formula}\n${item.substitution}\n= ${calculationOutcome(type, item)}\n${item.note}\n\nValues used:\n${sheet.variables.map((value) => `${value.symbol} (${value.label}) = ${quantity(value.value, value.unit)}`).join("\n")}\n\n${sheet.note}`;
     const status = this.root.querySelector(".copy-working-status");
     try {

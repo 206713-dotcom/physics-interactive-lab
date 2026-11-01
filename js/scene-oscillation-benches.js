@@ -109,8 +109,8 @@ export function createPendulumBench(p,root,options={}) {
     referenceBob=role(k.ring(.24,C.purple,pendulumPoint(0),'z',.9),'pendulum-reference');
   dashedPath(k,[pivot,pendulumPoint(0)],C.muted,.7);
   // Angle markings cover both ±120° releases without changing length mid-run.
-  const rim=[];
-  for(let degrees=-120;degrees<=120;degrees+=2){
+  const rim=[], limit = options.studyMode === "igcse" ? 30 : 120;
+  for(let degrees=-limit;degrees<=limit;degrees+=2){
     const a=degrees*Math.PI/180;rim.push([2.94*Math.sin(a),pivot[1]-2.94*Math.cos(a),-.24]);
     if(degrees%10===0){
       const outer=degrees%30===0?3.07:3.0;

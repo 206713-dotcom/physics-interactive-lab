@@ -1,4 +1,4 @@
-import { apparatusBounds, frameApparatus, diagramLabelVisible } from './scene-framing.js';
+import { apparatusBounds, frameApparatus, orbitBounds, diagramLabelVisible } from './scene-framing.js';
 import { sceneLabelAllowed } from './study-policy.js';
 /** Real WebGL scenes. Geometry follows the same state as graphs and the 2D view.
  * No physics is integrated here. Pointer/keyboard camera controls are visual only. */
@@ -367,16 +367,19 @@ export class SceneView {
     this.clear();
     this.framingBounds = null;
     this.pendingFraming = null;
+    this.orbitComposition = null;
+    this.orbitNewModel = type === 'gravity' && newModel;
     this.type = type;
     this.key = JSON.stringify(p);
     const space = ["gravity", "earthmoon", "solarsystem", "stars", "binary", "threebody", "universe"].includes(type);
     this.scene.background=space?null:this.studioBackdrop;
     this.scene.fog.color.set(space?0x080f1b:0x10283c);
-    this.ambient.intensity = type === "gravity" ? 0.12 : type === "earthmoon" ? 0.13 : 1.25;
+    // Orbital lighting is illustrative, not a simulated day/night cycle.
+    this.ambient.intensity = type === "gravity" ? 0.72 : type === "earthmoon" ? 0.13 : 1.25;
     this.keyLight.intensity = type === "earthmoon" ? 0 : 3.2;
     this.rimLight.intensity = space ? 0 : 20;
-    this.fillLight.intensity = space ? 0.05 : 1.15;
-    this.scene.environmentIntensity = space ? 0.08 : 0.9;
+    this.fillLight.intensity = type === 'gravity' ? 0.65 : space ? 0.05 : 1.15;
+    this.scene.environmentIntensity = type === 'gravity' ? 0.3 : space ? 0.08 : 0.9;
     this.stars.visible = space;
     const r = this.root,
       o = this.objects;
@@ -453,7 +456,7 @@ export class SceneView {
         roughness: 0.78,
       });
       planet.add(cloudShell(1.012));
-      const reference = add("reference", new T.Line(new T.BufferGeometry(), new T.LineDashedMaterial({ color: 0x80b4c7, transparent: true, opacity: 0.35, dashSize: 0.09, gapSize: 0.07 })));
+      const reference = add("reference", new T.Line(new T.BufferGeometry(), new T.LineDashedMaterial({ color: 0x89cada, transparent: true, opacity: 0.68, dashSize: 0.09, gapSize: 0.07, toneMapped: false })));
       reference.frustumCulled = false;
       o.referencePoints = orbitalReference(p);
       // Procedural longitude/latitude lines are a coordinate texture, not surface data.
@@ -703,6 +706,7 @@ export class SceneView {
       extent = Math.max(extent, Math.hypot(s.x, s.y) * 1.1);
       const sc = 5 / extent,
         rad = centralRadius(p) * sc;
+      this.orbitComposition = orbitBounds(lab.showTrail ? o.referencePoints : [], lab.showTrail ? lab.trail || [] : [], s, sc, rad);
       if (o.referenceScale !== sc) {
         setPath(o.reference, o.referencePoints.map(([x, y]) => [x * sc, 1, -y * sc]));
         o.reference.computeLineDistances();
@@ -725,7 +729,7 @@ export class SceneView {
           g = o.trail.geometry;
         const position = g.attributes.position,
           color = g.attributes.color;
-        const tail = new T.Color(0x123341),
+        const tail = new T.Color(0x306275),
           head = new T.Color(CYAN),
           shade = new T.Color();
         points.forEach((q, i) => {
@@ -880,9 +884,17 @@ export class SceneView {
       this.framingAspect=this.camera.aspect;
     }
     this.pendingFraming=null;
+    if (type === 'gravity' && this.orbitComposition) {
+      const fit=frameApparatus(this.orbitComposition,{aspect:this.camera.aspect,azimuth:-.18,polar:.6,padding:1.1}),
+        zoom=this.orbitNewModel ? 1 : this.radius / (this.homeRadius || fit.radius);
+      this.target.set(...fit.target);
+      this.homeRadius=fit.radius;this.homePolar=fit.polar;this.homeAzimuth=fit.azimuth;
+      this.radius=fit.radius*(Number.isFinite(zoom)?zoom:1);
+      if (this.orbitNewModel) {this.home();this.orbitNewModel=false;}
+    }
     const cameraRadius =
       this.radius *
-      (!this.framingBounds && (["gravity", ...ADVANCED_IDS].includes(type) || this.curriculum || this.precision)
+      (!this.framingBounds && !this.orbitComposition && (ADVANCED_IDS.includes(type) || this.curriculum || this.precision)
         ? Math.max(1, (this.curriculum?.camera?.fitAspect || this.precision?.fitAspect || (type === "buoyancy" ? 1.05 : type === "lenses" ? 1.55 : 1.35)) / this.camera.aspect)
         : 1);
     this.camera.position.set(

@@ -1,6 +1,6 @@
 /** Shared application shell for the simulation catalogue. Rendering never advances physics. */
 import { SIMULATIONS, CATEGORIES, spatialRows } from "./simulations.js";
-import { catalogueArt } from "./catalogue-art.js";
+import { catalogueArt, libraryHeroArt } from "./catalogue-art.js";
 import { installPresentationStudio } from "./presentation-studio.js";
 import { studyParams, studyControl, studyGraphs, studyTitle, IGCSE_AREAS, igcseArea } from "./study-policy.js";
 import { LESSONS as ORIGINAL_LESSONS } from "./content.js";
@@ -170,12 +170,13 @@ function thumbnail(id) {
   return `<svg viewBox="0 0 390 170" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">${drawing}</svg>`;
 }
 function card(id, preferredMode) {
-  const d = SIMULATIONS[id];
-  return `<a class="simulation-card" href="#/${id}?level=${resolveMode(id, typeof preferredMode === "string" ? (preferredMode === "as" || preferredMode === "a2" ? "alevel" : preferredMode) : null)}" style="--accent:${d.color}"><div class="card-art">${catalogueArt(id,thumbnail(id))}<span class="art-label">${d.category.toUpperCase()}</span><span class="card-dimension">${d.diagramOnly ? "INTERACTIVE DIAGRAM" : icon("cube") + " 3D + 2D"}</span></div><div class="card-body"><div class="card-meta">${preferredMode === "igcse" ? "CAMBRIDGE IGCSE · 0625" : levelBadges(id)}${d.isNew ? '<span class="new-lab-badge">NEW</span>' : ""}</div><h3>${studyTitle(id,preferredMode,d.short)}</h3><p>${preferredMode === "igcse" ? esc(getProfile(id,"igcse").goals.slice(0,2).join(". ")) + "." : d.summary}</p><div class="card-bottom"><span class="card-equation">${preferredMode === "igcse" ? esc(getProfile(id,"igcse").focus) : d.formula}</span><span>Explore ${icon("arrow")}</span></div></div></a>`;
+  const d = SIMULATIONS[id],
+    ink = ({Mechanics:'#2573b5',Oscillations:'#a076c9',Waves:'#168e8f',Optics:'#6b78cc',Electricity:'#bd8433',Magnetism:'#b56a7b','Thermal physics':'#ba7554','Nuclear physics':'#8c69b6','Space physics':'#3c81b6',Astrophysics:'#7770c0','Quantum physics':'#7b6bb7'})[d.category] || '#238a9c';
+  return `<a class="simulation-card" href="#/${id}?level=${resolveMode(id, typeof preferredMode === "string" ? (preferredMode === "as" || preferredMode === "a2" ? "alevel" : preferredMode) : null)}" style="--accent:${d.color};--card-ink:${ink}"><div class="card-art">${catalogueArt(id,thumbnail(id))}<span class="art-label">${d.category.toUpperCase()}</span><span class="card-dimension">${d.diagramOnly ? "INTERACTIVE DIAGRAM" : icon("cube") + " 3D + 2D"}</span></div><div class="card-body"><div class="card-meta">${preferredMode === "igcse" ? "CAMBRIDGE IGCSE · 0625" : levelBadges(id)}${d.isNew ? '<span class="new-lab-badge">NEW</span>' : ""}</div><h3>${studyTitle(id,preferredMode,d.short)}</h3><p>${preferredMode === "igcse" ? esc(getProfile(id,"igcse").goals.slice(0,2).join(". ")) + "." : d.summary}</p><div class="card-bottom"><span>Open experiment</span><span class="card-open-icon">${icon("arrow")}</span></div></div></a>`;
 }
 function home() {
   $("#main").innerHTML =
-    `<section class="library-intro page-width"><div><span class="eyebrow">PHYSICS INTERACTIVE LAB</span><h1>See the physics.<br><em>Understand the idea.</em></h1><p>One lab at a time. Clear controls, live model values and a diagram you can explore.</p></div><aside><span>START WITH YOUR COURSE</span><strong>Cambridge IGCSE</strong><p>0625 · 2026–2028<br>Core + Supplement, clearly scoped.</p><a href="#/course">Find your FocusPhysics lesson ↗</a></aside></section><div class="page-width"><section id="simulations" class="catalogue"><div class="section-heading"><div><div class="eyebrow">YOUR PHYSICS LABORATORY</div><h2>One collection. A clearer way to learn.</h2><p>Choose a topic. Set up one experiment. Explain what you see.</p></div><label class="library-search"><span aria-hidden="true">⌕</span><input type="search" id="search" aria-label="Search simulations" placeholder="Find an experiment…"></label></div><div class="catalogue-tools"><div class="category-filters" aria-label="Filter simulations">${CATEGORIES.map((c, i) => `<button class="${i === 0 ? "active" : ""}" data-category="${c}" aria-pressed="${i === 0}">${c}</button>`).join("")}</div><span id="result-count">${LAB_COUNT} experiments</span></div><div class="simulation-grid" id="cards">${Object.keys(SIMULATIONS).map(card).join("")}</div><p id="empty-results" hidden>No experiments match that search. Try a topic such as waves, light or motion.</p></section><section class="method-band"><div><div class="eyebrow">MORE THAN AN ANIMATION</div><h3>A little curiosity.<br>A deeper understanding.</h3></div>${[
+    `<section class="library-intro page-width"><div class="library-intro-copy"><span class="eyebrow"><span class="status-dot"></span> YOUR INTERACTIVE PHYSICS LAB</span><h1>Physics,<br><em>made visible.</em></h1><p>Explore the ideas behind the equations. Change a variable, follow the motion and see the physics for yourself.</p><div class="library-intro-actions"><a class="button" href="#simulations">Explore the experiments ${icon('arrow')}</a><a class="intro-course-link" href="#/course">Find your IGCSE lesson ↗</a></div><div class="library-intro-facts"><span><strong>57</strong> working models</span><span><strong>2D + 3D</strong> two ways to see it</span><span><strong>CAIE</strong> focused learning levels</span></div></div><div class="library-illustration"><span class="illustration-kicker">A DIFFERENT WAY TO UNDERSTAND</span>${libraryHeroArt()}<span class="illustration-caption">Explore the model. Discover the connection.</span></div></section><div class="page-width"><section id="simulations" class="catalogue"><div class="section-heading"><div><div class="eyebrow">THE EXPERIMENT COLLECTION</div><h2>What will you discover?</h2><p>Choose your course and a topic to get started.</p></div><label class="library-search"><span aria-hidden="true">⌕</span><input type="search" id="search" aria-label="Search simulations" placeholder="Find an experiment…"></label></div><div class="catalogue-tools"><div class="category-filters" aria-label="Filter simulations">${CATEGORIES.map((c, i) => `<button class="${i === 0 ? "active" : ""}" data-category="${c}" aria-pressed="${i === 0}">${c}</button>`).join("")}</div><span id="result-count">${LAB_COUNT} experiments</span></div><div class="simulation-grid" id="cards">${Object.keys(SIMULATIONS).map(card).join("")}</div><p id="empty-results" hidden>No experiments match that search. Try a topic such as waves, light or motion.</p></section><section class="method-band"><div><div class="eyebrow">MORE THAN AN ANIMATION</div><h3>A little curiosity.<br>A deeper understanding.</h3></div>${[
       [
         "01",
         "Predict it.",
@@ -271,10 +272,10 @@ function home() {
 
 function controlMarkup(d, p) {
   if (d.options)
-    return `<div class="control"><label class="control-label" for="${d.key}-select">${d.label}</label><select class="parameter-select" id="${d.key}-select" aria-label="${d.label}">${d.options.map(([v, label]) => `<option value="${v}" ${Number(v) === p[d.key] ? "selected" : ""}>${label}</option>`).join("")}</select><p class="control-hint">${d.hint}</p></div>`;
+    return `<div class="control"><label class="control-label" for="${d.key}-select">${d.label}</label><select class="parameter-select" id="${d.key}-select" aria-label="${d.label}">${d.options.map(([v, label]) => `<option value="${v}" ${Number(v) === p[d.key] ? "selected" : ""}>${label}</option>`).join("")}</select><p class="control-hint ${/^Change one variable, then compare/.test(d.hint) ? "generic-hint" : ""}">${d.hint}</p></div>`;
   const value = p[d.key] / (d.factor || 1),
     slider = d.log ? Math.log10(value) : value;
-  return `<div class="control"><div class="control-label"><label for="${d.key}-slider">${d.label}</label><span class="value-input"><input id="${d.key}-number" type="number" aria-label="${d.label} in ${d.unit || "dimensionless units"}" value="${d.log ? value.toExponential(2) : Number(value.toFixed(5))}" min="${d.log ? 100 : d.min}" max="${d.log ? 1e23 : d.max}" step="any"><span>${d.unit}</span></span></div><input type="range" id="${d.key}-slider" aria-label="${d.label}" min="${d.min}" max="${d.max}" step="${d.step}" value="${slider}"><div class="slider-ends"><span>${d.log ? "10²" : d.min}</span><span>${d.log ? "10²³" : d.max}</span></div><p class="control-hint">${d.hint}</p></div>`;
+  return `<div class="control"><div class="control-label"><label for="${d.key}-slider">${d.label}</label><span class="value-input"><input id="${d.key}-number" type="number" aria-label="${d.label} in ${d.unit || "dimensionless units"}" value="${d.log ? value.toExponential(2) : Number(value.toFixed(5))}" min="${d.log ? 100 : d.min}" max="${d.log ? 1e23 : d.max}" step="any"><span>${d.unit}</span></span></div><input type="range" id="${d.key}-slider" aria-label="${d.label}" min="${d.min}" max="${d.max}" step="${d.step}" value="${slider}"><div class="slider-ends"><span>${d.log ? "10²" : d.min}</span><span>${d.log ? "10²³" : d.max}</span></div><p class="control-hint ${/^Change one variable, then compare/.test(d.hint) ? "generic-hint" : ""}">${d.hint}</p></div>`;
 }
 function labPage(type, query) {
   const d = SIMULATIONS[type];
@@ -557,7 +558,8 @@ function arrangeOrbitWorkbench() {
   $(".controls-heading span").textContent = "CHANGE ONE VARIABLE AT A TIME";
   $(".graph-header h2").textContent = "Measurements over time";
   $("#camera-hint").innerHTML = "Drag to rotate <span>·</span> Scroll to zoom";
-  $("#camera-reset").innerHTML = `${icon("reset")}<span>Reset view</span>`;
+  $("#camera-reset").innerHTML = icon("reset");
+  $("#camera-reset").title = "Reset camera view";
   $(".controls-heading").after($(".preset-block"));
   const workspace = $(".workspace");
   const display = document.createElement("div");
@@ -576,7 +578,7 @@ function arrangeOrbitWorkbench() {
   const notes = document.createElement("details");
   notes.className = "view-notes";
   notes.innerHTML =
-    "<summary>View scale & model notes</summary><p>The planet surface and clouds are illustrative; atmospheric drag is not included. The orbit stays in one plane as you rotate the camera. r is the centre-to-centre separation, not the altitude above the surface.</p>";
+    "<summary>View scale & model notes</summary><p>The camera fits the visible orbit and planet together; their distances and the planet radius use the same scale. Spacecraft size, surface texture, clouds and brighter studio lighting are illustrative; no day/night cycle or atmospheric drag is simulated. The orbit stays in one plane as you rotate the camera. r is the centre-to-centre separation, not the altitude above the surface.</p>";
   notes.append($("#stage-caption"));
   workspace.append(notes);
   const analysis = document.createElement("section");
@@ -787,7 +789,7 @@ function bindControls() {
   );
   $("#scene-labels").onchange = (e) => (lab.showLabels = e.target.checked);
   const expandButton = $("#fullscreen");
-  expandButton.innerHTML = `${icon("expand")}<span class="expand-label">Expand</span>`;
+  expandButton.innerHTML = `${icon("expand")}<span class="expand-label">Workspace</span>`;
   expandButton.setAttribute("aria-label", "Expand simulation and calculations");
   expandButton.setAttribute("aria-expanded", "false");
   expandButton.title = "Expand the model, variables and live calculations";

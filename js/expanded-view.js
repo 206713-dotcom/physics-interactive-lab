@@ -45,9 +45,9 @@ export class ExpandedView {
     root.setAttribute("aria-labelledby", "expanded-title");
     root.innerHTML = `
       <header class="expanded-header">
-        <div class="expanded-heading"><span class="expanded-eyebrow">${embedded ? "INTERACTIVE PHYSICS LAB" : "EXPANDED WORKSPACE"}</span><h2 id="expanded-title">${mathHTML(title)}</h2></div>
+        <div class="expanded-heading"><a class="workspace-back" href="#/" aria-label="Return to the experiment library">← Laboratory</a><span class="expanded-eyebrow">${embedded ? "INTERACTIVE PHYSICS LAB" : "INTERACTIVE LABORATORY"}</span><h2 id="expanded-title">${mathHTML(title)}</h2></div>
         <nav class="expanded-panel-tabs" aria-label="Expanded inspector"><button type="button" data-inspector="calculations" aria-pressed="true">Calculations</button><button type="button" data-inspector="variables" aria-pressed="false">Parameters</button></nav>
-        <div class="expanded-actions"><button type="button" class="expanded-play"></button>${embedded ? '<a class="expanded-full-link" target="_blank" rel="noopener">Open full lab ↗</a>' : ""}<button type="button" class="expanded-close" aria-label="${embedded ? "Show lessons and notes" : "Close expanded view"}"><span aria-hidden="true">↙</span> ${embedded ? "Lessons & notes" : "Exit expanded view"} ${embedded ? "" : "<kbd>Esc</kbd>"}</button></div>
+        <div class="expanded-actions"><button type="button" class="expanded-play"></button>${embedded ? '<a class="expanded-full-link" target="_blank" rel="noopener">Open full lab ↗</a>' : ""}<button type="button" class="expanded-close" aria-label="${embedded ? "Show lessons and notes" : "Close expanded view"}"><span aria-hidden="true">↙</span> ${embedded ? "Lessons & notes" : "Lessons & notes"} ${embedded ? "" : "<kbd>Esc</kbd>"}</button></div>
       </header>
       <div class="expanded-layout">
         <aside class="expanded-variables" aria-label="Adjust model variables"></aside>

@@ -30,7 +30,12 @@ export function installPresentationStudio(stage, id) {
         });
         signature = next;
       }
-      readings.forEach((item,i) => nodes[i].textContent = calculationNumber(item.value));
+      readings.forEach((item,i) => {
+        // Round sub-nanodegree floating-point residue in the beam's display.
+        // Keep the integrated angle and every other scientific reading intact.
+        const value=id==='moments' && item.title==='Beam angle' && Math.abs(item.value)<1e-8 ? 0 : item.value;
+        nodes[i].textContent = calculationNumber(value);
+      });
       const watch = SCENE_GUIDES[id]?.[0]?.match(/^.*?[.!?](?=\s|$)/)?.[0] || getProfile(id,lab.studyMode).focus;
       context.textContent = watch;
       if (id === 'moments') {

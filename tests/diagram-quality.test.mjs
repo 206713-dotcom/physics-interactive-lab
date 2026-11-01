@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from '../vendor/three.module.min.js';
-import { frameApparatus,apparatusBounds,diagramLabelVisible } from '../js/scene-framing.js';
+import { frameApparatus,apparatusBounds,orbitBounds,diagramLabelVisible } from '../js/scene-framing.js';
+import { orbitalReference } from '../js/orbital-reference.js';
+import { G,centralRadius } from '../js/physics.js';
 import { createSceneKit } from '../js/scene-kit.js';
 import { createCurriculumScene,CURRICULUM_BUILDERS } from '../js/scene-curriculum.js';
 import { SIMULATIONS } from '../js/simulations.js';
@@ -19,6 +21,25 @@ function checkFrame(bounds,options) {
 test('perspective framing contains every apparatus corner on wide and portrait screens',()=>{
   for(const aspect of [.45,.75,1,1.6,2.4,3])for(const polar of [.3,1.18,1.57])
     checkFrame(new T.Box3(new T.Vector3(-5,-.4,-3),new T.Vector3(5,6,3)),{aspect,polar});
+});
+
+test('orbital composition fits circular, elliptical and escape paths without altering scale or state',()=>{
+  const base={centralMass:5.9722e24,bodyMass:1000,distance:15e6};
+  for(const multiplier of [.7,1,1.25,1.6]) {
+    const params={...base,velocity:multiplier*Math.sqrt(G*(base.centralMass+base.bodyMass)/base.distance)},
+      reference=orbitalReference(params),state={x:params.distance,y:0},trail=[{x:0,y:params.distance}],
+      before=structuredClone({params,reference,state,trail}),scale=5/(params.distance*1.35),radius=centralRadius(params)*scale,
+      bounds=orbitBounds(reference,trail,state,scale,radius);
+    assert.ok(bounds.containsPoint(new T.Vector3(state.x*scale,1,-state.y*scale)));
+    assert.ok(bounds.containsPoint(new T.Vector3(-radius,1-radius,-radius)));
+    for(const aspect of [.45,.75,1.3,2.5]) checkFrame(bounds,{aspect,polar:.6,azimuth:-.18});
+    assert.deepEqual({params,reference,state,trail},before);
+  }
+});
+
+test('orbital camera bounds reject non-finite positions and invalid display scales',()=>{
+  for(const scale of [0,-1,Infinity,NaN]) assert.throws(()=>orbitBounds([],[],{x:1,y:0},scale,1),RangeError);
+  assert.throws(()=>orbitBounds([],[],{x:NaN,y:0},1,1),RangeError);
 });
 test('all 44 curriculum apparatus bounds produce finite camera compositions without changing physics',()=>{
   for(const id of Object.keys(CURRICULUM_BUILDERS)) {

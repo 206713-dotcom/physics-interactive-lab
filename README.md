@@ -10,6 +10,16 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 ## What is in the laboratory?
 
+### Version 17: a shared visual design for the whole laboratory
+
+The homepage, experiment library, course map, learning paths and practice room now share a navy, white and teal design with larger type, clearer cards and original SVG illustrations. Twelve experiment covers have detailed apparatus artwork; the other covers retain their subject diagrams. All 57 existing laboratories, the 40 scoped IGCSE activities, 78 school lesson links and 312 practice questions are retained. No simulations or question sets were added.
+
+Expanded workspaces now have a deliberate maximum width, roomier parameter and calculation panels, full-width numerical inputs and stronger equation/result hierarchy. Wide desktops show parameters, model and working together; smaller screens use accessible inspector tabs. Instrument readings, meaningful parameter hints, units and playback controls remain visible in the same shared layout. Repeated generic hints have been removed from the visual flow. Beam-angle readings round numerical residue below 10⁻⁸ degrees to zero without changing the underlying state.
+
+**Orbital composition** fits the planet, visible analytic reference and calculated trail together. The planet radius and every trajectory point still use the same metres-to-scene scale. Manual camera rotation and zoom are preserved, including during resizing. Spacecraft dimensions, surface appearance and brighter fill lighting are illustrative; this is not a day/night or atmospheric model. The dashed reference is an analytic Kepler conic, distinct from the integrated trail. No physical equation, numerical integrator, unit conversion or supported range was changed.
+
+**264 automated tests pass**, including camera projection for circular, elliptical and escape trajectories across portrait and wide viewports, invalid camera-input handling and preservation of physical state and scale. Browser checks open all 57 models in both views, inspect every expanded calculation panel, check the library/course/learning-path/practice pages at 390, 768, 1024 and 1280 px, and verify a numerical practice answer with its worked solution. The 2560 px orbital workspace was also checked.
+
 ### Version 16: clearer diagrams and a beam that really turns
 
 The existing laboratories have a brighter 3D studio, more readable apparatus finishes and compact live instruments with units beside their values. Non-space curriculum apparatus without a custom camera now fits the actual object bounds to the available viewport; long detached text and large teaching arrows cannot push the apparatus into the distance. The wide expanded workspace displays **parameters, the model and its explanation together**. Most 2D laboratories now use a pale scientific-diagram background with darker, hue-preserving label ink. Astronomical orbit and three-body displays retain their space backgrounds. Geometry, units, graph values and physical reference scales are preserved.

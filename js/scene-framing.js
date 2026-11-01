@@ -54,3 +54,20 @@ export function frameApparatus(bounds, {aspect=1.6,fov=38,azimuth=-0.28,polar=1.
   if (![...target.toArray(),radius].every(Number.isFinite)) throw new RangeError('Non-finite apparatus bounds.');
   return {target:target.toArray(),radius,polar,azimuth};
 }
+
+/** Visible orbit and planet share one metres-to-scene scale. Frame their union,
+ * including a small margin for the illustrative spacecraft and vector heads.
+ * This adjusts only the camera: it cannot change the simulated trajectory. */
+export function orbitBounds(reference, trail, state, scale, planetRadius) {
+  if (!(scale>0) || !(planetRadius>0) || ![scale,planetRadius].every(Number.isFinite))
+    throw new RangeError('A finite, positive orbital display scale is required.');
+  const bounds=new T.Box3(new T.Vector3(-planetRadius,1-planetRadius,-planetRadius),new T.Vector3(planetRadius,1+planetRadius,planetRadius));
+  const include=(x,y)=>{
+    if (![x,y].every(Number.isFinite)) throw new RangeError('Non-finite orbital position.');
+    bounds.expandByPoint(new T.Vector3(x*scale,1,-y*scale));
+  };
+  reference.forEach(([x,y])=>include(x,y));
+  trail.forEach(point=>include(point.x,point.y));
+  include(state.x,state.y);
+  return bounds.expandByScalar(.45);
+}

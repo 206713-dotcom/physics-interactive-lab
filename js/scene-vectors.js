@@ -47,7 +47,7 @@ export function createVectorApparatus(params, k) {
     return o;
   });
   const tickLabels = Array.from({ length: 10 }, () => {
-    const o = label("", [0, 0, 0], "#5b7c93", 0.55, "ink");
+    const o = label("", [0, 0, 0], "#4d6d83", 0.55, "ink");
     grid.add(o);
     return o;
   });
@@ -182,7 +182,7 @@ export function createVectorApparatus(params, k) {
             [x, 5.25, -0.11],
           ]);
           if (value % (step * 2) === 0 && l < 6) {
-            k.setLabel(tickLabels[l], String(value), "#5b7c93", 0.55);
+            k.setLabel(tickLabels[l], String(value), "#4d6d83", 0.55);
             tickLabels[l++].position.set(x, 0.35, -0.04);
           }
         }
@@ -197,7 +197,7 @@ export function createVectorApparatus(params, k) {
           ]);
       }
       for (; j < 22; j++) setPath(gridLines[j], []);
-      for (; l < 10; l++) k.setLabel(tickLabels[l], "", "#5b7c93", 0.55);
+      for (; l < 10; l++) k.setLabel(tickLabels[l], "", "#4d6d83", 0.55);
     }
     setPath(xAxis, [
       [-4.25, O[1], -0.06],

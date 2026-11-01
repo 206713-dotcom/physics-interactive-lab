@@ -176,6 +176,10 @@ export class VectorStudio {
         this.nodes[id].textContent = value;
     };
     const phases = VECTOR_PHASES.map((row) => [...row]);
+    if(lab.studyMode==='igcse') phases[3]=[
+      'Check the scale',
+      'Check that every arrow uses the same force scale. State the resultant magnitude and its direction.',
+    ];
     if (method === "parallelogram") {
       phases[1] = [
         "Place B at the origin",

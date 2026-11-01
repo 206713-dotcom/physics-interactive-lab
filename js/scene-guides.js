@@ -167,7 +167,7 @@ export const SCENE_GUIDES = {
     "Follow the circuit and identify the series or parallel connection.",
     "Series elements share current; parallel elements share voltage. Total resistance determines source current.",
     "Compare the same resistors in series and parallel.",
-    "Gold markers indicate conventional current; speed and count do not represent charge drift. Component dimensions are schematic.",
+    "The board shows the actual series or parallel network. Gold marks total conventional current; teal and purple mark parallel branch currents. Within one setup, marker speeds are proportional to the calculated currents and use path length, so unequal branch lengths cannot change the ratio. Marker counts are not amounts of charge, and these are not electron drift speeds. Supply, wire and component dimensions are schematic. Resistor bodies have no fixed colour-code bands; labels give the selected resistance. Divider output is unloaded and measured across R₂.",
   ],
   devices: [
     "The device indicator lights when the selected ideal switching condition is met.",
@@ -299,7 +299,7 @@ export const SCENE_GUIDES = {
     "Blue is the incident wave, gold is the counter-propagating wave, and cyan is their sum. The probe and pale beads move vertically while keeping the same horizontal position.",
     "Superposition adds displacement at each position. Counter-propagating waves can form standing waves.",
     "Compare fixed and free reflection, then identify nodes in the resultant.",
-    "All three sampled strings share one horizontal scale of one scene unit per metre and a vertical enlargement of 1.5 scene units per metre. They illustrate three mathematical curves, not three coupled strings. The end frames mark an observation window, not additional boundary conditions. Probe displacement comes from the exact same wave function as the graph.",
+    "IGCSE shows one travelling wave with reflection locked off. AS / A Level separates the incident, counter-propagating and resultant curves. Every 3D trace uses one scene unit per metre horizontally and 1.5 scene units per metre vertically. The wavelength bracket joins two actual incident-wave crests; A measures equilibrium to crest. Beads keep fixed horizontal positions. The traces are mathematical curves, not coupled physical strings, and the frame is an observation window rather than a boundary condition. Probe displacement and graphs use the same wave function. IGCSE displacement readings are rounded to 0.001 m.",
   ],
   interference: [
     "Follow the two sources and compare bright and dark regions.",
@@ -311,7 +311,7 @@ export const SCENE_GUIDES = {
     "Follow the bright beam across the boundary and read both angles from the dashed normal. Reflected and transmitted percentages follow the lossless Fresnel model. Total internal reflection removes the transmitted beam.",
     "Snell law relates the two angles. Beyond the critical angle, transmission is replaced by total internal reflection.",
     "Launch from the higher-index medium and increase the angle through the critical angle.",
-    "Rays stay in their physical plane. Block shape, index-dependent tint and boundary thickness are illustrative; tint is not density or absorption. Direction markers are slowed, with relative speed proportional to 1/n; their phase and count are not photon measurements. Faint beams have boosted visibility, so read the labelled percentages rather than screen brightness for power fractions.",
+    "The protractor measures each angle from the normal in its own medium. Both background regions meet at the same ray junction. Gold, purple and teal distinguish incident, reflected and refracted paths; these teaching colours do not mean different wavelengths. The source face uses an approximate selected-wavelength colour. Index-dependent tint is illustrative, not density or absorption. Markers are slowed with relative speed proportional to 1/n; phase and count are not photon measurements. Weak paths have boosted visibility, so use the AS / A Level Fresnel percentages for power fractions. IGCSE focuses on direction, angles and total internal reflection.",
   ],
   circuits: [
     "Watch charge markers accumulate on the separated capacitor plates. The gold current-direction markers travel along the conductors and stop short of the dielectric. Discharging isolates the source and reverses current through the resistor.",

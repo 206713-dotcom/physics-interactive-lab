@@ -329,8 +329,11 @@ export class SceneView {
       this.polar = Math.PI / 2;
     }
     if (name === "above") {
-      this.azimuth = this.type === "vectors" ? -0.55 : 0;
-      this.polar = this.type === "vectors" ? 1.02 : 0.035;
+      // A near-edge-on top view hides a vertical drawing board. Use an
+      // isometric preset for planar apparatus while retaining free rotation.
+      const planar=this.type==='vectors' || this.precision?.planar || this.curriculum?.planar;
+      this.azimuth = planar ? -0.55 : 0;
+      this.polar = planar ? 1.02 : 0.035;
     }
     if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
       const delta = Math.atan2(
@@ -419,8 +422,8 @@ export class SceneView {
       return;
     }
     if (["spring", "pendulum", "refraction", "waves", "circuits", "projectile", "collisions"].includes(type)) {
-      this.precision = type === "refraction" ? createRefractionApparatus(p, r, wavelengthRGB(p.wavelength * 1e9))
-        : type === "waves" ? createWaveBench(p, r)
+      this.precision = type === "refraction" ? createRefractionApparatus(p, r, wavelengthRGB(p.wavelength * 1e9), { studyMode })
+        : type === "waves" ? createWaveBench(p, r, { studyMode })
         : type === "circuits" ? createRCBench(p, r)
         : type === "projectile" ? createProjectileBench(p, r)
         : type === "collisions" ? createCollisionBench(p, r)

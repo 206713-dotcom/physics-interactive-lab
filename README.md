@@ -10,6 +10,18 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 ## What is in the laboratory?
 
+### Version 19: waves, refraction and circuit diagrams
+
+Three existing laboratories have clearer apparatus and matching 2D diagrams:
+
+- **Waves:** IGCSE now shows one travelling trace in the scene and graphs, with a marked particle, an amplitude bracket and a wavelength bracket joining two real crests. Doubling wavelength at fixed speed halves the frequency. AS / A Level retains all three superposition curves. The shared crest construction uses metres; 3D positions retain one scene unit per metre horizontally and 1.5 vertically. Beads keep their horizontal coordinates. IGCSE displacement instruments round to 0.001 m.
+- **Refraction:** the new protractor measures both angles from the normal. Shaded sectors, distinct ray paths and the two medium backgrounds use the same Snell-law junction. Total internal reflection removes the refracted path, and undefined readings have no degree unit appended. Gold, purple and teal are teaching colours for the paths; the source face retains an approximate wavelength colour. Weak paths remain visually boosted; Fresnel power percentages are shown in AS / A Level, rather than in the IGCSE scene.
+- **DC circuits:** a new board shows distinct source terminals, both resistors, real branch junctions and the divider output. Parallel markers follow both branches. Their speed ratios use the calculated currents and path lengths, so a longer branch cannot distort the comparison. Markers indicate conventional current, not electron drift or discrete measured charge. Uncoded ceramic bodies avoid implying a false commercial resistor colour code; labels give the selected resistance. The Ω resistance unit is now distinguished from angular frequency ω by the IGCSE label filter. Wire-resistivity mode remains in AS / A Level; IGCSE keeps series, parallel and unloaded-divider arrangements.
+
+Planar boards have a useful isometric preset, alongside front view and free camera rotation. Governing equations, numerical state, full-model parameter ranges, the 57-laboratory library and all question/resource collections are preserved. Board dimensions, mounts and textures are illustrative. The circuit board perforations share one instanced draw object, and animated guides reuse their buffers.
+
+**273 automated tests pass.** New checks cover actual crest positions, calibrated wave guides, immutable state and stable buffers, exact optical-medium alignment, circuit junction connectivity and measured marker-speed ratios, plus the Ω/ω filter distinction. Browser checks open every lab in both views without console errors. The refined pages are checked at phone, tablet and desktop sizes; interactive checks include frequency halving, a 12 V equal-resistor divider producing 6 V, and total internal reflection with no fabricated refracted angle.
+
 ### Version 18: clearer mechanics diagrams
 
 This pass refines three existing laboratories without adding simulations or question sets:

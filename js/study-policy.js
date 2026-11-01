@@ -115,6 +115,8 @@ export function studyControl(id, mode, control) {
   if (mode !== 'igcse') return control;
   const key = `${id}.${control.key}`;
   const overrides = {
+    'waves.amplitude': {label:'Amplitude',hint:'Maximum displacement from the equilibrium line. The vertical scale is enlarged to make the motion clear.'},
+    'dc.mode': {options:[[0,'Series resistors'],[1,'Parallel resistors'],[2,'Unloaded potential divider']],hint:'Compare one current path with two branches. The divider output is measured without a load.'},
     'motion.drag': { label: 'Air resistance', options: [[0,'Negligible'],[0.5,'Some resistance'],[2,'Greater resistance']], hint: 'Resistance grows with speed in this model. Compare the velocity–time graphs.' },
     'collisions.restitution': { label: 'Collision type', options: [[1,'Bounce elastically'],[0,'Stick together']], hint: 'Both conserve total momentum when external forces are negligible. Only the elastic case conserves kinetic energy.' },
     'expansion.alpha': { label: 'Bar material', options: [[0.000023,'Aluminium'],[0.000012,'Steel'],[0.000009,'Glass']], hint: 'Compare equal starting lengths and the same temperature rise. Expansion is exaggerated visually.' },
@@ -178,6 +180,7 @@ export function studyReadings(id, state, params, mode, definition) {
   ];
   const keys = getProfile(id,mode).calculations;
   const readings = keys.map(k => sheet.calculations.find(c => c.id === k)).filter(Boolean).slice(0,3);
+  if(id==='waves' && mode==='igcse')return readings.map(r=>r.id==='resultant'?{...r,title:'Wave displacement'}:r);
   if (mode === 'igcse' && id === 'gases' && params.state !== 2) return [
     {title:'Particle view',value:params.state === 0 ? 'Solid' : 'Liquid',unit:''},
     {title:'Gas readings',value:'Select gas',unit:''},
@@ -195,8 +198,10 @@ export function studyReadings(id, state, params, mode, definition) {
 export function sceneLabelAllowed(id, mode, text = '') {
   if (mode !== 'igcse') return true;
   if (text.length > 105) return false;
-  const common = /nRT|RMS|rms|mol(?:e|⁻|\b)|Stefan|Boltzmann|Schwarzschild|\bRK4\b|Verlet|\bdt\b|d²|dθ|θ̈|θ˙|ω|ζ|τ|e\^|exp\(|∫|∂|ħ|Lorentz|restitution/i;
-  if (common.test(text)) return false;
+  const common = /nRT|RMS|rms|mol(?:e|⁻|\b)|Stefan|Boltzmann|Schwarzschild|\bRK4\b|Verlet|\bdt\b|d²|dθ|θ̈|θ˙|ζ|τ|e\^|exp\(|∫|∂|ħ|Lorentz|restitution/i;
+  // Angular frequency ω is beyond these activities; the resistance unit Ω
+  // remains essential. A case-insensitive omega pattern confuses the two.
+  if (common.test(text) || /ω/.test(text)) return false;
   const rules = {
     pendulum: /√|sin|cos|energy|damping|tension|link force|acceleration|potential|kinetic|[−-]?(?:120|90|60)°/i,
     gases: /nitrogen|kinetic energy|mean speed|pressure.*=|pV.*=/i,

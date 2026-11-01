@@ -502,6 +502,8 @@ function labPage(type, query) {
     $('[data-camera="above"]').textContent = "Isometric";
     $(".controls-heading h2").textContent = "Your vectors";
   }
+  if(['dc','refraction'].includes(type) || type==='waves' && studyMode==='igcse')
+    $('[data-camera="above"]').textContent='Isometric';
   $(".lab-page").classList.add('consolidated-lab');
   $(".scene-equation").textContent = getProfile(type,studyMode).equation;
   $("#metrics").hidden = true;
@@ -1061,7 +1063,8 @@ function sample() {
   lab.graphDirty = true;
 }
 function selectedGraph() {
-  return lab.definition.graphs.find((g) => g.id === lab.graph);
+  const graph=lab.definition.graphs.find((g) => g.id === lab.graph);
+  return lab.type==='waves' && lab.studyMode==='igcse' ? {...graph,keys:['resultant'],label:'Displacement'} : graph;
 }
 function createCharts() {
   charts.forEach((c) => c.chart.destroy());

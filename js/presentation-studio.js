@@ -34,10 +34,20 @@ export function installPresentationStudio(stage, id) {
         // Round sub-nanodegree floating-point residue in the beam's display.
         // Keep the integrated angle and every other scientific reading intact.
         const value=id==='moments' && item.title==='Beam angle' && Math.abs(item.value)<1e-8 ? 0 : item.value;
-        nodes[i].textContent = calculationNumber(value);
+        nodes[i].textContent = id==='waves' && lab.studyMode==='igcse' && item.unit==='m'
+          ? Number(value.toFixed(3)).toString() : calculationNumber(value);
+        // A missing angle or an undefined result has no numerical unit to append.
+        nodes[i].nextElementSibling.textContent=typeof value==='number' && Number.isFinite(value)?item.unit || '':'';
       });
       const watch = SCENE_GUIDES[id]?.[0]?.match(/^.*?[.!?](?=\s|$)/)?.[0] || getProfile(id,lab.studyMode).focus;
       context.textContent = watch;
+      if(id==='waves' && lab.studyMode==='igcse')
+        context.textContent='The marked particle moves up and down. The wave pattern travels to the right.';
+      if(id==='refraction' && lab.studyMode==='igcse')
+        context.textContent='Measure angles from the dashed normal. Compare the direction of each ray.';
+      if(id==='dc')context.textContent=lab.params.mode===1
+        ? 'Current splits between the branches, then recombines. Both branches have the same potential difference.'
+        : 'One path · the current is the same through both components.';
       if (id === 'moments') {
         const q=lab.definition.sample(lab.state,lab.params);
         context.textContent = q.contact ? 'At the angular stop · The stop supplies a balancing reaction moment.'

@@ -1067,108 +1067,57 @@ export function drawCurriculum(canvas, lab) {
       break;
     }
     case "dc": {
-      title(
-        [
-          "Series circuit",
-          "Parallel circuit",
-          "Potential divider",
-          "Resistance of a wire",
-        ][p.mode],
-        "Conventional-current dots · drift speed illustrative",
-      );
-      const x1 = 160,
-        x2 = 690,
-        y1 = 110,
-        y2 = 340;
-      line(
-        [
-          [x1, 210],
-          [x1, y1],
-          [x2, y1],
-          [x2, y2],
-          [x1, y2],
-          [x1, 250],
-        ],
-        CYAN,
-        3,
-      );
-      line(
-        [
-          [130, 210],
-          [190, 210],
-        ],
-        GOLD,
-        4,
-      );
-      line(
-        [
-          [143, 250],
-          [177, 250],
-        ],
-        GOLD,
-        3,
-      );
-      text(`${p.voltage} V`, 105, 240, GOLD, 23, "center");
-      const resistor = (x, y, label, value, col) => {
-        rect(x - 52, y - 15, 104, 30, col + "22", col, 2);
-        text(label, x, y - 35, col, 18, "center");
-        text(`${fmt(value)} Ω`, x, y + 48, MUTED, 17, "center");
+      const parallel=p.mode===1,P=[150,228],N=[150,253],J1=[230,140],J2=[650,140],paths=[],
+        addPath=(points,key,color,count)=>paths.push({points,key,color,count});
+      title(['Series circuit','Parallel branches','Unloaded divider','Wire + resistor'][p.mode],'Conventional current →');
+      // Battery plates interrupt the left-hand conductor: a voltage source is
+      // a component, not a piece of wire shorting its own terminals.
+      line([[150,140],P],MUTED,3);line([N,[150,350]],MUTED,3);
+      line([[120,228],[180,228]],GOLD,4);line([[133,253],[167,253]],MUTED,4);
+      text('+',111,233,GOLD,18,'center');text('−',119,259,MUTED,18,'center');
+      text(p.voltage+' V',78,246,WHITE,22,'center');
+      const resistor=(x,y,value,name,color)=>{
+        rect(x-55,y-12,110,24,'#e7edf4',color,2);
+        text(name+' · '+fmt(value,4)+' Ω',x,y-24,color,17,'center');
       };
-      resistor(
-        415,
-        y1,
-        p.mode === 3 ? "Wire" : "R₁",
-        p.mode === 3 ? q.wire : p.r1,
-        GOLD,
-      );
-      if (p.mode === 1) {
-        line(
-          [
-            [240, y1],
-            [240, 248],
-            [600, 248],
-            [600, y1],
-          ],
-          CYAN,
-          3,
-        );
-        resistor(415, 248, "R₂", p.r2, BLUE);
-        text("Same voltage in each branch", 430, 392, WHITE, 18, "center");
-      } else resistor(415, y2, "R₂", p.r2, BLUE);
-      for (let i = 0; i < 14; i++) {
-        const pos = (((t * 0.13 * Math.sign(q.current) + i / 14) % 1) + 1) % 1,
-          per = 2 * (x2 - x1 + y2 - y1),
-          d = pos * per;
-        let x, y;
-        if (d < x2 - x1) {
-          x = x1 + d;
-          y = y1;
-        } else if (d < x2 - x1 + y2 - y1) {
-          x = x2;
-          y = y1 + d - (x2 - x1);
-        } else if (d < 2 * (x2 - x1) + y2 - y1) {
-          x = x2 - (d - (x2 - x1 + y2 - y1));
-          y = y2;
-        } else {
-          x = x1;
-          y = y2 - (d - (2 * (x2 - x1) + y2 - y1));
+      if(parallel) {
+        line([[150,140],J1],MUTED,3);
+        for(const y of [140,270]) {
+          line([[230,y],[385,y]],MUTED,3);line([[495,y],[650,y]],MUTED,3);
         }
-        circle(x, y, 3, CYAN);
+        line([J1,[230,270]],MUTED,3);line([[650,270],J2],MUTED,3);
+        line([J2,[720,140],[720,350],[150,350]],MUTED,3);
+        resistor(440,140,p.r1,'R₁',GOLD);resistor(440,270,p.r2,'R₂',PURPLE);
+        circle(...J1,5,WHITE);circle(...J2,5,WHITE);
+        addPath([P,[150,140],J1],'current',GOLD,3);
+        addPath([J1,J2],'i1',CYAN,5);
+        addPath([J1,[230,270],[650,270],J2],'i2',PURPLE,6);
+        addPath([J2,[720,140],[720,350],[150,350],N],'current',GOLD,9);
+        text('I₁ = '+fmt(q.i1,3)+' A',440,183,CYAN,18,'center');
+        text('I₂ = '+fmt(q.i2,3)+' A',440,312,PURPLE,18,'center');
+      } else {
+        line([[150,140],[275,140]],MUTED,3);line([[385,140],[500,140]],MUTED,3);
+        line([[610,140],[720,140],[720,350],[150,350]],MUTED,3);
+        resistor(330,140,p.mode===3?q.wire:p.r1,p.mode===3?'Wire':'R₁',GOLD);
+        resistor(555,140,p.r2,'R₂',PURPLE);
+        addPath([P,[150,140],[720,140],[720,350],[150,350],N],'current',GOLD,17);
+        text('Same current through both components',440,286,WHITE,19,'center');
+        if(p.mode===2) {
+          line([[500,140],[500,90],[610,90],[610,140]],PURPLE,1.5,[3,4]);
+          text('Vout = '+fmt(q.v2)+' V',555,77,PURPLE,16,'center');
+        }
       }
-      if (p.mode === 2) {
-        line(
-          [
-            [690, 340],
-            [755, 340],
-          ],
-          PURPLE,
-        );
-        text("Vout", 760, 320, PURPLE, 18, "center");
+      if(lab.vectors!==false)for(const path of paths) {
+        const lengths=path.points.slice(1).map((point,i)=>Math.hypot(point[0]-path.points[i][0],point[1]-path.points[i][1])),total=lengths.reduce((a,b)=>a+b,0),
+          travel=t*80*q[path.key]/Math.max(q.current,1e-12);
+        for(let i=0;i<path.count;i++) {
+          let d=((travel+i/path.count*total)%total+total)%total,j=0;
+          while(j<lengths.length-1 && d>lengths[j])d-=lengths[j++];
+          const a=path.points[j],b=path.points[j+1],u=d/lengths[j],x=a[0]+u*(b[0]-a[0]),y=a[1]+u*(b[1]-a[1]),angle=Math.atan2(b[1]-a[1],b[0]-a[0]);
+          c.save();c.translate(x,y);c.rotate(angle);c.beginPath();c.moveTo(5,0);c.lineTo(-4,-3);c.lineTo(-4,3);c.closePath();c.fillStyle=path.color;c.fill();c.restore();
+        }
       }
-      foot(
-        `I = ${fmt(q.current, 4)} A   ·   Req = ${fmt(q.resistance)} Ω`,
-        `V₂ = ${fmt(q.v2)} V`,
-      );
+      foot(`I = ${fmt(q.current,3)} A · Rtotal = ${fmt(q.resistance)} Ω`,parallel?'Same voltage':`V₂ = ${fmt(q.v2)} V`);
       break;
     }
     case "devices": {

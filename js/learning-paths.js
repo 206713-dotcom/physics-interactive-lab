@@ -520,7 +520,7 @@ export const LEARNING_PATHS = {
       "3.1",
       "Read a travelling-wave model",
       "Distinguish amplitude and wavelength|Use wave speed = frequency × wavelength|Separate oscillation from energy propagation",
-      "Set reflection to zero. Double wavelength while keeping wave speed fixed.",
+        "Double wavelength while keeping wave speed fixed. Compare frequency and count the crests in the same window.",
       "v = fλ",
       "At fixed speed, what happens to frequency when wavelength doubles?",
       "Frequency halves.",

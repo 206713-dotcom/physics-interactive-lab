@@ -1,4 +1,5 @@
 import { paperInk } from './diagram-theme.js';
+import { waveMeasurement } from './wave-geometry.js';
 import { sceneLabelAllowed } from './study-policy.js';
 /** Orthographic diagram mode and an automatic fallback for browsers without WebGL. */
 import { drawOrbit } from "./canvas.js";
@@ -209,51 +210,35 @@ function drawDiagram(canvas, lab) {
     }
     text("Camera follows pair · ruler and velocities use the lab frame",24,h-25,'#abc5d5',13);
   } else if (lab.type === "waves") {
-    const left = 35,
-      width = w - 70,
-      mid = h * 0.5,
-      scale = Math.min((h * 0.25) / 1.2, 100),
-      sets = [
-        ["incident", B],
-        ["reflected", G],
-        ["resultant", C],
-      ];
-    line(
-      [
-        [left, mid],
-        [w - left, mid],
-      ],
-      "#31566c",
-    );
-    for (const [key, col] of sets)
-      line(
-        Array.from({ length: 321 }, (_, i) => {
-          const x = i / 40;
-          return [
-            left + (x / 8) * width,
-            mid - E.waveAt(x, s.t, p)[key] * scale,
-          ];
-        }),
-        col,
-        key === "resultant" ? 2.8 : 1.1,
-      );
-    const px = left + (p.probe / 8) * width,
-      py = mid - E.waveAt(p.probe, s.t, p).resultant * scale;
-    line(
-      [
-        [px, 75],
-        [px, h - 65],
-      ],
-      "#ffffff44",
-      1,
-      [4, 5],
-    );
-    ball(px, py, 6, "#ffffff");
-    for (let i = 0; i <= 8; i += 2)
-      text(`${i} m`, left + (i / 8) * width, h - 38, "#95b7c8", 10, "center");
-    text("Incident", 24, 44, B);
-    text("Counter-wave", 110, 44, G);
-    text("Resultant", 235, 44, C);
+    const intro=lab.studyMode==='igcse',left=55,width=w-110,mid=h*.5,
+      scale=Math.min((h-170)/(intro?1.2:2.4),180),
+      sets=intro?[["resultant",C]]:[["incident",B],["reflected",G],["resultant",C]],
+      xPixel=x=>left+x/8*width;
+    line([[left,mid],[w-left,mid]],'#7091a4',1.2);
+    for(const amplitude of [-p.amplitude,p.amplitude])line([[left,mid-amplitude*scale],[w-left,mid-amplitude*scale]],'#9dbacb',1,[3,5]);
+    for(const [key,col] of sets)line(Array.from({length:321},(_,i)=>{
+      const x=i/40;return [xPixel(x),mid-E.waveAt(x,s.t,p)[key]*scale];
+    }),col,key==='resultant'?3:1.4);
+    // Fixed horizontal samples show transverse motion rather than material
+    // being carried along with the moving crest guide.
+    for(let i=0;i<=32;i++) {
+      const x=i/4,y=mid-E.waveAt(x,s.t,p).resultant*scale;
+      c.beginPath();c.arc(xPixel(x),y,2.3,0,Math.PI*2);c.fillStyle=intro?'#407f87':'#5ba79d';c.fill();
+    }
+    const px=xPixel(p.probe),py=mid-E.waveAt(p.probe,s.t,p).resultant*scale,
+      guide=waveMeasurement(p,s.t),crestY=mid-p.amplitude*scale,gy=crestY-29,
+      gx1=xPixel(guide.first),gx2=xPixel(guide.second);
+    line([[px,80],[px,h-66]],'#ac8a50',1,[3,5]);ball(px,py,6,'#b47c26');
+    line([[gx1,crestY],[gx1,gy],[gx2,gy],[gx2,crestY]],'#8263a1',1.5);
+    text('λ = '+p.wavelength+' m',(gx1+gx2)/2,gy-10,'#70518e',13,'center');
+    line([[left-5,mid],[left-17,mid],[left-17,crestY],[left-5,crestY]],C,1.5);
+    text('A',left-28,(mid+crestY)/2+4,C,14,'center');
+    for(let i=0;i<=8;i++) {
+      line([[xPixel(i),h-56],[xPixel(i),h-49]],'#678a9e',1);
+      if(i%2===0)text(i+' m',xPixel(i),h-30,'#446c83',12,'center');
+    }
+    if(intro)text('Travelling wave →',24,39,'#176c72',14);
+    else {text('Incident',24,39,B,12);text('Counter-wave',111,39,G,12);text('Resultant',238,39,C,12);}
   } else if (lab.type === "interference") {
     const slitX = w * 0.24,
       screenX = w * 0.84,
@@ -297,50 +282,39 @@ function drawDiagram(canvas, lab) {
     text("Wavefront spacing enlarged", 24, h - 24);
     text("±20 mm", screenX, h - 25, "#95b7c8", 10, "center");
   } else if (lab.type === "refraction") {
-    const x = w / 2,
-      y = h * 0.5,
-      L = Math.min(w * 0.37, h * 0.37),
-      q = E.refractionInfo(p),
-      i = p.angle * E.DEG;
-    c.fillStyle = "#237cac20";
-    c.fillRect(0, y, w, h - y);
-    line(
-      [
-        [0, y],
-        [w, y],
-      ],
-      "#70c5ff88",
-      1,
-    );
-    line(
-      [
-        [x, 40],
-        [x, h - 40],
-      ],
-      "#6b93a5",
-      1,
-      [5, 6],
-    );
-    const a = [x - L * Math.sin(i), y - L * Math.cos(i)],
-      b = [x + L * Math.sin(i), y - L * Math.cos(i)];
-    arrow(a[0], a[1], x - a[0], y - a[1], C);
-    if (q.reflectance > 1e-8) arrow(x, y, b[0] - x, b[1] - y, C);
-    if (!q.tir && q.reflectance < 1 - 1e-8) {
-      const rr = q.refracted * E.DEG;
-      arrow(x, y, L * Math.sin(rr), L * Math.cos(rr), C);
+    const x=w/2,y=h*.5,L=Math.min(w*.3,h*.34),q=E.refractionInfo(p),i=p.angle*E.DEG,
+      gold='#a77827',teal='#087d79',purple='#7d59a8',radius=L+12;
+    c.fillStyle='#bad7e61a';c.fillRect(0,0,w,y);
+    c.fillStyle='#79c2cd24';c.fillRect(0,y,w,h-y);
+    line([[20,y],[w-20,y]],'#789eaf',1.4);
+    line([[x,38],[x,h-38]],'#587f95',1,[5,5]);
+    c.beginPath();c.arc(x,y,radius,0,Math.PI*2);c.strokeStyle='#9cb7c5';c.lineWidth=1;c.stroke();
+    for(let deg=0;deg<360;deg+=5) {
+      const a=deg*Math.PI/180,inner=radius-(deg%30===0?12:deg%10===0?8:4);
+      line([[x+inner*Math.sin(a),y-inner*Math.cos(a)],[x+radius*Math.sin(a),y-radius*Math.cos(a)]],'#6a8c9e',1);
+      if(deg%30===0) {
+        const m=deg%180;
+        text(Math.min(m,180-m)+'°',x+(radius-25)*Math.sin(a),y-(radius-25)*Math.cos(a)+4,'#466b80',11,'center');
+      }
     }
-    text(`n₁ = ${p.n1.toFixed(2)}`, 24, 60);
-    text(`n₂ = ${p.n2.toFixed(2)}`, 24, h - 45);
-    text(
-      q.tir
-        ? "TOTAL INTERNAL REFLECTION"
-        : `i = ${p.angle}°   r = ${q.refracted.toFixed(1)}°`,
-      w / 2,
-      h - 20,
-      q.tir ? G : C,
-      11,
-      "center",
-    );
+    const sector=(a,b,ink)=>{
+      c.beginPath();c.moveTo(x,y);c.arc(x,y,31,a,b);c.closePath();c.fillStyle=ink+'28';c.fill();
+      c.beginPath();c.arc(x,y,31,a,b);c.strokeStyle=ink;c.lineWidth=1.5;c.stroke();
+    };
+    sector(-Math.PI/2-i,-Math.PI/2,gold);
+    const start=[x-L*Math.sin(i),y-L*Math.cos(i)],reflected=[x+L*Math.sin(i),y-L*Math.cos(i)];
+    arrow(start[0],start[1],x-start[0],y-start[1],gold,3);
+    if(q.reflectance>1e-8)arrow(x,y,reflected[0]-x,reflected[1]-y,purple,2.4);
+    if(!q.tir && q.reflectance<1-1e-8) {
+      const r=q.refracted*E.DEG;sector(Math.PI/2-r,Math.PI/2,teal);
+      arrow(x,y,L*Math.sin(r),L*Math.cos(r),teal,3);
+    }
+    text('Normal',x+12,29,'#466b80',12);
+    text('n₁ = '+p.n1.toFixed(2),24,77,'#466b80',14);
+    text('n₂ = '+p.n2.toFixed(2),24,h-64,'#266875',14);
+    text('i = '+p.angle+'°',w-24,77,gold,15,'right');
+    text(q.tir?'No refracted ray':'r = '+q.refracted.toFixed(1)+'°',w-24,h-64,q.tir?'#597787':teal,15,'right');
+    text(q.tir?'TOTAL INTERNAL REFLECTION':'Measure angles from the normal',w/2,h-20,q.tir?purple:'#466b80',12,'center');
   } else if (lab.type === "circuits") {
     const lx = w * 0.2,
       rx = w * 0.8,

@@ -10,6 +10,18 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 ## What is in the laboratory?
 
+### Version 18: clearer mechanics diagrams
+
+This pass refines three existing laboratories without adding simulations or question sets:
+
+- **Vector addition** has a light 3D drafting board, darker teaching colours, quieter coordinate marks, compact paper labels and a narrow frame. Both construction methods, pointer editing, geometric scales and resultant calculations are preserved. The expanded layout reserves room for the method toolbar so playback stays accessible on laptops.
+- **Moments & stability** has a smaller bearing, a braced support, engraved beam ticks and clearer perpendicular-distance brackets. Ticks use the same two scene units per metre as the load positions; weight arrows retain a fixed common linear scale per setup and fit above the base at both stops. The IGCSE 2D view gives the beam the full canvas width. The independent stability illustration remains available in the AS / A Level 2D view.
+- **Density, pressure & floating** marks the actual submerged cube faces in blue, with a precise waterline and a clearer depth ruler. The tint clips to the solver's immersion fraction for all supported cube volumes. A long weight arrow near the bottom is moved into clear space and linked to the cube by a leader; its length still shares the same fixed force scale as upthrust, drag and support. The IGCSE 2D explanation focuses on weight, upthrust and the floor's support when present. Full numerical drag and resultant-force readings remain in AS / A Level.
+
+These are display changes. No governing equation, integrator, reservoir height, state, parameter range or unit conversion was altered. Short 2D force arrows now have proportionately smaller heads, preserving their endpoints and common shaft scale. The diagram captions explain the illustrative frame, colour tint and displaced force annotations.
+
+**268 automated tests pass.** Added checks cover the submerged-face waterline across all cube sizes, the true force ratios and visible floor-offset weight arrow, ruler calibration and fixed beam force scaling at both angular stops. Existing tests still cover sinking/floating, torque direction, damping, contact, pointer editing, camera composition and all numerical models. Browser checks open all 57 models in both 3D and 2D with no console errors; the three refined workspaces are also checked at desktop, tablet and phone widths.
+
 ### Version 17: a shared visual design for the whole laboratory
 
 The homepage, experiment library, course map, learning paths and practice room now share a navy, white and teal design with larger type, clearer cards and original SVG illustrations. Twelve experiment covers have detailed apparatus artwork; the other covers retain their subject diagrams. All 57 existing laboratories, the 40 scoped IGCSE activities, 78 school lesson links and 312 practice questions are retained. No simulations or question sets were added.

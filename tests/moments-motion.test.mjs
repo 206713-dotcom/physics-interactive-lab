@@ -71,3 +71,25 @@ test('the real 3D beam and attached masses follow the solver angle while weight 
   const after=[];root.traverse(o=>after.push([o,o.geometry]));assert.deepEqual(after,before);
   root.traverse(o=>{o.geometry?.dispose();o.material?.dispose?.();});
 });
+
+test('beam force arrows share a fixed linear mass scale and stay clear of the base at both stops',()=>{
+  for(const distance of [.1,1.5]) {
+    const p={...base,m1:10,m2:.2,d1:distance,d2:distance},root=new T.Group(),k=createSceneKit(root,{labels:false}),bench=createMomentsBench(p,k);
+    let lengths;
+    for(const theta of [-BEAM_STOP,0,BEAM_STOP]) {
+      const s={...createMoments(),theta};bench.update(s,momentsReadings(s,p),{});
+      const current=k.indicators.map(a=>a.userData.vectorLength);
+      near(current[0]/current[1],p.m1/p.m2);
+      if(lengths)assert.deepEqual(current,lengths);else lengths=current;
+      for(const arrow of k.indicators) assert.ok(arrow.position.y-arrow.userData.vectorLength>=.15-1e-9);
+    }
+    root.traverse(o=>{o.geometry?.dispose();o.material?.dispose?.();});
+  }
+});
+
+test('engraved beam ticks use the same metre scale as the load attachment points',()=>{
+  const root=new T.Group(),k=createSceneKit(root,{labels:false});createMomentsBench(base,k);
+  const ticks=k.objects.filter(o=>o.userData.role==='moments-ruler-tick');assert.ok(ticks.length>20);
+  for(const tick of ticks)near(tick.geometry.attributes.position.getX(0),tick.userData.metres*2,1e-6);
+  root.traverse(o=>{o.geometry?.dispose();o.material?.dispose?.();});
+});

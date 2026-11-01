@@ -65,7 +65,7 @@ export function drawCurriculum(canvas, lab) {
   };
   const arrow = (x, y, dx, dy, col = CYAN, lw = 3) => {
     if (Math.hypot(dx, dy) < 0.01) return;
-    const a = Math.atan2(dy, dx);
+    const a = Math.atan2(dy, dx),head=Math.min(11,Math.hypot(dx,dy)*.32);
     line(
       [
         [x, y],
@@ -76,9 +76,9 @@ export function drawCurriculum(canvas, lab) {
     );
     line(
       [
-        [x + dx - 11 * Math.cos(a - 0.45), y + dy - 11 * Math.sin(a - 0.45)],
+        [x + dx - head * Math.cos(a - 0.45), y + dy - head * Math.sin(a - 0.45)],
         [x + dx, y + dy],
-        [x + dx - 11 * Math.cos(a + 0.45), y + dy - 11 * Math.sin(a + 0.45)],
+        [x + dx - head * Math.cos(a + 0.45), y + dy - head * Math.sin(a + 0.45)],
       ],
       col,
       lw,
@@ -283,23 +283,35 @@ export function drawCurriculum(canvas, lab) {
     }
     case "moments": {
       title("Moments and centre of mass", "Free pivot · greater moment turns down");
-      const pivot=300,sc=125,py=207,theta=s.theta||0,
+      const introductory=lab.studyMode==='igcse',pivot=introductory?420:300,sc=introductory?180:125,py=introductory?185:207,theta=s.theta||0,
         point=x=>[pivot+x*sc*Math.cos(theta),py-x*sc*Math.sin(theta)],
         half=Math.max(1.2,p.d1,p.d2)+.15;
       line([point(-half),point(half)],WHITE,8);
-      line([[pivot-30,256],[pivot,211],[pivot+30,256],[pivot-30,256]],MUTED,3);
+      line([[pivot-30,py+49],[pivot,py+4],[pivot+30,py+49],[pivot-30,py+49]],MUTED,3);
       circle(pivot,py,7,PURPLE);
       c.save();c.translate(pivot,py);c.rotate(-theta);
-      for(const [x,color] of [[-p.d1,CYAN],[p.d2,GOLD]]) rect(x*sc-17,-20,34,40,color,color,4);
+      for(let i=-Math.floor(half*10);i<=Math.floor(half*10);i++)
+        line([[i*sc/10,-4],[i*sc/10,i%5===0?5:1]],'#91afbf',1);
+      for(const [x,color] of [[-p.d1,CYAN],[p.d2,GOLD]]) {
+        const width=Math.min(34,Math.abs(x)*sc*.9);rect(x*sc-width/2,-20,width,40,color,color,4);
+      }
       c.restore();
       for(const [distance,mass,color,arm] of [[-p.d1,p.m1,CYAN,q.armLeft],[p.d2,p.m2,GOLD,q.armRight]]) {
         const [x,y]=point(distance);
-        arrow(x,y+23,0,65*mass/Math.max(p.m1,p.m2),color,3);
-        text(`${mass} kg`,x,y-32,color,18,'center');
-        line([[x,y+40],[x,319]],color,1,[4,5]);
-        line([[pivot,319],[x,319]],color,2);
-        text(`${arm.toFixed(2)} m`,(x+pivot)/2,343,color,16,'center');
+        arrow(x,y+23,0,(introductory?45:65)*mass/Math.max(p.m1,p.m2),color,3);
+        const labelX=Math.abs(x-pivot)<54?pivot+Math.sign(distance)*65:x,
+          dimY=introductory?358:319,mid=(x+pivot)/2,
+          readingX=Math.abs(x-pivot)<100?pivot+Math.sign(distance)*78:mid;
+        if(labelX!==x)line([[x,y-23],[labelX,y-39]],color,1);
+        text(`${mass} kg`,labelX,y-43,color,18,'center');
+        line([[x,y+35],[x,dimY]],color,1,[4,5]);
+        line([[pivot,dimY-6],[pivot,dimY],[x,dimY],[x,dimY-6]],color,2);
+        if(readingX!==mid)line([[mid,dimY],[readingX,dimY+12]],color,1);
+        text(`${arm.toFixed(2)} m`,readingX,dimY+27,color,16,'center');
       }
+      // A focused IGCSE diagram uses the full width for the turning-effect
+      // experiment. The independent stability illustration remains in AS mode.
+      if(!introductory) {
       c.save();
       c.translate(680, 320);
       c.rotate(-p.tilt * P.DEG);
@@ -331,10 +343,11 @@ export function drawCurriculum(canvas, lab) {
         15,
         "center",
       );
-      foot(
-        `Resultant load moment = ${fmt(q.net)} N m`,
-        q.contact ? "ANGULAR STOP SUPPLIES REACTION" : Math.abs(q.net)<1e-8 ? "BALANCED LOADS" : q.net>0 ? "LEFT SIDE TURNS DOWN" : "RIGHT SIDE TURNS DOWN",
-      );
+      }
+      if(introductory) foot(q.contact?'At the stop · support prevents further rotation.'
+        : Math.abs(q.net)<1e-8?'Equal moments · level at release.'
+        : q.net>0?'Left moment is greater · left side turns down.':'Right moment is greater · right side turns down.');
+      else foot(`ΔM = ${fmt(q.net)} N m`,q.contact?'AT ANGULAR STOP':Math.abs(q.net)<1e-8?'BALANCED LOADS':q.net>0?'LEFT SIDE TURNS DOWN':'RIGHT SIDE TURNS DOWN');
       break;
     }
     case "buoyancy": {
@@ -390,18 +403,31 @@ export function drawCurriculum(canvas, lab) {
         null,
         0,
       );
-      arrow(315 - side / 2, yy, 0, q.weight * unit, GOLD, 4);
+      const submergedHeight=q.fraction*side;
+      rect(340-side/2,yy+side/2-submergedHeight,side,submergedHeight,'#32bdd057',null,0);
+      if(q.fraction>1e-8 && q.fraction<1-1e-8)
+        line([[340-side/2,water],[340+side/2,water]],CYAN,2);
+      const weightY=Math.min(yy,floor-8-q.weight*unit);
+      arrow(315 - side / 2, weightY, 0, q.weight * unit, GOLD, 4);
+      if(weightY<yy-1e-8)line([[340-side/2,yy],[315-side/2,weightY]],GOLD,1,[3,4]);
       arrow(365 + side / 2, yy, 0, -q.upthrust * unit, CYAN, 4);
       arrow(395 + side / 2, yy, 0, -q.drag * unit, BLUE, 3);
       if (q.normal) arrow(340, floor, 0, -q.normal * unit, PURPLE, 4);
       text(BUOYANCY_STATUS[q.status], 550, 141, WHITE, 22);
       text("W = " + fmt(q.weight) + " N", 550, 184, GOLD, 20);
       text("U = " + fmt(q.upthrust) + " N", 550, 218, CYAN, 20);
-      text("Drag = " + fmt(q.drag) + " N", 550, 252, BLUE, 18);
-      text("Support = " + fmt(q.normal) + " N", 550, 284, PURPLE, 18);
-      text("Net = " + fmt(q.net) + " N", 550, 323, WHITE, 20);
+      if(lab.studyMode==='igcse') {
+        if(q.normal>0) {
+          text('Floor support = '+fmt(q.normal)+' N',550,261,PURPLE,18);
+          text('Support now balances the forces.',550,294,MUTED,14);
+        } else text(q.status===3 || q.status===4?'Balanced forces':'Unbalanced forces change the motion.',550,267,MUTED,14);
+      } else {
+        text("Drag = " + fmt(q.drag) + " N", 550, 252, BLUE, 18);
+        text("Support = " + fmt(q.normal) + " N", 550, 284, PURPLE, 18);
+        text("Net = " + fmt(q.net) + " N", 550, 323, WHITE, 20);
+      }
       foot(
-        fmt(q.immersion, 1) + "% immersed · v = " + fmt(q.v, 3) + " m/s",
+        fmt(q.immersion, 1) + (lab.studyMode==='igcse'?"% immersed":"% immersed · v = " + fmt(q.v, 3) + " m/s"),
         "Probe: " +
           fmt(q.pressure) +
           " Pa at " +

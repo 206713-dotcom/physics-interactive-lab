@@ -34,6 +34,45 @@ test("release is fully immersed at rest; initial acceleration comes from actual 
     near(q.drag, 0);
   }
 });
+
+test('the submerged face tint clips to the true waterline across every supported cube size',()=>{
+  for(const volume of [.0002,.001,.005]) {
+    const p=params({volume}),lab=createCurriculum('buoyancy',p),root=new T.Group(),scene=createCurriculumScene('buoyancy',p,root,{labels:false}),side=Math.cbrt(volume);
+    for(const fraction of [0,.1,.6,1]) {
+      lab.state={...lab.state,y:TANK_DEPTH+side/2-fraction*side,v:0};
+      const saved=structuredClone(lab);scene.update(lab);root.updateMatrixWorld(true);
+      const faces=[];root.traverse(o=>{if(o.userData.role==='buoyancy-submerged-face')faces.push(o);});
+      assert.equal(faces.length,4);
+      for(const face of faces) {
+        near(face.scale.y,6*side*fraction);
+        const centre=face.getWorldPosition(new T.Vector3());
+        near(centre.y+face.scale.y/2,.14+TANK_DEPTH*6);
+        assert.equal(face.visible,fraction>0);
+      }
+      const line=scene.kit.objects.find(o=>o.userData.role==='buoyancy-immersion-line');
+      assert.equal(line.visible,fraction>0 && fraction<1);
+      near(line.geometry.attributes.position.getY(0),.14+TANK_DEPTH*6,1e-6);
+      assert.deepEqual(lab,saved);
+    }
+    root.traverse(o=>{o.geometry?.dispose();o.material?.dispose?.();});
+  }
+});
+
+test('the floor-offset weight arrow keeps the true force ratio and a visible tip',()=>{
+  const p=params({density:15000}),lab=createCurriculum('buoyancy',p),root=new T.Group(),scene=createCurriculumScene('buoyancy',p,root,{labels:false});
+  lab.state=run(p,9);scene.update(lab);
+  const arrows=Object.fromEntries(scene.kit.indicators.map(a=>[a.userData.quantity,a])),q=buoyancySample(lab.state,p);
+  near(arrows.weight.userData.vectorLength/arrows.upthrust.userData.vectorLength,q.weight/q.upthrust);
+  near(arrows.normal.userData.vectorLength/arrows.weight.userData.vectorLength,q.normal/q.weight);
+  assert.ok(arrows.weight.position.y-arrows.weight.userData.vectorLength>=.14+.08-1e-9);
+  for(const [quantity,arrow] of Object.entries(arrows)) {
+    if(Math.abs(q[quantity])<1e-8)continue;
+    const direction=new T.Vector3(0,1,0).applyQuaternion(arrow.quaternion);
+    near(direction.x,0);near(direction.y,quantity==='weight'?-1:Math.sign(q[quantity]));
+  }
+  assert.equal(scene.kit.objects.find(o=>o.userData.role==='buoyancy-force-leader').visible,true);
+  root.traverse(o=>{o.geometry?.dispose();o.material?.dispose?.();});
+});
 test("the reported 15 kg screenshot case actually sinks and rests on a support with all forces balanced", () => {
   const p = params({ density: 15000 }),
     s = run(p, 9),

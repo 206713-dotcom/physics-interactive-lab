@@ -17,19 +17,19 @@ export const SCENE_GUIDES = {
     "Cyan A leads into gold B. Purple runs directly from the starting point to the final point.",
     "Head-to-tail addition gives the same resultant as adding horizontal and vertical components.",
     "Try 0°, 90° and 180°. Predict the resultant before reading its value.",
-    "All arrows and coordinate ticks share one fitted force scale. Drag the A/B rings to change the inputs; the construction demo only translates or reveals fixed vectors. Use Components to inspect the projections. Camera rotation changes the view without changing the forces.",
+    "All arrows and coordinate ticks share one fitted force scale. The light drafting board and its frame are illustrative. Drag the A/B rings to change the inputs; the construction demo only translates or reveals fixed vectors. Use Components to inspect the projections in AS / A Level. Camera rotation changes the view without changing the forces.",
   ],
   moments: [
     "Watch the beam turn toward the greater moment: force × perpendicular distance from the pivot.",
     "The left weight produces an anticlockwise moment; the right weight produces a clockwise moment. Compare mass × distance, not mass alone. Equal moments keep a beam released from rest level.",
     "Give the lighter mass a longer distance from the pivot. Predict the direction, then compare equal mass × distance on both sides.",
-    "Both weights act vertically. Lever distances in the readouts are their current horizontal distances from the pivot. The massless beam has attached point masses, a fixed bearing damper and inelastic ±24° stops. The stop supplies a reaction moment when reached. Block sizes are illustrative; the separate stability test does not set the beam angle.",
+    "Both weights act vertically and their arrows share one fixed force scale per setup. Engraved beam ticks measure distance along the beam; the brackets and readouts show the current horizontal, perpendicular distances to the weights. The massless beam has attached point masses, a fixed bearing damper and inelastic ±24° stops. The stop supplies a reaction moment when reached. Block sizes and bearing details are illustrative; the separate AS / A Level stability diagram does not set the beam angle.",
   ],
   buoyancy: [
     "Watch the released cube rise or sink. Gold is weight, cyan is upthrust, blue is drag and purple is the support force.",
     "Upthrust equals the weight of displaced liquid. A floating object displaces just enough liquid to balance its weight.",
     "Increase object density through the liquid density and compare the two forces.",
-    "The cube, depth ruler and 0.50 m liquid column share one length scale. Vertical motion is integrated from actual immersion, weight and approximate fluid drag. A permeable 5 mm support allows liquid underneath; contact is inelastic. The separate pressure probe does not change the tank depth. Surface highlights are schematic, driven by the cube speed; fluid waves are not solved.",
+    "The cube, depth ruler and 0.50 m liquid column share one length scale. Blue face tint marks the actual submerged part, without changing the reservoir level. Force arrows share one fixed linear scale per setup. Near the floor, the weight arrow is shifted into clear space and linked to the cube by a leader. Vertical motion is integrated from actual immersion, weight and approximate fluid drag. A permeable 5 mm support allows liquid underneath; contact is inelastic. The separate pressure probe does not change the tank depth. Surface highlights are schematic, driven by the cube speed; fluid waves are not solved.",
   ],
   energy: [
     "Watch the winch lift the gold load and compare the energy bars.",

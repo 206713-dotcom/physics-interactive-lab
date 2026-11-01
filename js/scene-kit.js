@@ -40,7 +40,7 @@ export function setPath(line, points) {
   line.geometry.setDrawRange(0, points.length);
   line.frustumCulled = false;
 }
-function textTexture(text, color) {
+function textTexture(text, color, theme = 'dark') {
   const canvas = document.createElement("canvas"),
     c = canvas.getContext("2d");
   c.font = "600 60px Segoe UI,sans-serif";
@@ -49,13 +49,15 @@ function textTexture(text, color) {
     Math.min(1900, Math.ceil(c.measureText(text).width) + 58),
   );
   canvas.height = 110;
-  c.fillStyle = "rgba(9,28,43,.76)";
-  c.beginPath();
-  c.roundRect(3, 3, canvas.width - 6, 104, 16);
-  c.fill();
-  c.strokeStyle = "rgba(150,206,222,.10)";
-  c.lineWidth = 2;
-  c.stroke();
+  if (theme !== 'ink') {
+    c.fillStyle = theme === 'paper' ? 'rgba(250,253,255,.96)' : 'rgba(9,28,43,.76)';
+    c.beginPath();
+    c.roundRect(3, 3, canvas.width - 6, 104, 16);
+    c.fill();
+    c.strokeStyle = theme === 'paper' ? 'rgba(77,111,137,.25)' : 'rgba(150,206,222,.10)';
+    c.lineWidth = 2;
+    c.stroke();
+  }
   c.font = "500 60px Segoe UI,sans-serif";
   c.textAlign = "center";
   c.textBaseline = "middle";
@@ -158,10 +160,10 @@ export function createSceneKit(root, { labels = true } = {}) {
     setArrow(o, origin, vector);
     return o;
   };
-  const label = (text, pos, color = "#cfe6ef", width = 2.25) => {
+  const label = (text, pos, color = "#cfe6ef", width = 2.25, theme = 'dark') => {
     let o;
     if (labels) {
-      const map = textTexture(text, color);
+      const map = textTexture(text, color, theme);
       o = new T.Sprite(
         new T.SpriteMaterial({
           map,
@@ -178,6 +180,7 @@ export function createSceneKit(root, { labels = true } = {}) {
     o.userData.text = text;
     o.userData.labelWidth = width;
     o.userData.labelColor = color;
+    o.userData.labelTheme = theme;
     annotations.push(o);
     return o;
   };
@@ -193,7 +196,7 @@ export function createSceneKit(root, { labels = true } = {}) {
     o.userData.labelColor = color;
     if (!o.material) return;
     const old = o.material.map,
-      map = textTexture(text, color);
+      map = textTexture(text, color, o.userData.labelTheme);
     o.material.map = map;
     o.material.needsUpdate = true;
     o.scale.set(width, (width * map.image.height) / map.image.width, 1);

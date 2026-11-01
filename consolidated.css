@@ -273,6 +273,11 @@ button,a,input,select,summary { -webkit-tap-highlight-color:transparent; }
  .expanded-calculations .calculation-result { font-size:38px; }
  .calculation-variables dt,.calculation-variables dd { font-size:15px; }
 }
+/* The vector method strip takes one extra toolbar row. Reserve its height so
+   the shared instruments and animation controls still fit on laptop screens. */
+@media (min-width:901px) {
+ .expanded-lab[data-model=vectors] .expanded-model .scene-container { height:clamp(260px,calc(100dvh - 570px),560px); }
+}
 @media (min-width:1180px) and (max-width:1430px) {
  .expanded-layout { grid-template-columns:250px minmax(0,1fr) 305px; gap:16px; padding:18px; }
  .expanded-variables .controls,.expanded-layout > .expanded-calculations { padding:19px; }

@@ -1,19 +1,29 @@
 /** A reactive vector workbench: meshes survive parameter edits. Construction
  * animation translates / reveals fixed vectors; it is never force evolution. */
 import * as T from "../vendor/three.module.min.js";
-import { PALETTE as C, setPath } from "./scene-kit.js";
+import { setPath } from "./scene-kit.js";
 import {
   vectorConstruction,
   parametersFromVectorPoint,
 } from "./vector-geometry.js";
+// A paper drafting board uses darker versions of the shared teaching hues.
+const C={cyan:0x087e79,gold:0xa86c1b,purple:0x7451b3,blue:0x2b6fa6,white:0x315870};
 const mix = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t),
   n = (x) => Number(x.toFixed(2)).toString();
 export function createVectorApparatus(params, k) {
+  const label=(text,pos,color='#315870',width=1.4,theme='paper')=>k.label(text,pos,color,width,theme);
+  k.box(9.3,6.1,.12,0x294d65,[0,2.65,-.3],{metalness:.25,roughness:.55});
   const plane = k.box(9.1, 5.9, 0.09, 0x0b2334, [0, 2.65, -0.19], {
     metalness: 0.05,
     roughness: 0.9,
   });
   plane.receiveShadow = false;
+  plane.castShadow = false;
+  // A constant paper tone keeps contrast independent of the camera lighting.
+  plane.material.dispose();
+  plane.material=new T.MeshBasicMaterial({color:0xedf4f8,toneMapped:false});
+  for(const x of [-4.43,4.43])for(const y of [-.18,5.48])
+    k.ball(.028,0x7898ad,[x,y,-.12],{metalness:.6,roughness:.35});
   const border = k.line(
     [
       [-4.55, -0.3, -0.12],
@@ -22,7 +32,7 @@ export function createVectorApparatus(params, k) {
       [4.55, -0.3, -0.12],
       [-4.55, -0.3, -0.12],
     ],
-    0x37566b,
+    0x96b4c7,
     0.7,
   );
   const grid = new T.Group(),
@@ -32,24 +42,29 @@ export function createVectorApparatus(params, k) {
   k.add(guides);
   k.add(angleGroup);
   const gridLines = Array.from({ length: 22 }, () => {
-    const o = k.line([], 0x557d90, 0.17);
+    const o = k.line([], 0x9fb8c9, 0.35);
     grid.add(o);
     return o;
   });
   const tickLabels = Array.from({ length: 10 }, () => {
-    const o = k.label("", [0, 0, 0], "#7c9cae", 0.55);
+    const o = label("", [0, 0, 0], "#5b7c93", 0.55, "ink");
     grid.add(o);
     return o;
   });
-  const xAxis = k.line([], 0x719aaa, 0.65),
-    yAxis = k.line([], 0x719aaa, 0.65);
-  const xLabel = k.label("+x / N", [4.1, 0.25, 0], "#91aebf", 1.1),
-    yLabel = k.label("+y / N", [-4.1, 5.3, 0], "#91aebf", 1.1);
+  const xAxis = k.line([], 0x63869d, 0.7),
+    yAxis = k.line([], 0x63869d, 0.7);
+  const xLabel = label("+x / N", [4.1, 0.25, 0], "#365d76", 1.1, "ink"),
+    yLabel = label("+y / N", [-4.1, 5.3, 0], "#365d76", 1.1, "ink");
   const A = k.arrow([0, 0, 0], [1, 0, 0], C.cyan),
     B = k.arrow([0, 0, 0], [1, 0, 0], C.gold),
     R = k.arrow([0, 0, 0], [1, 0, 0], C.purple);
   R.children[0].geometry.dispose();
   R.children[0].geometry = new T.CylinderGeometry(0.048, 0.048, 1, 14);
+  for(const [arrow,color] of [[A,C.cyan],[B,C.gold],[R,C.purple]]) {
+    arrow.children[0].material.dispose();
+    const ink=new T.MeshBasicMaterial({color,toneMapped:false});
+    arrow.children.forEach(part=>part.material=ink);
+  }
   R.renderOrder = 1;
   A.renderOrder = B.renderOrder = 2;
   const projectionX = k.line([], C.blue, 0.6),
@@ -59,15 +74,15 @@ export function createVectorApparatus(params, k) {
   [projectionX, projectionY, ghostA, ghostB].forEach((o) => guides.add(o));
   const arc = k.line([], C.gold, 0.85);
   angleGroup.add(arc);
-  const theta = k.label("", [0, 0, 0], "#ffc584", 1.3);
+  const theta = label("", [0, 0, 0], "#996017", 1.3);
   angleGroup.add(theta);
   const labels = [
-    k.label("A", [0, 0, 0], "#64e8d1", 2),
-    k.label("B", [0, 0, 0], "#ffc584", 2),
-    k.label("R", [0, 0, 0], "#c3a6ff", 2.2),
+    label("A", [0, 0, 0], "#087e79", 2),
+    label("B", [0, 0, 0], "#996017", 2),
+    label("R", [0, 0, 0], "#7451b3", 2.2),
   ];
-  const rx = k.label("", [0, 0, 0], "#89baff", 1.8),
-    ry = k.label("", [0, 0, 0], "#89baff", 1.8);
+  const rx = label("", [0, 0, 0], "#2b6fa6", 1.8),
+    ry = label("", [0, 0, 0], "#2b6fa6", 1.8);
   guides.add(rx, ry);
   const origin = k.ball(0.065, C.white, [0, 0, 0], { metalness: 0 }),
     end = k.ball(0.065, C.purple, [0, 0, 0], {
@@ -167,7 +182,7 @@ export function createVectorApparatus(params, k) {
             [x, 5.25, -0.11],
           ]);
           if (value % (step * 2) === 0 && l < 6) {
-            k.setLabel(tickLabels[l], String(value), "#7c9cae", 0.55);
+            k.setLabel(tickLabels[l], String(value), "#5b7c93", 0.55);
             tickLabels[l++].position.set(x, 0.35, -0.04);
           }
         }
@@ -182,7 +197,7 @@ export function createVectorApparatus(params, k) {
           ]);
       }
       for (; j < 22; j++) setPath(gridLines[j], []);
-      for (; l < 10; l++) k.setLabel(tickLabels[l], "", "#7c9cae", 0.55);
+      for (; l < 10; l++) k.setLabel(tickLabels[l], "", "#5b7c93", 0.55);
     }
     setPath(xAxis, [
       [-4.25, O[1], -0.06],
@@ -207,9 +222,9 @@ export function createVectorApparatus(params, k) {
       construction.components > 0.01;
     segmentLines[2].visible = segmentLines[3].visible =
       method === "parallelogram";
-    k.setLabel(rx, "Rₓ = " + n(q.x) + " N", "#89baff", 2);
+    k.setLabel(rx, "Rₓ = " + n(q.x) + " N", "#2b6fa6", 2);
     rx.position.set((O[0] + tip[0]) / 2, O[1] - 0.55, 0.02);
-    k.setLabel(ry, "Rᵧ = " + n(q.y) + " N", "#89baff", 2);
+    k.setLabel(ry, "Rᵧ = " + n(q.y) + " N", "#2b6fa6", 2);
     ry.position.set(
       tip[0] + (tip[0] > 2 ? -1.05 : 1.05),
       (O[1] + tip[1]) / 2,
@@ -242,9 +257,9 @@ export function createVectorApparatus(params, k) {
       labels[1].position.set(headA[0] + 1.1, headA[1] + 0.4, 0.09);
     if (q.resultant * layout.scale < 1.3)
       labels[2].position.set(O[0], O[1] + 1.4, 0.1);
-    k.setLabel(labels[0], "A · " + n(p.a) + " N", "#64e8d1", 1.9);
-    k.setLabel(labels[1], "B · " + n(p.b) + " N", "#ffc584", 1.9);
-    k.setLabel(labels[2], "R · " + n(q.resultant) + " N", "#c3a6ff", 2.15);
+    k.setLabel(labels[0], "A · " + n(p.a) + " N", "#087e79", 1.65);
+    k.setLabel(labels[1], "B · " + n(p.b) + " N", "#996017", 1.65);
+    k.setLabel(labels[2], "R · " + n(q.resultant) + " N", "#7451b3", 1.85);
     const radius = Math.min(0.75, Math.max(0.3, p.b * layout.scale * 0.3)),
       center = tail;
     setPath(
@@ -258,7 +273,7 @@ export function createVectorApparatus(params, k) {
         ];
       }),
     );
-    k.setLabel(theta, n(p.angle) + "°", "#ffc584", 1);
+    k.setLabel(theta, n(p.angle) + "°", "#996017", 1);
     const halfAngle = (p.angle * Math.PI) / 360;
     theta.position.set(
       center[0] + (radius + 0.2) * Math.cos(halfAngle),

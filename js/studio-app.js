@@ -2,7 +2,7 @@
 import { SIMULATIONS, CATEGORIES, spatialRows } from "./simulations.js";
 import { catalogueArt } from "./catalogue-art.js";
 import { installPresentationStudio } from "./presentation-studio.js";
-import { studyParams, studyControl, studyGraphs, IGCSE_AREAS, igcseArea } from "./study-policy.js";
+import { studyParams, studyControl, studyGraphs, studyTitle, IGCSE_AREAS, igcseArea } from "./study-policy.js";
 import { LESSONS as ORIGINAL_LESSONS } from "./content.js";
 import { EXTRA_LESSONS } from "./content-extra.js";
 import { ADVANCED_LESSONS } from "./content-advanced.js";
@@ -171,7 +171,7 @@ function thumbnail(id) {
 }
 function card(id, preferredMode) {
   const d = SIMULATIONS[id];
-  return `<a class="simulation-card" href="#/${id}?level=${resolveMode(id, typeof preferredMode === "string" ? (preferredMode === "as" || preferredMode === "a2" ? "alevel" : preferredMode) : null)}" style="--accent:${d.color}"><div class="card-art">${catalogueArt(id,thumbnail(id))}<span class="art-label">${d.category.toUpperCase()}</span><span class="card-dimension">${d.diagramOnly ? "INTERACTIVE DIAGRAM" : icon("cube") + " 3D + 2D"}</span></div><div class="card-body"><div class="card-meta">${preferredMode === "igcse" ? "CAMBRIDGE IGCSE · 0625" : levelBadges(id)}${d.isNew ? '<span class="new-lab-badge">NEW</span>' : ""}</div><h3>${d.short}</h3><p>${d.summary}</p><div class="card-bottom"><span class="card-equation">${preferredMode === "igcse" ? esc(getProfile(id,"igcse").focus) : d.formula}</span><span>Explore ${icon("arrow")}</span></div></div></a>`;
+  return `<a class="simulation-card" href="#/${id}?level=${resolveMode(id, typeof preferredMode === "string" ? (preferredMode === "as" || preferredMode === "a2" ? "alevel" : preferredMode) : null)}" style="--accent:${d.color}"><div class="card-art">${catalogueArt(id,thumbnail(id))}<span class="art-label">${d.category.toUpperCase()}</span><span class="card-dimension">${d.diagramOnly ? "INTERACTIVE DIAGRAM" : icon("cube") + " 3D + 2D"}</span></div><div class="card-body"><div class="card-meta">${preferredMode === "igcse" ? "CAMBRIDGE IGCSE · 0625" : levelBadges(id)}${d.isNew ? '<span class="new-lab-badge">NEW</span>' : ""}</div><h3>${studyTitle(id,preferredMode,d.short)}</h3><p>${preferredMode === "igcse" ? esc(getProfile(id,"igcse").goals.slice(0,2).join(". ")) + "." : d.summary}</p><div class="card-bottom"><span class="card-equation">${preferredMode === "igcse" ? esc(getProfile(id,"igcse").focus) : d.formula}</span><span>Explore ${icon("arrow")}</span></div></div></a>`;
 }
 function home() {
   $("#main").innerHTML =
@@ -510,7 +510,8 @@ function labPage(type, query) {
   $$("[data-graph]").forEach(b => b.hidden = !courseGraphs.some(g => g.id === b.dataset.graph));
   $(".graph-panel").hidden = !courseGraphs.length;
   if (studyMode === 'igcse') {
-    $(".lab-title-row h1").textContent = type === 'pendulum' ? 'Pendulum timing' : d.short;
+    $(".lab-title-row h1").textContent = studyTitle(type,studyMode,d.short);
+    document.title = `${studyTitle(type,studyMode,d.short)} · IGCSE Physics Lab`;
     $(".lab-title-row p").textContent = getProfile(type,studyMode).focus;
     $('#vectors').checked = lab.vectors;
     if (type === 'pendulum') $('#vectors').closest('label').hidden = true;
@@ -799,7 +800,7 @@ function bindControls() {
     expandButton.title = "Return to normal view";
     expandButton.setAttribute("aria-label", "Close expanded view");
     expandedView = new ExpandedView({
-      title: lab.definition.short,
+      title: studyTitle(lab.type,lab.studyMode,lab.definition.short),
       controls: $(".controls"),
       workspace: $(".workspace"),
       extraGraph: lab.type === "gravity" ? $(".graph-panel") : null,

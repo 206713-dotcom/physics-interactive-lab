@@ -56,6 +56,18 @@ export const IGCSE_AREAS = [
   'Motion, forces and energy','Thermal physics','Waves',
   'Electricity and magnetism','Nuclear physics','Space physics',
 ];
+/** Full-model names can mention options deliberately absent from IGCSE. */
+export function studyTitle(id, mode, fallback) {
+  if (mode !== 'igcse') return fallback;
+  return ({
+    hooke:'Springs: load & extension', measurement:'Timing repeated oscillations',
+    gases:'Particles & gas pressure', dc:'Series & parallel circuits',
+    charged:'Magnetic deflection', radiation:'Alpha, beta & gamma',
+    atom:'Atoms & nuclear equations', stars:'How stars change',
+    universe:'Redshift & the Universe', pendulum:'Pendulum timing',
+    waves:'Speed, frequency & wavelength', fields:'Electric field patterns',
+  })[id] || fallback;
+}
 export function igcseArea(id) {
   const first = getProfile(id,'igcse')?.refs[0];
   return IGCSE_AREAS[Number(first?.split('.')[0]) - 1] || '';

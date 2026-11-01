@@ -60,7 +60,7 @@ export function createSpringBench(p,root,options={}) {
     legend=k.label('',[0,3.55,0],'#b0cbd9',7.2),ledger=energyLedger(k,.5*p.k*p.displacement**2,4.08);
   let last=-Infinity,lastMode;
   const readouts=[xLabel,vLabel,regime,restoringLabel,dampingLabel,netLabel,legend,damperLabel,equilibriumLabel,ledger.reading,ledger.track,...ledger.bars];
-  return {target:[0,1.9,0],radius:9.4,polar:1.22,azimuth:-.17,fitAspect:1.65,kit:k,update(lab){
+  return {target:[0,1.05,0],radius:8.4,polar:1.18,azimuth:-.22,fitAspect:1.65,kit:k,update(lab){
     const s=lab.state,q=springReadings(s,p),x=1+SPRING_TRACK.scale*s.x,motion=lab.oscillationVectors==='motion',
       refresh=!lab.running||s.t<last||s.t-last>=.08||lastMode!==motion;
     mass.position.set(x,.285-.045*1.2,0);cart.roll(x/1.2);
@@ -101,24 +101,30 @@ export function createPendulumBench(p,root,options={}) {
   for(const [radius,z] of [[.21,-.1],[.14,.1],[.07,.2]]){
     const bearing=k.cylinder(radius,.12,radius===.14?0xbaa071:0x9aafbb,[0,pivot[1],z],metal);bearing.rotation.x=Math.PI/2;
   }
-  const bob=role(k.ball(.2+.02*Math.sqrt(p.mass),C.gold,pendulumPoint(0),{metalness:.84,roughness:.2}),'pendulum-bob'),
-    rod=role(k.rod(pivot,pendulumPoint(0),0xb6cbd3,.025),'pendulum-link'),
+  const bob=role(k.ball(.29+.018*Math.sqrt(p.mass),C.gold,pendulumPoint(0),{metalness:.84,roughness:.2}),'pendulum-bob'),
+    rod=role(k.rod(pivot,pendulumPoint(0),0xc7dce3,.035),'pendulum-link'),
     path=role(k.line(Array.from({length:1201},()=>pendulumPoint(0)),C.gold,.5),'pendulum-trail'),
     angle=role(k.line(Array.from({length:33},()=>[0,0,0]),C.cyan,.8),'pendulum-angle');
   const referenceRod=dashedPath(k,[pivot,pendulumPoint(0)],C.purple,.65),
     referenceBob=role(k.ring(.24,C.purple,pendulumPoint(0),'z',.9),'pendulum-reference');
   dashedPath(k,[pivot,pendulumPoint(0)],C.muted,.7);
   // Angle markings cover both ±120° releases without changing length mid-run.
-  const rim=[], limit = options.studyMode === "igcse" ? 30 : 120;
+  const rim=[], limit = options.studyMode === "igcse" ? 30 : 120, major = options.studyMode === "igcse" ? 10 : 30;
   for(let degrees=-limit;degrees<=limit;degrees+=2){
     const a=degrees*Math.PI/180;rim.push([2.94*Math.sin(a),pivot[1]-2.94*Math.cos(a),-.24]);
     if(degrees%10===0){
-      const outer=degrees%30===0?3.07:3.0;
+      const outer=degrees%major===0?3.07:3.0;
       k.line([[2.9*Math.sin(a),pivot[1]-2.9*Math.cos(a),-.24],[outer*Math.sin(a),pivot[1]-outer*Math.cos(a),-.24]],C.muted,.75);
-      if(degrees%30===0&&degrees!==0)k.label(`${degrees}°`,[3.27*Math.sin(a),pivot[1]-3.27*Math.cos(a),-.23],'#9bbdce',.72);
+      if(degrees%major===0&&degrees!==0)k.label(`${degrees}°`,[3.27*Math.sin(a),pivot[1]-3.27*Math.cos(a),-.23],'#9bbdce',.72);
     }
   }
-  k.line(rim,0x4b6e81,.4);
+  k.line(rim,0x8aafc0,.7);
+  const sectorGeometry=new T.BufferGeometry(),sectorPositions=new T.Float32BufferAttribute(new Float32Array(32*9),3);
+  sectorGeometry.setAttribute('position',sectorPositions);
+  const sector=new T.Mesh(sectorGeometry,new T.MeshBasicMaterial({color:C.cyan,transparent:true,opacity:.19,side:T.DoubleSide,depthWrite:false,toneMapped:false}));
+  k.add(sector,pivot,'pendulum-angle-sector');
+  const angleTag=k.label('',[1,pivot[1]-.55,.3],'#a4f2df',1.25);
+
   const vectors=[C.gold,C.purple,C.blue,C.cyan,C.red].map(c=>k.arrow([0,1,0],[0,0,0],c)),
     thetaLabel=k.label('',[-2.0,6.12,0],'#e1edf4',2.4),speedLabel=k.label('',[2.2,6.12,0],'#ffc584',3.3),
     periodLabel=k.label(`T₀ ${fmt(2*Math.PI*Math.sqrt(p.length/p.g))} s · finite-angle ${fmt(pendulumPeriod(p))} s (undamped)`,[0,6.83,0],'#b3ccda',7.5),
@@ -128,10 +134,20 @@ export function createPendulumBench(p,root,options={}) {
     ledger=energyLedger(k,pendulumReadings({theta:p.angle*Math.PI/180,omega:0},p).initial,-.1,1.0,6.7);
   let last=-Infinity,lastMode,lastReference;
   const readouts=[thetaLabel,speedLabel,periodLabel,legend,forceLabel,referenceLabel,ledger.reading,ledger.track,...ledger.bars];
-  return {target:[0,3.55,0],radius:10.8,polar:1.47,azimuth:-.16,fitAspect:1.5,kit:k,update(lab){
+  return {target:[0,2.65,0],radius:9.0,polar:1.42,azimuth:-.12,fitAspect:1.5,kit:k,update(lab){
     const s=lab.state,q=pendulumReadings(s,p),at=pendulumPoint(s.theta),motion=lab.oscillationVectors!=='forces',
       compare=lab.smallAngleReference===true,ref=smallAngleReference(p,s.t),refresh=!lab.running||s.t<last||s.t-last>=.08||motion!==lastMode||compare!==lastReference;
     bob.position.set(...at);putRod(rod,pivot,at);
+    for(let i=0;i<32;i++){
+      const a=s.theta*i/32,b=s.theta*(i+1)/32;
+      sectorPositions.setXYZ(i*3,0,0,.15);
+      sectorPositions.setXYZ(i*3+1,.76*Math.sin(a),-.76*Math.cos(a),.15);
+      sectorPositions.setXYZ(i*3+2,.76*Math.sin(b),-.76*Math.cos(b),.15);
+    }
+    sectorPositions.needsUpdate=true;sectorGeometry.computeBoundingSphere();
+    sector.visible=lab.showLabels!==false && Math.abs(s.theta)>1e-5;
+    angleTag.position.set(s.theta<0?-1.08:1.08,pivot[1]-.62,.3);
+    if(refresh) k.setLabel(angleTag,`${Math.abs(s.theta*180/Math.PI).toFixed(1)}°`,'#a4f2df',1.25);
     const hist=lab.trail??[];setPath(path,hist.map(v=>[v.x*length/p.length,pivot[1]+v.y*length/p.length,.03]));
     setPath(angle,Array.from({length:33},(_,i)=>{const a=s.theta*i/32;return [.56*Math.sin(a),pivot[1]-.56*Math.cos(a),.13];}));
     const refAt=pendulumPoint(ref.theta);referenceBob.position.set(...refAt);referenceBob.position.z=.12;

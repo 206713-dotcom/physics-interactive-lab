@@ -56,8 +56,8 @@ export const PARAMETERS = {
   moments: [
     number("m1", "Left mass", "kg"),
     number("m2", "Right mass", "kg"),
-    number("d1", "Left lever arm", "m"),
-    number("d2", "Right lever arm", "m"),
+    number("d1", "Left distance from pivot", "m",1,"Measured along the beam. The moment uses its horizontal, perpendicular distance from the vertical weight line."),
+    number("d2", "Right distance from pivot", "m",1,"A lighter mass farther from the pivot can produce the greater moment."),
     number("tilt", "Separate block: tilt", "°"),
     number("height", "Centre-of-mass height", "m"),
     number("width", "Support width", "m"),
@@ -438,19 +438,19 @@ export const WORK = {
       "left",
       "Anticlockwise moment",
       "N m",
-      "M₁ = m₁gd₁",
-      (p, q, n) => `${n(p.m1)} × 9.81 × ${n(p.d1)}`,
+      "M₁ = m₁g × left perpendicular distance",
+      (p, q, n) => `${n(p.m1)} × 9.81 × ${n(q.armLeft)}`,
     ),
     W(
       "right",
       "Clockwise moment",
       "N m",
-      "M₂ = m₂gd₂",
-      (p, q, n) => `${n(p.m2)} × 9.81 × ${n(p.d2)}`,
+      "M₂ = m₂g × right perpendicular distance",
+      (p, q, n) => `${n(p.m2)} × 9.81 × ${n(q.armRight)}`,
     ),
     W(
       "net",
-      "Resultant moment",
+      "Resultant load moment",
       "N m",
       "M = M₁ − M₂",
       (p, q, n) => `${n(q.left)} − ${n(q.right)}`,
@@ -1742,6 +1742,10 @@ Object.assign(CURRICULUM_SIMULATIONS.energy, {
     dynamicGraph("height", "Height", ["height"], "m"),
   ],
 });
+Object.assign(CURRICULUM_SIMULATIONS.moments, {
+  graphs: [dynamicGraph('rotation','Beam angle',['angle'],'°'), ...CURRICULUM_SIMULATIONS.moments.graphs],
+  caption: 'Free pivot, massless rigid beam and attached point masses. Weight acts vertically; the moment uses the current perpendicular distance. A fixed 0.35 N m s bearing damper and inelastic ±24° stops limit the motion. Block dimensions are illustrative. The separate stability block is independent of the beam.',
+});
 Object.assign(CURRICULUM_SIMULATIONS.calorimetry, {
   graphs: [
     dynamicGraph("heating", "Heating curve", ["temperature"], "°C"),
@@ -1840,6 +1844,9 @@ const SAMPLE_UNITS = {
     left: "N_m",
     right: "N_m",
     net: "N_m",
+    angle: "deg",theta:"rad",omega:"rad_per_s",alpha:"rad_per_s2",
+    armLeft:"m",armRight:"m",inertia:"kg_m2",torque:"N_m",dampingMoment:"N_m",stopMoment:"N_m",
+    kinetic:"J",potential:"J",dissipated:"J",impactLoss:"J",contact:"sign",
     critical: "deg",
     offset: "m",
     tipping: "boolean",
@@ -2074,6 +2081,10 @@ export function curriculumCalculationSheet(type, s, p, n) {
         value: p[c.key],
         unit: parameterUnit(type, c),
       })),
+      ...(type === 'moments' ? [
+        {symbol:'d₁⊥',label:'Current left perpendicular distance',value:q.armLeft,unit:'m'},
+        {symbol:'d₂⊥',label:'Current right perpendicular distance',value:q.armRight,unit:'m'},
+      ] : []),
       ...(type === "buoyancy"
         ? [
             {
@@ -2145,7 +2156,9 @@ export function curriculumCalculationSheet(type, s, p, n) {
           ? type === "lenses"
             ? "At focus, outgoing rays are parallel. There is no finite image distance, magnification or image height."
             : "This result is undefined for this setup. See the model assumptions."
-          : type === "buoyancy"
+          : type === 'moments'
+            ? 'Moments use the current perpendicular distance to each vertical weight line. The angular stop adds a separate reaction moment; the displayed load difference excludes that reaction and bearing damping.'
+            : type === "buoyancy"
             ? "Upward is positive. Forces and immersion use the current integrated position and velocity. Values are calculated before rounding."
             : "Uses the current model state and parameters. Values are calculated before rounding for display.",
     })),

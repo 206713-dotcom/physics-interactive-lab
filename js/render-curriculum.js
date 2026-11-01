@@ -9,12 +9,12 @@ import { phaseInventory } from "./thermal-geometry.js";
 import { drawMotionDiagram } from "./render-motion.js";
 const chargedViews = new WeakMap();
 const TAU = Math.PI * 2,
-  CYAN = "#6be5d4",
-  GOLD = "#ffc580",
-  BLUE = "#91baff",
-  PURPLE = "#c4a3ff",
-  MUTED = "#8faec2",
-  WHITE = "#e7f5ff";
+  CYAN = "#168e87",
+  GOLD = "#b37c32",
+  BLUE = "#4f7cb1",
+  PURPLE = "#8b66b2",
+  MUTED = "#5e7c8c",
+  WHITE = "#294e64";
 export function drawCurriculum(canvas, lab) {
   if (lab.type === "vectors") return drawVectorDiagram(canvas, lab);
   const width = canvas.clientWidth,
@@ -30,8 +30,8 @@ export function drawCurriculum(canvas, lab) {
   const c = canvas.getContext("2d");
   c.setTransform(dpr, 0, 0, dpr, 0, 0);
   const bg = c.createLinearGradient(0, 0, width, height);
-  bg.addColorStop(0, "#071a2b");
-  bg.addColorStop(1, "#10283a");
+  bg.addColorStop(0, "#f8fbfd");
+  bg.addColorStop(1, "#edf5f8");
   c.fillStyle = bg;
   c.fillRect(0, 0, width, height);
   const scale = Math.min(width / 840, height / 470),
@@ -41,7 +41,7 @@ export function drawCurriculum(canvas, lab) {
   c.scale(scale, scale);
   for (let x = 20; x < 840; x += 28)
     for (let y = 20; y < 470; y += 28) {
-      c.fillStyle = "#91baff13";
+      c.fillStyle = "#507d9517";
       c.fillRect(x, y, 1.2, 1.2);
     }
   const p = lab.params,
@@ -50,7 +50,7 @@ export function drawCurriculum(canvas, lab) {
     t = s.t;
   const text = (str, x, y, color = MUTED, size = 17, align = "left") => {
     c.fillStyle = color;
-    c.font = `${size}px Inter,Segoe UI,sans-serif`;
+    c.font = `500 ${Math.max(size,12/scale)}px Manrope,Segoe UI,sans-serif`;
     c.textAlign = align;
     c.fillText(String(str), x, y);
   };
@@ -89,8 +89,8 @@ export function drawCurriculum(canvas, lab) {
     y,
     w,
     h,
-    col = "#ffffff0b",
-    stroke = "#a5cadd36",
+    col = "#dceaf160",
+    stroke = "#7c9eaf66",
     r = 10,
   ) => {
     c.beginPath();
@@ -140,7 +140,7 @@ export function drawCurriculum(canvas, lab) {
     if (note) text(note, 805, 36, MUTED, 14, "right");
   };
   const foot = (a, b = "") => {
-    rect(25, 416, 790, 40, "#071522aa");
+    rect(25, 416, 790, 40, "#dceaf1");
     text(a, 42, 442, WHITE, 16);
     if (b) text(b, 795, 442, GOLD, 16, "right");
   };
@@ -282,37 +282,24 @@ export function drawCurriculum(canvas, lab) {
       break;
     }
     case "moments": {
-      title("Moments and centre of mass", "Beam held level · torque shown");
-      const pivot = 300,
-        sc = 125;
-      line(
-        [
-          [80, 207],
-          [520, 207],
-        ],
-        WHITE,
-        8,
-      );
-      line(
-        [
-          [pivot - 30, 256],
-          [pivot, 211],
-          [pivot + 30, 256],
-          [pivot - 30, 256],
-        ],
-        MUTED,
-        3,
-      );
-      const xl = pivot - p.d1 * sc,
-        xr = pivot + p.d2 * sc;
-      rect(xl - 20, 130, 40, 73, "#ffc58055", GOLD, 3);
-      rect(xr - 20, 130, 40, 73, "#91baff55", BLUE, 3);
-      arrow(xl, 212, 0, 75, GOLD);
-      arrow(xr, 212, 0, 75, BLUE);
-      text(`${p.m1} kg`, xl, 115, GOLD, 18, "center");
-      text(`${p.m2} kg`, xr, 115, BLUE, 18, "center");
-      text(`${p.d1} m`, (xl + pivot) / 2, 317, MUTED, 18, "center");
-      text(`${p.d2} m`, (xr + pivot) / 2, 317, MUTED, 18, "center");
+      title("Moments and centre of mass", "Free pivot · greater moment turns down");
+      const pivot=300,sc=125,py=207,theta=s.theta||0,
+        point=x=>[pivot+x*sc*Math.cos(theta),py-x*sc*Math.sin(theta)],
+        half=Math.max(1.2,p.d1,p.d2)+.15;
+      line([point(-half),point(half)],WHITE,8);
+      line([[pivot-30,256],[pivot,211],[pivot+30,256],[pivot-30,256]],MUTED,3);
+      circle(pivot,py,7,PURPLE);
+      c.save();c.translate(pivot,py);c.rotate(-theta);
+      for(const [x,color] of [[-p.d1,CYAN],[p.d2,GOLD]]) rect(x*sc-17,-20,34,40,color,color,4);
+      c.restore();
+      for(const [distance,mass,color,arm] of [[-p.d1,p.m1,CYAN,q.armLeft],[p.d2,p.m2,GOLD,q.armRight]]) {
+        const [x,y]=point(distance);
+        arrow(x,y+23,0,65*mass/Math.max(p.m1,p.m2),color,3);
+        text(`${mass} kg`,x,y-32,color,18,'center');
+        line([[x,y+40],[x,319]],color,1,[4,5]);
+        line([[pivot,319],[x,319]],color,2);
+        text(`${arm.toFixed(2)} m`,(x+pivot)/2,343,color,16,'center');
+      }
       c.save();
       c.translate(680, 320);
       c.rotate(-p.tilt * P.DEG);
@@ -345,8 +332,8 @@ export function drawCurriculum(canvas, lab) {
         "center",
       );
       foot(
-        `Resultant moment = ${fmt(q.net)} N m`,
-        Math.abs(q.net) < 1e-8 ? "ROTATIONAL EQUILIBRIUM" : "UNBALANCED",
+        `Resultant load moment = ${fmt(q.net)} N m`,
+        q.contact ? "ANGULAR STOP SUPPLIES REACTION" : Math.abs(q.net)<1e-8 ? "BALANCED LOADS" : q.net>0 ? "LEFT SIDE TURNS DOWN" : "RIGHT SIDE TURNS DOWN",
       );
       break;
     }
@@ -926,7 +913,7 @@ export function drawCurriculum(canvas, lab) {
         "Dispersive optical interface",
         "Air → Cauchy material · one interface",
       );
-      rect(420, 65, 390, 330, "#91baff13", null, 0);
+      rect(420, 65, 390, 330, "#507d9517", null, 0);
       line(
         [
           [420, 65],
@@ -1349,7 +1336,7 @@ export function drawCurriculum(canvas, lab) {
         "RMS values · leakage and core loss omitted",
       );
       rect(245, 105, 350, 260, "#91baff12", MUTED, 8);
-      rect(315, 160, 210, 150, "#071a2b", MUTED, 8);
+      rect(315, 160, 210, 150, "#f8fbfd", MUTED, 8);
       const drawCoil = (x, n, col) => {
         const count = Math.max(3, Math.min(20, Math.round(n / 70)));
         for (let i = 0; i < count; i++) {
@@ -1523,7 +1510,7 @@ export function drawCurriculum(canvas, lab) {
       arc(450, 225, 135, 0, TAU, "#8faec244");
       const mx = 450 - 135 * Math.cos(q.phase),
         my = 225 + 100 * Math.sin(q.phase);
-      circle(mx, my, 17, WHITE);
+      circle(mx, my, 17, "#c8dce4");
       text("EARTH", 450, 355, BLUE, 18, "center");
       c.fillStyle = "#020c20";
       c.beginPath();
@@ -1538,7 +1525,7 @@ export function drawCurriculum(canvas, lab) {
             [720 + (waxing ? term : -edge), 185 + yy],
             [720 + (waxing ? edge : -term), 185 + yy],
           ],
-          WHITE,
+          "#d9eef4",
           1.2,
         );
       }

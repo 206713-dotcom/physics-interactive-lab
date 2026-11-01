@@ -64,16 +64,16 @@
 .running-status { font-size: 11px; }
 .camera-toolbar { min-height: 48px; padding: 8px 18px; }
 .camera-toolbar button,.camera-toolbar label { font-size: 12px; }
-.presentation-stage .scene-container,.consolidated-lab .presentation-stage .scene-container { height: clamp(360px,35vw,520px); min-height: 360px; }
+.presentation-stage .scene-container,.consolidated-lab .presentation-stage .scene-container { height: clamp(360px,31vw,470px); min-height: 360px; }
 .scene-equation { display: none !important; }
 .scene-camera-hint,.presentation-stage .scene-camera-hint { font-size: 10px; color: #b0c8d4; }
-.instrument-hud,.expanded-model .instrument-hud { position: static; inset: auto; width: auto; max-width: none; padding: 18px 21px 12px; background: #0f293c; border-top: 1px solid #345060; pointer-events: auto; }
-.instrument-values { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 20px; }
-.instrument-value,.expanded-model .instrument-value { display: grid; grid-template-columns: 1fr auto; gap: 5px 8px; padding: 0; min-width: 0; background: none; border: 0; border-radius: 0; box-shadow: none; }
-.instrument-value > span { grid-column: 1/-1; font-size: 12px; line-height: 1.4; color: #a9c7d2; overflow-wrap: anywhere; }
-.instrument-value > strong,.expanded-model .instrument-value > strong { font: 650 clamp(20px,2vw,29px)/1.25 Manrope,sans-serif; white-space: normal; overflow-wrap: anywhere; color: #e6f5f5; }
-.instrument-value > small { align-self: end; font-size: 12px; padding-bottom: 3px; color: #a8c8d3; }
-.instrument-context { display: block; border: 0; padding: 0; background: none; margin-top: 12px; color: #93b5c6; font-size: 11px; }
+.instrument-hud,.expanded-model .instrument-hud { position: static; inset: auto; width: auto; max-width: none; padding: 18px 21px 12px; background: #f1f7f9; border-top: 1px solid #d3e4ea; pointer-events: auto; }
+.instrument-values { display: grid; grid-template-columns: repeat(var(--reading-count,3),minmax(0,1fr)); gap: 12px; }
+.instrument-value,.expanded-model .instrument-value { display: grid; grid-template-columns: max-content 1fr; gap: 7px 7px; padding: 12px 13px; min-width: 0; background: #fff; border: 1px solid #d7e6ec; border-radius: 9px; box-shadow: 0 2px 6px #123c4b04; }
+.instrument-value > span { grid-column: 1/-1; font-size: 12px; line-height: 1.4; color: #537485; overflow-wrap: anywhere; }
+.instrument-value > strong,.expanded-model .instrument-value > strong { font: 650 clamp(20px,2vw,29px)/1.25 Manrope,sans-serif; white-space: normal; overflow-wrap: anywhere; color: #153f54; }
+.instrument-value > small { align-self: end; justify-self: start; font-size: 13px; padding-bottom: 3px; color: #557788; }
+.instrument-context { display: block; border: 0; padding: 0; background: none; margin-top: 12px; color: #426575; font-size: 13px; line-height: 1.65; }
 .transport { padding: 13px 18px; gap: 12px; }
 .transport button,.speed-select,.speed-select select,.time-readout { font-size: 13px; }
 .play-button { min-width: 110px; }
@@ -182,3 +182,54 @@
 .course-hero h1 { font-size: clamp(32px,4vw,48px); }
 .course-hero p,.course-scope { font-size: 16px; line-height: 1.8; }
 .course-lesson h3 { font-size: 20px; }
+
+/* Wide workbenches keep inputs, apparatus and explanation visible together. */
+@media (min-width:1180px) {
+  .expanded-layout { grid-template-columns: 242px minmax(0,1fr) 300px; gap: 16px; padding: 16px; }
+  .expanded-layout > .expanded-variables { grid-column: 1; grid-row: 1; display: block; padding: 19px; }
+  .expanded-layout > .expanded-model { grid-column: 2; grid-row: 1; display: block; }
+  .expanded-layout > .expanded-calculations { grid-column: 3; grid-row: 1; display: block; padding: 21px; }
+  .expanded-panel-tabs { display: none; }
+  .expanded-model .stage-top { padding-inline: 12px; }
+  .expanded-model .stage-views { gap: 0; }
+  .expanded-model .stage-views button { padding-inline: 7px; font-size: 12px; }
+  .expanded-model .scene-focus-toggle { display: none; }
+  .expanded-model .camera-toolbar { padding-inline: 12px; }
+  .expanded-model .presentation-stage .scene-container { height: max(280px,calc(100dvh - 430px)); min-height: 280px; }
+  .expanded-model .instrument-hud { padding: 12px; }
+  .expanded-model .instrument-values { gap: 8px; }
+  .expanded-model .instrument-value { padding: 11px; }
+  .expanded-model .instrument-value > strong { font-size: 24px; }
+  .expanded-model .instrument-value > small { font-size: 11px; }
+  .expanded-model .instrument-context { font-size: 12px; }
+  .expanded-model .transport { padding: 12px; gap: 9px; flex-wrap: wrap; }
+  .expanded-model .transport .play-button { min-width: 94px; }
+  .expanded-variables .value-input { flex-basis: 90px; width: 90px; }
+  .expanded-variables .control-label { flex-wrap: wrap; }
+  .expanded-variables .value-input { margin-left: auto; }
+  .expanded-variables .control-hint { font-size: 12px; }
+  .expanded-lab .calculation-heading h2 { font-size: 23px; }
+  .expanded-lab .inspector-study-brief h3 { font-size: 20px; }
+  .expanded-lab .inspector-study-brief { font-size: 14px; }
+  .expanded-lab .focus-equation { font-size: 19px; }
+}
+.expanded-model .buoyancy-reading { padding: 20px; }
+.expanded-model .buoyancy-reading h2 { font-size: 22px; }
+[data-study-mode=igcse] .buoyancy-forces,
+[data-learning-mode=igcse] .buoyancy-forces,
+[data-study-mode=igcse] .buoyancy-detail { display: none; }
+[data-study-mode=igcse] .buoyancy-reading .buoyancy-heading > span { display: none; }
+.calculation-launch { background: #0b7f7b; border-color: #0b7f7b; color: white; }
+.calculation-launch:hover { background: #096b68; color: white; }
+@media (max-width:760px) {
+  .instrument-value { grid-template-columns: minmax(0,1fr); }
+  .instrument-value > strong { font-size: 22px; }
+}
+
+/* Numeric inputs need room for both a five-digit density and its unit. */
+.expanded-variables .control-label .value-input,
+.controls .control-label .value-input { width: auto; flex: 0 0 auto; min-width: 126px; }
+.expanded-variables .value-input input,
+.controls .value-input input { width: 74px; min-width: 0; }
+.expanded-variables .value-input span,
+.controls .value-input span { white-space: nowrap; font-size: 11px; }

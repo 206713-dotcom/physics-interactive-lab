@@ -35,7 +35,7 @@ const NOTES = {
     "A force can turn an object.",
     "Moment equals force times perpendicular lever arm. Rotational equilibrium requires clockwise and anticlockwise moments to balance. Translational equilibrium also requires zero resultant force.",
     "A body topples when the vertical line through its centre of mass passes beyond the support edge. A wider base or lower centre of mass improves stability.",
-    "The beam is held level: unequal moments indicate a tendency to turn, not a solved rotation. A separate tilted rectangular block has its centre of mass at the entered height above the base centre.",
+    "The beam rotates from the difference between clockwise and anticlockwise moments. The rigid beam is massless and its two masses are treated as attached points. A fixed bearing damper slows it; inelastic stops limit it to ±24°. Current moments use the horizontal distance to each vertical weight line. At a stop, a support reaction balances the remaining load moment. The separate tilted rectangular block is an independent stability test.",
     "Cranes, balancing beams, door handles and vehicle stability.",
     "Does zero resultant force guarantee equilibrium?",
     "No. A pair of equal opposing forces can still produce a couple. Resultant force and resultant moment must both be zero.",

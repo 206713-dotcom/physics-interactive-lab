@@ -3,12 +3,12 @@
 import { vectorConstruction } from "./vector-geometry.js";
 import { sampleCurriculum } from "./curriculum-physics.js";
 const C = {
-  a: "#64e8d1",
-  b: "#ffc584",
-  r: "#c3a6ff",
-  component: "#89baff",
-  grid: "#234252",
-  text: "#d3e5ed",
+  a: "#128e83",
+  b: "#ba8032",
+  r: "#8661b0",
+  component: "#4d7db3",
+  grid: "#c3d8e3",
+  text: "#315b72",
 };
 export function vectorCanvasFrame(canvas, lab) {
   const width = canvas.clientWidth,
@@ -46,8 +46,8 @@ export function drawVectorDiagram(canvas, lab) {
   const c = canvas.getContext("2d");
   c.setTransform(dpr, 0, 0, dpr, 0, 0);
   const bg = c.createLinearGradient(0, 0, f.width, f.height);
-  bg.addColorStop(0, "#071b2b");
-  bg.addColorStop(1, "#102e40");
+  bg.addColorStop(0, "#f8fbfd");
+  bg.addColorStop(1, "#edf5f8");
   c.fillStyle = bg;
   c.fillRect(0, 0, f.width, f.height);
   const p = lab.params,
@@ -86,7 +86,7 @@ export function drawVectorDiagram(canvas, lab) {
       Math.max(w / 2 + 7, Math.min(f.width - w / 2 - 7, at[0])),
       Math.max(16, Math.min(f.height - 16, at[1])),
     ];
-    c.fillStyle = "#071b2bea";
+    c.fillStyle = "#f8fbfdea";
     c.beginPath();
     c.roundRect(at[0] - w / 2, at[1] - 13, w, 26, 5);
     c.fill();

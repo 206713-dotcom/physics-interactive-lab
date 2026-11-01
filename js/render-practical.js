@@ -5,12 +5,12 @@ import {
   LAMP_AMBIENT,
 } from "./practical-physics.js";
 import { temperatureHeight } from "./thermal-geometry.js";
-const C = "#6be5d4",
-  G = "#ffc580",
-  B = "#91baff",
-  P = "#c4a3ff",
-  W = "#e7f5ff",
-  M = "#8faec2";
+const C = "#168e87",
+  G = "#b37c32",
+  B = "#4f7cb1",
+  P = "#8b66b2",
+  W = "#294e64",
+  M = "#5e7c8c";
 export function drawPractical(lab, kit) {
   const {
     c,
@@ -47,7 +47,7 @@ export function drawPractical(lab, kit) {
       M,
       2,
     );
-    rect(x - 19, y - 25, 38, 50, "#102e42", col, 3);
+    rect(x - 19, y - 25, 38, 50, "#dbeaf0", col, 3);
     text(label, x + 32, y + 5, col, 15);
   };
   const clipped = (x, y, w, h, fn) => {
@@ -331,7 +331,7 @@ export function drawPractical(lab, kit) {
         M,
         15,
       );
-      rect(562, 260, 215, 120, "#071a2bf0", C);
+      rect(562, 260, 215, 120, "#e2eef4", C);
       text("BETA · INDEPENDENT SCALE", 670, 280, C, 13, "center");
       if (refs.beta.radius !== null) {
         const r = refs.beta.radius,

@@ -1,0 +1,56 @@
+/** Camera composition only. Fitting an apparatus changes no physical lengths,
+ * positions, simulation state or reference scale. */
+import * as T from '../vendor/three.module.min.js';
+
+export function diagramLabelVisible(text='',width=2.25) {
+  // Keep names, scale ticks and short ray labels on the apparatus. Paragraphs
+  // and detached numerical banners belong in the HTML explanation/instruments.
+  return text.length<=45 && !(width>3.5 && /[=≈]|\d.*(?:Pa|Hz|J|N|V|s)\b/.test(text));
+}
+
+export function apparatusBounds(root) {
+  const bounds = new T.Box3(), box = new T.Box3();
+  root.updateMatrixWorld(true);
+  root.traverse(node => {
+    if (node.userData.role==='label') {
+      if (node.visible && diagramLabelVisible(node.userData.text,node.userData.labelWidth)) {
+        const point=node.getWorldPosition(new T.Vector3()),pad=Math.min(.7,(node.userData.labelWidth||1)*.3);
+        bounds.expandByPoint(point.clone().add(new T.Vector3(-pad,-.15,0)));
+        bounds.expandByPoint(point.clone().add(new T.Vector3(pad,.15,0)));
+      }
+      return;
+    }
+    if (!node.isMesh || !node.geometry) return;
+    for (let parent=node; parent && parent!==root; parent=parent.parent)
+      if (['label','indicator','energy-kinetic','energy-potential','energy-dissipated'].includes(parent.userData.role)) return;
+    if (node.isInstancedMesh) {
+      if (!node.count) return;
+      node.computeBoundingBox();
+      box.copy(node.boundingBox);
+    } else {
+      if (!node.geometry.boundingBox) node.geometry.computeBoundingBox();
+      box.copy(node.geometry.boundingBox);
+    }
+    if (!box.isEmpty()) bounds.union(box.applyMatrix4(node.matrixWorld));
+  });
+  return bounds;
+}
+
+/** Fit all eight box corners in perspective, accounting for corner depth.
+ * Unlike a bounding-sphere approximation this uses the actual view aspect. */
+export function frameApparatus(bounds, {aspect=1.6,fov=38,azimuth=-0.28,polar=1.18,padding=1.13}={}) {
+  if (!(aspect>0) || !(fov>0 && fov<179) || !(padding>=1) || bounds.isEmpty())
+    throw new RangeError('A finite apparatus and a valid camera are required.');
+  const target=bounds.getCenter(new T.Vector3()),
+    outward=new T.Vector3(Math.sin(polar)*Math.sin(azimuth),Math.cos(polar),Math.sin(polar)*Math.cos(azimuth)),
+    right=new T.Vector3().crossVectors(new T.Vector3(0,1,0),outward).normalize(),
+    up=new T.Vector3().crossVectors(outward,right).normalize(),
+    tanV=Math.tan(fov*Math.PI/360),tanH=tanV*aspect;
+  let radius=1;
+  for (const x of [bounds.min.x,bounds.max.x]) for (const y of [bounds.min.y,bounds.max.y]) for (const z of [bounds.min.z,bounds.max.z]) {
+    const relative=new T.Vector3(x,y,z).sub(target),depth=relative.dot(outward);
+    radius=Math.max(radius,depth+padding*Math.abs(relative.dot(right))/tanH,depth+padding*Math.abs(relative.dot(up))/tanV);
+  }
+  if (![...target.toArray(),radius].every(Number.isFinite)) throw new RangeError('Non-finite apparatus bounds.');
+  return {target:target.toArray(),radius,polar,azimuth};
+}

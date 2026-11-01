@@ -1,3 +1,4 @@
+import { buoyancySample } from './buoyancy-physics.js';
 /** Course presentation policy, independent of the physical solvers.
  * IGCSE presents selected 0625 Core / Supplement outcomes. Model readings can
  * come from a more detailed solver without teaching its advanced derivation. */
@@ -22,7 +23,7 @@ const WORKING = {
 };
 const GRAPHS = {
   measurement: ['period'], motion: ['position','velocity','acceleration'],
-  vectors: ['reading-2'], moments: ['reading-0','reading-1'],
+  vectors: ['reading-2'], moments: ['rotation','reading-0','reading-1'],
   buoyancy: ['reading-0'], energy: ['height'], hooke: ['loadcurve'],
   hydraulics: ['travel'], gases: ['reading-0','reading-1'],
   expansion: ['reading-0'], calorimetry: ['heating'], heat: [],
@@ -143,7 +144,7 @@ export function studySheet(id, state, params, mode) {
   const keys = new Set(visibleControlKeys(id,mode)),
     codes = new Set(['mode','state','alpha','exponent','decay','seed','restitution','field','charge','planet','stage','conductance']),
     extras = {
-      buoyancy:['g'], cooling:['mass','specific'], universe:['hubble'],
+      moments:['d₁⊥','d₂⊥'], buoyancy:['g'], cooling:['mass','specific'], universe:['hubble'],
       collisions:['m₁','m₂','u₁','u₂','v₁','v₂'],
       waves:['A','λ','c'], refraction:['n₁','n₂','i','c'],
     };
@@ -158,6 +159,18 @@ export function studySheet(id, state, params, mode) {
 }
 export function studyReadings(id, state, params, mode, definition) {
   const sheet = calculationSheet(id,state,params);
+  if (id === 'moments') {
+    const q=definition.sample(state,params);
+    return [{title:'Left moment ↺',value:q.left,unit:'N m'},
+      {title:'Right moment ↻',value:q.right,unit:'N m'},
+      {title:'Beam angle',value:q.angle,unit:'°'}];
+  }
+  if (id === 'buoyancy') {
+    const q=buoyancySample(state,params);
+    return [{title:'Weight ↓',value:q.weight,unit:'N'},
+      {title:'Upthrust ↑',value:q.upthrust,unit:'N'},
+      {title:'Submerged volume',value:q.immersion,unit:'%'}];
+  }
   if (id === 'pendulum' && mode === 'igcse') return [
     { title:'Length', value:params.length, unit:'m' },
     { title:'Angle from vertical', value:state.theta * 180 / Math.PI, unit:'°' },

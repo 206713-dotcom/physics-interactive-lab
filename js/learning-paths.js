@@ -160,7 +160,7 @@ export const LEARNING_PATHS = {
       "net-2,left-0",
       "m1,m2,d1,d2",
       {},
-      "The beam is held level; this model calculates turning effects rather than integrating rotational motion.",
+      "The beam rotates under the load moments, with bearing resistance and angular stops. Rotational inertia and the numerical motion solver explain the animation; they are not extra required 9702 recall equations.",
     ),
   },
   buoyancy: {
@@ -1266,6 +1266,8 @@ LEARNING_PATHS.expansion.igcse.task = 'Compare aluminium and steel bars with the
 LEARNING_PATHS.cooling.igcse.task = 'Keep the initial and surrounding temperatures fixed. Compare well-insulated and poorly-insulated objects.';
 LEARNING_PATHS.motion.igcse.task = 'Select falling motion with some air resistance. Compare the early acceleration with the eventual constant speed.';
 LEARNING_PATHS.hooke.igcse.task = 'Double the load on the single spring and compare its extension on the load–extension graph.';
+LEARNING_PATHS.moments.igcse.task = 'Make one side heavier, then shorten its distance until the moments balance. Try making the lighter side turn down by moving it farther from the pivot.';
+LEARNING_PATHS.moments.igcse.scope = 'The beam turns toward the greater load moment and stays level when the moments balance at release. Perpendicular distance means horizontal distance to the vertical weight line. Small bearing resistance slows the motion; stops limit the angle to 24° on either side.';
 // Measurement, not a derivation of SHM, is the 0625 pendulum outcome.
 LEARNING_PATHS.pendulum.igcse.calculations = [];
 LEARNING_PATHS.pendulum.igcse.scope = 'Count complete swings and divide the elapsed time by that count. Use small release angles; no pendulum period formula is required here.';

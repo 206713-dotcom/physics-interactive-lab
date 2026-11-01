@@ -271,9 +271,11 @@ export function createSceneKit(root, { labels = true } = {}) {
     o.computeBoundingSphere();
   };
   const stand = (w = 8, d = 3) => {
-    const base = box(w, 0.2, d, 0x192b3b, [0, -0.1, 0], { roughness: 0.55, metalness: 0.35 });
+    const base = box(w, 0.2, d, 0x35566b, [0, -0.1, 0], { roughness: 0.46, metalness: 0.32 });
     base.userData.role = "base";
-    box(w - 0.14, 0.018, d - 0.14, 0x344e5e, [0, 0.009, 0], { roughness: 0.7 });
+    box(w - 0.14, 0.018, d - 0.14, 0x688695, [0, 0.009, 0], { roughness: 0.64, metalness: 0.15 });
+    const rim = line([[-w/2+.1,.025,d/2-.07],[w/2-.1,.025,d/2-.07]],0x88c7cd,.75);
+    rim.userData.role='bench-trim';
     for (const x of [-w / 2 + 0.3, w / 2 - 0.3])
       for (const z of [-d / 2 + 0.3, d / 2 - 0.3]) {
         cylinder(0.12, 0.18, 0x0d1721, [x, -0.27, z], { roughness: 0.88 });

@@ -1,3 +1,4 @@
+import { apparatusBounds, frameApparatus, diagramLabelVisible } from './scene-framing.js';
 import { sceneLabelAllowed } from './study-policy.js';
 /** Real WebGL scenes. Geometry follows the same state as graphs and the 2D view.
  * No physics is integrated here. Pointer/keyboard camera controls are visual only. */
@@ -128,13 +129,13 @@ export class SceneView {
     // A quiet studio backdrop adds depth without adding anything to the model.
     const backdrop=document.createElement('canvas');backdrop.width=backdrop.height=512;
     const backdropContext=backdrop.getContext('2d'),backdropPaint=backdropContext.createRadialGradient(256,180,0,256,230,400);
-    backdropPaint.addColorStop(0,'#173449');backdropPaint.addColorStop(.58,'#0d2335');backdropPaint.addColorStop(1,'#081725');
+    backdropPaint.addColorStop(0,'#24485d');backdropPaint.addColorStop(.58,'#142f44');backdropPaint.addColorStop(1,'#0b1c2b');
     backdropContext.fillStyle=backdropPaint;backdropContext.fillRect(0,0,512,512);
     this.studioBackdrop=new T.CanvasTexture(backdrop);this.studioBackdrop.colorSpace=T.SRGBColorSpace;
     this.scene.fog = new T.FogExp2(0x080f1b, 0.018);
     this.environmentTarget = studioEnvironment(this.renderer);
     this.scene.environment = this.environmentTarget.texture;
-    this.scene.environmentIntensity = 0.65;
+    this.scene.environmentIntensity = 0.9;
     this.camera = new T.PerspectiveCamera(38, 1, 0.05, 200);
     this.target = new T.Vector3(0, 1, 0);
     this.azimuth = -0.38;
@@ -170,7 +171,7 @@ export class SceneView {
   addEnvironment() {
     const floor = new T.Mesh(
       new T.PlaneGeometry(200, 200),
-      material(0x101b29, { roughness: 0.95, metalness: 0, envMapIntensity: 0.15 }),
+      material(0x1a3041, { roughness: 0.95, metalness: 0, envMapIntensity: 0.15 }),
     );
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = -0.82;
@@ -364,16 +365,18 @@ export class SceneView {
   build(type, p, studyMode) {
     const newModel = this.type !== type;
     this.clear();
+    this.framingBounds = null;
+    this.pendingFraming = null;
     this.type = type;
     this.key = JSON.stringify(p);
     const space = ["gravity", "earthmoon", "solarsystem", "stars", "binary", "threebody", "universe"].includes(type);
     this.scene.background=space?null:this.studioBackdrop;
     this.scene.fog.color.set(space?0x080f1b:0x10283c);
-    this.ambient.intensity = type === "gravity" ? 0.12 : type === "earthmoon" ? 0.13 : 0.8;
-    this.keyLight.intensity = type === "earthmoon" ? 0 : 2.6;
+    this.ambient.intensity = type === "gravity" ? 0.12 : type === "earthmoon" ? 0.13 : 1.25;
+    this.keyLight.intensity = type === "earthmoon" ? 0 : 3.2;
     this.rimLight.intensity = space ? 0 : 20;
-    this.fillLight.intensity = space ? 0.05 : 0.75;
-    this.scene.environmentIntensity = space ? 0.08 : 0.65;
+    this.fillLight.intensity = space ? 0.05 : 1.15;
+    this.scene.environmentIntensity = space ? 0.08 : 0.9;
     this.stars.visible = space;
     const r = this.root,
       o = this.objects;
@@ -401,6 +404,7 @@ export class SceneView {
         if (newModel) this.home();
       }
       this.curriculum = createCurriculumScene(type, p, r);
+      if (!this.curriculum.camera && !space) this.pendingFraming = { newModel };
       if (this.curriculum.camera) {
         const camera = this.curriculum.camera;
         this.target.set(...camera.target);
@@ -822,7 +826,8 @@ export class SceneView {
         .add(new T.Vector3(...item.offset));
     this.root.traverse(node => {
       if (node.userData.role === 'label' && (lab.showLabels === false ||
-          !sceneLabelAllowed(lab.type,lab.studyMode,node.userData.text))) node.visible = false;
+          !sceneLabelAllowed(lab.type,lab.studyMode,node.userData.text) ||
+          (lab.cleanPresentation && !diagramLabelVisible(node.userData.text,node.userData.labelWidth)))) node.visible = false;
     });
     const w = this.canvas.clientWidth,
       h = this.canvas.clientHeight;
@@ -859,9 +864,25 @@ export class SceneView {
       }
     }
     this.lastCameraFrame = performance.now();
+    if (this.pendingFraming) {
+      this.framingBounds = apparatusBounds(this.root);
+      // Keep short component labels clear above the apparatus.
+      this.framingBounds.max.y += 0.55;
+      this.framingAspect = null;
+    }
+    if (this.framingBounds && this.framingAspect !== this.camera.aspect) {
+      const fit = frameApparatus(this.framingBounds,{aspect:this.camera.aspect}),
+        zoom = this.pendingFraming?.newModel ? 1 : this.radius / this.homeRadius;
+      this.target.set(...fit.target);
+      this.homeRadius=fit.radius;this.homePolar=fit.polar;this.homeAzimuth=fit.azimuth;
+      this.radius=fit.radius*(Number.isFinite(zoom)?zoom:1);
+      if (this.pendingFraming?.newModel) {this.polar=fit.polar;this.azimuth=fit.azimuth;this.cameraGoal=null;}
+      this.framingAspect=this.camera.aspect;
+    }
+    this.pendingFraming=null;
     const cameraRadius =
       this.radius *
-      (["gravity", ...ADVANCED_IDS].includes(type) || this.curriculum || this.precision
+      (!this.framingBounds && (["gravity", ...ADVANCED_IDS].includes(type) || this.curriculum || this.precision)
         ? Math.max(1, (this.curriculum?.camera?.fitAspect || this.precision?.fitAspect || (type === "buoyancy" ? 1.05 : type === "lenses" ? 1.55 : 1.35)) / this.camera.aspect)
         : 1);
     this.camera.position.set(

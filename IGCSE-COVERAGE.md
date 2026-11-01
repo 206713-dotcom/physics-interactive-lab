@@ -12,6 +12,8 @@ IGCSE controls and worked steps are governed by `js/study-policy.js`, with secti
 
 Sources: [0625 syllabus, 2026–2028](https://www.cambridgeinternational.org/Images/697209-2026-2028-syllabus.pdf), [official version 2 update](https://www.cambridgeinternational.org/Images/748914-2026-2028-syllabus-update.pdf). The update confirms version 2 was published in December 2025 and changed a web link, not the subject content. These activities support selected outcomes, not all assessment objectives or required practical experience.
 
+The moments activity now lets the beam turn when its load moments differ. IGCSE students compare force × perpendicular distance and read the direction of motion; the rotational differential equation is part of the documented numerical model, not an added recall requirement. The current horizontal distances are shown as the beam tilts. Mechanical stops and their support reaction are labelled, so stopping is not presented as equilibrium of the two weights alone.
+
 ## 1 Motion, forces and energy
 
 | FocusPhysics lesson                                                                                                                                                       | Working models                                                                                                                                                                                                                                                                                                                                                                                     | Coverage                                 |

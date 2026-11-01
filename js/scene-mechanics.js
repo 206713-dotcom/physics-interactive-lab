@@ -1,3 +1,4 @@
+import { createMomentsBench } from './scene-moments.js';
 import { PALETTE as C, putRod } from "./scene-kit.js";
 import { createVectorApparatus } from "./scene-vectors.js";
 import { createBuoyancyApparatus } from "./scene-buoyancy.js";
@@ -28,25 +29,7 @@ export const MECHANICAL_SCENES = {
   vectors(p, k) {
     return createVectorApparatus(p, k);
   },
-  moments(p, k) {
-    k.stand();
-    k.cylinder(0.3, 1.7, C.muted, [0, 0.8, 0]);
-    k.box(7, 0.14, 0.6, 0x86a5b7, [0, 1.7, 0]);
-    for (const [m, x, col] of [
-      [p.m1, -p.d1 * 2, C.cyan],
-      [p.m2, p.d2 * 2, C.gold],
-    ]) {
-      k.box(0.45, 0.3 + Math.sqrt(m) * 0.18, 0.55, col, [
-        x,
-        1.95 + Math.sqrt(m) * 0.09,
-        0,
-      ]);
-      k.arrow([x, 1.35, 0], [0, -Math.min(1.2, m * 0.15), 0], col);
-    }
-    k.label("Compare turning effects", [0, 3.7, 0], "#cfe6ef", 3.6);
-    k.label("F × perpendicular distance", [0, 3.1, 0], "#89baff", 3.8);
-    return () => {};
-  },
+  moments: createMomentsBench,
   buoyancy: createBuoyancyApparatus,
   energy(p, k) {
     k.stand(7, 3);

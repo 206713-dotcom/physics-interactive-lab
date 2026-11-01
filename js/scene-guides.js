@@ -20,10 +20,10 @@ export const SCENE_GUIDES = {
     "All arrows and coordinate ticks share one fitted force scale. Drag the A/B rings to change the inputs; the construction demo only translates or reveals fixed vectors. Use Components to inspect the projections. Camera rotation changes the view without changing the forces.",
   ],
   moments: [
-    "Compare the downward loads and their distances from the central pivot.",
-    "A moment equals force times perpendicular distance. Equal opposite moments balance.",
-    "Move the smaller mass farther out until the net moment is zero.",
-    "This is a static moment comparison. Beam rotation is not integrated. The separate tipping calculation is in the inspector.",
+    "Watch the beam turn toward the greater moment: force × perpendicular distance from the pivot.",
+    "The left weight produces an anticlockwise moment; the right weight produces a clockwise moment. Compare mass × distance, not mass alone. Equal moments keep a beam released from rest level.",
+    "Give the lighter mass a longer distance from the pivot. Predict the direction, then compare equal mass × distance on both sides.",
+    "Both weights act vertically. Lever distances in the readouts are their current horizontal distances from the pivot. The massless beam has attached point masses, a fixed bearing damper and inelastic ±24° stops. The stop supplies a reaction moment when reached. Block sizes are illustrative; the separate stability test does not set the beam angle.",
   ],
   buoyancy: [
     "Watch the released cube rise or sink. Gold is weight, cyan is upthrust, blue is drag and purple is the support force.",

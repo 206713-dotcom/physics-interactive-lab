@@ -10,6 +10,25 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 ## What is in the laboratory?
 
+### Version 16: clearer diagrams and a beam that really turns
+
+The existing laboratories have a brighter 3D studio, more readable apparatus finishes and compact live instruments with units beside their values. Non-space curriculum apparatus without a custom camera now fits the actual object bounds to the available viewport; long detached text and large teaching arrows cannot push the apparatus into the distance. The wide expanded workspace displays **parameters, the model and its explanation together**. Most 2D laboratories now use a pale scientific-diagram background with darker, hue-preserving label ink. Astronomical orbit and three-body displays retain their space backgrounds. Geometry, units, graph values and physical reference scales are preserved.
+
+**Moments & stability now integrates beam rotation.** A greater anticlockwise load moment makes the left side descend; a greater clockwise moment makes the right side descend. Equal release moments keep a beam released from rest level. This depends on `mass × perpendicular distance`, not on mass alone. In the reported example, 2.84 kg at 0.80 m produces a smaller release moment than 2.00 kg at 1.20 m, so the right side turns down. Both views, the angle graph, worked substitutions and perpendicular-distance guides use the same integrated state.
+
+The beam is massless with two attached point masses:
+
+- `I = m₁d₁² + m₂d₂²`
+- `τloads = g(m₁d₁ − m₂d₂) cos θ`
+- `I θ̈ = τloads − b θ̇`, with a fixed bearing damping coefficient `b = 0.35 N m s`.
+- Inelastic mechanical stops limit the angle to `±24°`. Contact is located within a step before removing kinetic energy. The stop then supplies the balancing reaction moment. The displayed **load-moment difference** excludes bearing and stop reactions.
+
+Distances entered in the controls are along the beam; each current perpendicular distance is `d cos θ`. The introductory inspector teaches force times perpendicular distance without requiring the rotational differential equation. Block sizes are illustrative and their own rotational inertia is omitted. The separate stability block remains independent. RK4 substeps are at most 1/240 s and also resolve the damping timescale; bearing transfer is integrated independently and contact loss is recorded at impact. [OpenStax: torque](https://openstax.org/books/university-physics-volume-1/pages/10-6-torque) and [Newton's second law for rotation](https://openstax.org/books/university-physics-volume-1/pages/10-7-newtons-second-law-for-rotation) provide the underlying mechanics.
+
+**Pendulum** has closer framing, a larger visible bob, a shaded angle sector and clearer small-angle markings; its solver and calibrated length transforms are unchanged. **Buoyancy** now places weight, upthrust and immersion together in the main readout, with a clearer cube outline and nearby force labels. The dynamic explanation distinguishes sinking, floating, settling and floor support.
+
+**262 automated tests** include the reported unequal-moment case, balanced releases, direction reversal, the rotational force balance, independent energy accounting for damping and impact, all mass/distance corners, immutable stepping, 3D attachment positions, vertical weight arrows, camera projection across portrait and wide viewports, apparatus bounds for all 44 curriculum builders and readable paper-label contrast. No simulations or question sets were added.
+
 ### Version 15: one consolidated laboratory
 
 No laboratories or question sets were added. All 57 existing models now share the same readable HTML instrument panel, larger controls, consistent diagram viewer and focused explanation. Duplicate featured collections, promotional panels, repeated live-value blocks and the second animation walkthrough have been removed. The library starts with **40 IGCSE-focused activities**, grouped by Cambridge's six subject areas; AS, A2 and enrichment remain separate filters. The original 78 FocusPhysics lesson links and the A Level question bank are retained.

@@ -1,3 +1,4 @@
+import { paperInk } from './diagram-theme.js';
 import { sceneLabelAllowed } from './study-policy.js';
 /** Orthographic diagram mode and an automatic fallback for browsers without WebGL. */
 import { drawOrbit } from "./canvas.js";
@@ -9,12 +10,17 @@ import { drawCurriculum } from "./render-curriculum.js";
 import { projectileLayout, projectilePreview } from "./kinematics-display.js";
 import { drawOscillation } from './render-oscillations.js';
 export function draw2D(canvas, lab) {
-  const context = canvas.getContext('2d'), original = context.fillText;
-  if (lab.studyMode !== 'igcse') return drawDiagram(canvas,lab);
+  const context = canvas.getContext('2d'), original = context.fillText,
+    paper = !ADVANCED_IDS.includes(lab.type) && lab.type !== 'gravity';
+  if (!paper && lab.studyMode !== 'igcse') return drawDiagram(canvas,lab);
   // A scoped text filter, restored even on error. No path or physical coordinate
   // changes, and no prototype changes affecting charts or other canvases.
   context.fillText = function(text,...args) {
-    if (sceneLabelAllowed(lab.type,lab.studyMode,String(text))) return original.call(this,text,...args);
+    if (!sceneLabelAllowed(lab.type,lab.studyMode,String(text))) return;
+    const saved=this.fillStyle;
+    if (paper) this.fillStyle=paperInk(saved);
+    try { return original.call(this,text,...args); }
+    finally { this.fillStyle=saved; }
   };
   try { return drawDiagram(canvas,lab); }
   finally { context.fillText = original; }
@@ -48,18 +54,18 @@ function drawDiagram(canvas, lab) {
   }
   const c = canvas.getContext("2d");
   c.setTransform(dpr, 0, 0, dpr, 0, 0);
-  c.fillStyle = "#081827";
+  c.fillStyle = "#f3f8fb";
   c.fillRect(0, 0, w, h);
   for (let x = 20; x < w; x += 28)
     for (let y = 20; y < h; y += 28) {
-      c.fillStyle = "#7ab5c51a";
+      c.fillStyle = "#507d9520";
       c.fillRect(x, y, 1, 1);
     }
   const p = lab.params,
     s = lab.state,
-    C = "#65ead5",
-    G = "#ffcb7b",
-    B = "#8dabff";
+    C = "#149e91",
+    G = "#b57d32",
+    B = "#567fb5";
   const line = (pts, col, width = 1.5, dash = []) => {
     if (!pts.length) return;
     c.beginPath();
@@ -72,7 +78,7 @@ function drawDiagram(canvas, lab) {
   };
   const text = (t, x, y, col = "#94b7cb", size = 11, align = "left") => {
     c.fillStyle = col;
-    c.font = `${size}px Inter,Segoe UI,sans-serif`;
+    c.font = `500 ${Math.max(size,12)}px Manrope,Segoe UI,sans-serif`;
     c.textAlign = align;
     c.fillText(t, x, y);
   };

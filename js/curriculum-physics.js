@@ -1,5 +1,6 @@
+import { createMoments, stepMoments, momentsReadings } from './moments-physics.js';
 /** Pure IGCSE models. SI calculations are independent of the Canvas presentation.
- * Analytic models use elapsed simulated time; only radioactive decay is stochastic.
+ * Most models are analytic; beam rotation and buoyancy are integrated dynamics.
  * Illustrative particle trajectories and stellar storyboards are labelled as such. */
 import {
   PRACTICAL_RANGES,
@@ -268,6 +269,7 @@ export function createCurriculum(id, p = { ...DEFAULTS[id] }) {
     state = { t: 0 };
   if (PRACTICAL_IDS.includes(id)) return { params, state: createPractical(id) };
   if (id === "buoyancy") return { params, state: createBuoyancy(p) };
+  if (id === "moments") return { params, state: createMoments() };
   if (id === "radioactivity") {
     const rng = randomSequence(p.seed);
     state.decayTimes = Array.from(
@@ -282,6 +284,7 @@ export function stepCurriculum(id, s, p, h) {
     throw new RangeError("Invalid time step.");
   if (PRACTICAL_IDS.includes(id)) return stepPractical(id, s, p, h);
   if (id === "buoyancy") return stepBuoyancy(s, p, h);
+  if (id === "moments") return stepMoments(s, p, h);
   return { ...s, t: s.t + h };
 }
 export const PLANETS = [
@@ -370,9 +373,7 @@ export function sampleCurriculum(id, s, p) {
     }
     case "moments":
       Object.assign(q, {
-        left: p.m1 * 9.81 * p.d1,
-        right: p.m2 * 9.81 * p.d2,
-        net: 9.81 * (p.m1 * p.d1 - p.m2 * p.d2),
+        ...momentsReadings(s,p),
         critical: Math.atan(p.width / (2 * p.height)) / DEG,
         offset: p.height * Math.tan(p.tilt * DEG),
         tipping: p.height * Math.tan(p.tilt * DEG) > p.width / 2 ? 1 : 0,

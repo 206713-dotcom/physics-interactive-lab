@@ -49,6 +49,8 @@ export function createBuoyancyApparatus(p, k) {
   const body = k.box(side, side, side, C.gold, [0, 2, 0], { metalness: 0.55, roughness: 0.28 }),
     bodyDetail = new T.Group();
   body.add(bodyDetail);
+  const edge=new T.LineSegments(new T.EdgesGeometry(body.geometry,32),new T.LineBasicMaterial({color:0xffe0a3,transparent:true,opacity:.65}));
+  body.add(edge);
   for (const z of [-side / 2 - 0.001, side / 2 + 0.001]) {
     const inset = k.box(side * 0.72, side * 0.72, 0.004, 0xab743d, [0, 0, z], { metalness: 0.6, roughness: 0.4 });
     bodyDetail.add(inset);
@@ -80,12 +82,15 @@ export function createBuoyancyApparatus(p, k) {
       k.setArrow(drag, [side / 2 + 0.92, y, 0.7], [0, q.drag * unit, 0]);
       k.setArrow(normal, [0, floor + 0.04, 0.85], [0, q.normal * unit, 0]);
       k.setLabel(status, BUOYANCY_STATUS[q.status] + " · " + q.immersion.toFixed(1) + "% immersed", "#cfdee9", 4.2);
-      k.setLabel(wl, "Weight  " + q.weight.toFixed(2) + " N", "#ffc584", 2.25);
-      k.setLabel(ul, "Upthrust  " + q.upthrust.toFixed(2) + " N", "#64e8d1", 2.25);
+      k.setLabel(wl, "Weight ↓", "#ffc584", 1.45);
+      wl.position.set(-side/2-.68,Math.max(floor+.22,y-.65),1.05);
+      k.setLabel(ul, "Upthrust ↑", "#64e8d1", 1.6);
+      ul.position.set(side/2+.73,y+.75,1.05);
       supportLabel.userData.show = q.normal > 1e-8;
     },
     afterVisibility(lab) {
       supportLabel.visible = lab.showLabels !== false && supportLabel.userData.show;
+      status.visible = lab.showLabels !== false && !lab.cleanPresentation;
     },
   };
 }

@@ -71,7 +71,7 @@ export function springEnergy(s, p) {
 }
 export function createSpring(params = SPRING_DEFAULTS) {
   const p = validate(params, SPRING_LIMITS);
-  return { params: p, state: { x: p.displacement, v: 0, t: 0 } };
+  return { params: p, state: { x: p.displacement, v: 0, t: 0, dissipated:0 } };
 }
 /** Fixed-step fourth-order Runge–Kutta; h ≤ 1/240 s in the application. */
 export function stepSpring(s, p, h) {
@@ -87,6 +87,9 @@ export function stepSpring(s, p, h) {
     x: s.x + (h * (v1 + 2 * v2 + 2 * v3 + v4)) / 6,
     v: s.v + (h * (a1 + 2 * a2 + 2 * a3 + a4)) / 6,
     t: s.t + h,
+    // Integrate actual damping power with the same RK4 stage velocities.
+    // This is independent of the mechanical-energy balance residual.
+    dissipated:(s.dissipated??0)+h*p.damping*(v1*v1+2*v2*v2+2*v3*v3+v4*v4)/6,
   };
 }
 

@@ -317,6 +317,8 @@ function labPage(type, query) {
     vectors: true,
     showLabels: true,
     projectileFrame: query.get("frame")==="vacuum"?"vacuum":"actual",
+    oscillationVectors: ["motion","forces"].includes(query.get("indicators"))?query.get("indicators"):type==="spring"?"forces":"motion",
+    smallAngleReference:query.get("compare")==="1",
     vectorMethod: ["triangle", "parallelogram", "components"].includes(
       query.get("method"),
     )
@@ -367,6 +369,7 @@ function labPage(type, query) {
     !d.curriculum &&
     ![
       "spring",
+      "pendulum",
       "gravity",
       "projectile",
       "collisions",
@@ -439,6 +442,20 @@ function labPage(type, query) {
     notes.append($("#stage-caption"));
   }
   installVisualGuide();
+  if(["spring","pendulum"].includes(type)) {
+    const tools=document.createElement("div");
+    tools.className="oscillation-tools";tools.setAttribute("aria-label","Oscillation indicators");
+    tools.innerHTML='<div aria-label="Vector interpretation"><button data-oscillation-vectors="motion">Motion vectors</button><button data-oscillation-vectors="forces">Force diagram</button></div>'+(type==='pendulum'?'<label><input type="checkbox" id="small-angle-reference"> Small-angle reference</label>':'');
+    $("#camera-toolbar").classList.add("oscillation-camera");$("#camera-toolbar").append(tools);
+    const sync=()=>{
+      tools.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.oscillationVectors===lab.oscillationVectors)));
+      const reference=tools.querySelector('input');if(reference)reference.checked=lab.smallAngleReference;
+      const full=$(".expanded-full-link");if(full)full.href=setupLink(false);
+    };
+    tools.querySelectorAll('button').forEach(b=>b.onclick=()=>{lab.oscillationVectors=b.dataset.oscillationVectors;sync();});
+    const reference=tools.querySelector('input');if(reference)reference.onchange=()=>{lab.smallAngleReference=reference.checked;sync();};
+    sync();
+  }
   if(type==="projectile") {
     const framing=document.createElement("div");
     framing.className="projectile-frame-tools";
@@ -896,11 +913,16 @@ function setupLink(embed = false) {
     studyMode: lab.studyMode,
     syllabusCycle: lab.syllabusCycle,
   });
-  if (!["vectors","projectile"].includes(lab.type)) return link;
+  if (!["vectors","projectile","spring","pendulum"].includes(lab.type)) return link;
   const [path, query = ""] = link.split("#"),
     [route, search = ""] = query.split("?"),
     args = new URLSearchParams(search);
   if(lab.type==="projectile") {args.set("frame",lab.projectileFrame);return `${path}#${route}?${args}`;}
+  if(["spring","pendulum"].includes(lab.type)) {
+    args.set("indicators",lab.oscillationVectors);
+    if(lab.type==="pendulum")args.set("compare",lab.smallAngleReference?"1":"0");
+    return `${path}#${route}?${args}`;
+  }
   args.set("method", lab.vectorMethod);
   args.set("components", lab.vectorComponents ? "1" : "0");
   args.set("grid", lab.vectorGrid ? "1" : "0");
@@ -921,7 +943,7 @@ async function setView(mode) {
   $("#simulation").hidden = mode === "3d";
   $("#camera-hint").hidden = mode !== "3d";
   $("#camera-reset").hidden = mode !== "3d";
-  $("#camera-toolbar").hidden = mode !== "3d" && lab.type!=="projectile";
+  $("#camera-toolbar").hidden = mode !== "3d" && !["projectile","spring","pendulum"].includes(lab.type);
   $("#camera-toolbar").classList.toggle("is-diagram",mode!=="3d");
   $(".scene-equation").hidden = mode !== "3d";
   $$("[data-view]").forEach((b) =>
@@ -1085,7 +1107,9 @@ function createCharts() {
               resultant: "Resultant",
               kinetic: "Kinetic",
               potential: "Potential",
-              total: "Total",
+              total: ["spring","pendulum"].includes(lab.type)?"Mechanical energy":"Total",
+              dissipated:"Damping transfer",
+              accounted:"Mechanical + damping",
               intensity: "Intensity",
               envelope: "Diffraction envelope",
               speedA: "Star A",
@@ -1099,7 +1123,7 @@ function createCharts() {
               divergence: "Twin tip separation",
             }[key] || key,
           data: [],
-          borderColor: SERIES_COLORS[key] || COLORS[part.colorIndex ?? j % 3],
+          borderColor: (["spring","pendulum"].includes(lab.type)?{kinetic:'#b47b20',potential:'#078f89',total:'#7666b3',dissipated:'#c36c5b',accounted:'#173d58'}[key]:null) || SERIES_COLORS[key] || COLORS[part.colorIndex ?? j % 3],
           borderWidth: 2.5,
           pointRadius: 0,
           pointHitRadius: 7,
@@ -1422,6 +1446,8 @@ function exportData() {
           ? "J_per_kg"
           : "J",
     total: lab.type === "projectile" ? "J_per_kg" : "J",
+    dissipated:"J",
+    accounted:"J",
     momentum: "kg_m_per_s",
     incident: "m",
     reflected: "m",

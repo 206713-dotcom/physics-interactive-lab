@@ -266,10 +266,10 @@ export const SCENE_GUIDES = {
     "The display curve fits its own peak; use the graph for calibrated spectral axes and comparisons. Glow is illustrative.",
   ],
   spring: [
-    "Follow the solid spring and mass. Gold shows velocity; cyan shows the spring’s restoring force. The two small bars compare kinetic and elastic potential energy.",
-    "The restoring spring force opposes displacement. Damping removes mechanical energy.",
-    "Set damping to zero and compare kinetic, elastic and total energy over several cycles.",
-    "Displacement and the engraved track share 3.2 scene units per metre. Force and velocity arrows use separate bounded display scales. Energy bars share the release-energy scale, and are zero for zero release energy. Rollers and wire thickness are apparatus illustrations; no friction or wire inertia is added.",
+    "Follow the cart against the fixed metre ruler. Switch between Motion vectors (gold velocity, purple acceleration) and Force diagram (cyan spring, coral damping, purple resultant). Force arrows share one linear scale; velocity and acceleration have separate scales.",
+    "The spring force is −kx, the viscous damping force is −bv and their sum is ma. Damping transfers mechanical energy at bv² watts. Gold kinetic, cyan elastic and coral transferred-energy segments share the release-energy scale; the transfer is integrated independently, not inferred from missing energy.",
+    "Compare Ideal, Damped and Critical presets. Watch the damping ratio and the energy balance graph. A critically damped mass returns towards equilibrium without oscillating; T₀ remains an undamped reference.",
+    "Displacement and the ruler use 3.2 scene units per metre in every setup. Cart, coil, wheel and dashpot dimensions are illustrative; no rolling resistance, rotational energy, spring inertia or fluid dynamics is added. Arrows have fixed linear scales per setup. Zero energy produces no coloured bar. E + transferred energy should match the release energy within RK4 numerical error, which is not labelled as heat.",
   ],
   gravity: [
     "Follow the satellite, its tangential velocity and inward acceleration.",
@@ -278,10 +278,10 @@ export const SCENE_GUIDES = {
     "The orbit is planar. The solid trail contains integrated samples; the dashed curve is an analytic Kepler reference, stopped at the surface or six release distances. The display fits the trail; r is measured centre to centre. The Earth surface uses the Muon Atlas NASA Blue Marble asset. Its Earth appearance is illustrative when changing mass. Clouds and glow do not add atmospheric drag.",
   ],
   pendulum: [
-    "Watch the brass bob exchange height and speed. The gold arrow shows weight and the cyan arrow shows tangential velocity; the arc marks the actual angle from the vertical.",
-    "Gravity supplies a tangential restoring component. The integrated model uses sin θ, not the small-angle approximation.",
-    "Compare periods at a small angle and a large angle.",
-    "The pendulum moves in one plane. Its length is fitted per setup and the trail uses that same scale. The rigid link supports starting angles above 90° in this nonlinear model. Weight and velocity arrows use separate illustrative scales. Camera rotation does not change the physical angle.",
+    "The protractor reads the angle from the downward vertical. Motion vectors show gold tangential velocity and purple total acceleration, including its inward component. Force diagram shows blue weight, cyan signed link force and coral tangential damping on one common force scale.",
+    "Gravity gives the nonlinear restoring term sin θ. Select Small-angle reference to compare the dashed purple analytic linear prediction using the same release angle and damping. At wide releases it gradually disagrees with the solid calculated bob; it is a prediction, not a second measurement.",
+    "Compare 10° and 100° releases with the small-angle reference enabled. Then add damping and open Energy balance: mechanical energy plus the independently integrated damping transfer should stay near the release energy. Compare the exact undamped finite-angle period with T₀.",
+    "The motion is planar and the fitted length scale stays fixed for the whole run; rod, bob and trail share it. The point bob and rigid massless link permit ±120° releases: positive link force pulls inward, negative pushes outward. A string could go slack where this rod pushes. Force arrows share a linear scale; velocity and acceleration use separate fixed scales. The ghost solves sin θ ≈ θ, with the same damping. The finite-angle period is an undamped reference computed by the arithmetic–geometric mean, not a measurement of damped motion. Damping transfer integrates mL²βω²; zero release energy leaves all bars empty.",
   ],
   projectile: [
     "The purple trail records calculated motion. Gold shows velocity, blue shows gravitational acceleration, and coral shows drag acceleration opposing velocity. The dashed curve is the analytic vacuum prediction, never experimental data.",

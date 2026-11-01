@@ -1,11 +1,12 @@
 /** Orthographic diagram mode and an automatic fallback for browsers without WebGL. */
-import { drawSpring, drawOrbit } from "./canvas.js";
+import { drawOrbit } from "./canvas.js";
 import * as E from "./physics-extra.js";
 import { ADVANCED_IDS } from "./physics-advanced.js";
 import { drawAdvanced } from "./render-advanced.js";
 import { CURRICULUM_IDS } from "./curriculum-physics.js";
 import { drawCurriculum } from "./render-curriculum.js";
 import { projectileLayout, projectilePreview } from "./kinematics-display.js";
+import { drawOscillation } from './render-oscillations.js';
 export function draw2D(canvas, lab) {
   if (CURRICULUM_IDS.includes(lab.type)) {
     drawCurriculum(canvas, lab);
@@ -15,8 +16,8 @@ export function draw2D(canvas, lab) {
     drawAdvanced(canvas, lab);
     return;
   }
-  if (lab.type === "spring") {
-    drawSpring(canvas, lab);
+  if (["spring","pendulum"].includes(lab.type)) {
+    drawOscillation(canvas, lab);
     return;
   }
   if (lab.type === "gravity") {
@@ -96,54 +97,7 @@ export function draw2D(canvas, lab) {
       2,
     );
   };
-  if (lab.type === "pendulum") {
-    const L = Math.min(h * 0.63, w * 0.34),
-      cx = w / 2,
-      py = 60,
-      x = cx + L * Math.sin(s.theta),
-      y = py + L * Math.cos(s.theta);
-    line(
-      [
-        [cx, py],
-        [cx, py + L],
-      ],
-      "#365569",
-      1,
-      [4, 5],
-    );
-    c.beginPath();
-    c.arc(cx, py, L * 0.22, Math.PI / 2, Math.PI / 2 - s.theta, s.theta > 0);
-    c.strokeStyle = G;
-    c.stroke();
-    if (lab.showTrail)
-      line(
-        (lab.trail || []).map((q) => [
-          cx + (L * q.x) / p.length,
-          py - (L * q.y) / p.length,
-        ]),
-        "#ffcc7866",
-      );
-    line(
-      [
-        [cx, py],
-        [x, y],
-      ],
-      "#c6dfe8",
-      2.5,
-    );
-    line(
-      [
-        [cx - 35, py - 5],
-        [cx + 35, py - 5],
-      ],
-      "#728d9d",
-      5,
-    );
-    ball(x, y, 16, G);
-    ball(cx, py, 5, "#b5d9eb");
-    text(`L = ${p.length.toFixed(2)} m`, cx + 22, py + L * 0.45);
-    text(`θ = ${(s.theta / E.DEG).toFixed(1)}°`, 24, h - 30);
-  } else if (lab.type === "projectile") {
+  if (lab.type === "projectile") {
     const r = E.projectileReference(p),layout=projectileLayout(p,lab.projectileFrame),
       sc = Math.min(
         (w - 90) / layout.maxX,

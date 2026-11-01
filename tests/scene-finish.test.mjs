@@ -8,6 +8,7 @@ import { createCurriculumScene } from "../js/scene-curriculum.js";
 import { TANK_DEPTH } from "../js/buoyancy-physics.js";
 import { orbitalReference } from "../js/orbital-reference.js";
 import { G, centralRadius } from "../js/physics.js";
+import { PENDULUM_RIG } from '../js/oscillation-physics.js';
 
 const near = (a, b, tol = 1e-6) => assert.ok(Math.abs(a - b) <= tol, `${a} ≠ ${b}`);
 const clean = (root) => root.traverse((o) => { o.geometry?.dispose(); o.material?.dispose?.(); });
@@ -69,8 +70,8 @@ test("pendulum link and trail use one fitted scale for all supported lengths and
       scene = createDetailedMechanics("pendulum", run.params, root, { labels: false }), saved = JSON.stringify(run);
     scene.update({ ...run, trail: [{ x: length * Math.sin(run.state.theta), y: -length * Math.cos(run.state.theta) }], showTrail: true });
     const bob = scene.kit.objects.find((o) => o.userData.role === "pendulum-bob");
-    near(bob.position.distanceTo(new T.Vector3(0, 4.1, 0)), 3.3);
-    near(bob.position.x, 3.3 * Math.sin(run.state.theta));
+    near(bob.position.distanceTo(new T.Vector3(...PENDULUM_RIG.pivot)), PENDULUM_RIG.length);
+    near(bob.position.x, PENDULUM_RIG.length * Math.sin(run.state.theta));
     assert.equal(JSON.stringify(run), saved);
     finite(root); clean(root);
   }

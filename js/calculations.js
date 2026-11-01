@@ -6,6 +6,7 @@ import { ADVANCED_IDS } from "./physics-advanced.js";
 import { advancedCalculationSheet } from "./calculations-advanced.js";
 import { CURRICULUM_IDS } from "./curriculum-physics.js";
 import { curriculumCalculationSheet } from "./curriculum-simulations.js";
+import { springReadings,pendulumReadings,pendulumPeriod } from './oscillation-physics.js';
 
 export function calculationNumber(value) {
   if (typeof value === "string") return value;
@@ -103,6 +104,9 @@ export function calculationSheet(type, s, p) {
         "J",
         "SI inputs: kilograms, metres and seconds.",
       ),
+      c("damping-power","Damping power","P = bv²",`(${n(p.damping)} kg/s)(${n(s.v)} m/s)²`,p.damping*s.v**2,"W","Rate of mechanical energy transfer by the viscous damper."),
+      c("transferred","Energy transferred by damping","D = ∫ bv² dt","RK4 integrates the damping power alongside x and v.",s.dissipated??0,"J","Computed from the power integral, independently of E₀ − E."),
+      c("budget","Accounted energy","E + D = ½mv² + ½kx² + D",`${n(energy.total)} J + ${n(s.dissipated??0)} J`,springReadings(s,p).accounted,"J",`Release energy: ${n(.5*p.k*p.displacement**2)} J. Any difference is numerical integration error.`),
     ];
   } else if (type === "gravity") {
     const r = Math.hypot(s.x, s.y),
@@ -203,6 +207,11 @@ export function calculationSheet(type, s, p) {
         "J",
         "SI inputs; zero potential energy at the lowest point.",
       ),
+      c("link","Signed link force","R = m(Lω² + g cos θ)",`(${n(p.mass)})[(${n(p.length)})(${n(s.omega)})² + (${n(p.g)})cos(${n(s.theta)} rad)]`,pendulumReadings(s,p).link,"N","Positive is inward tension; negative is outward compression. The rigid massless link can do both."),
+      c("finite-period","Finite-angle period (undamped)","T = T₀ / AGM(1, cos(|θ₀|/2))",`${n(2*Math.PI*Math.sqrt(p.length/p.g))} s / AGM(1, cos(${n(Math.abs(p.angle)*E.DEG/2)} rad))`,pendulumPeriod(p),"s","Extension: AGM is the arithmetic–geometric mean. An undamped reference at the release angle, not the period of a damped run."),
+      c("damping-power","Damping power","P = mL²βω²",`(${n(p.mass)})(${n(p.length)})²(${n(p.damping)})(${n(s.omega)})²`,pendulumReadings(s,p).power,"W","Angular damping torque is −mL²βω. Its power is always dissipative."),
+      c("transferred","Energy transferred by damping","D = ∫ mL²βω² dt","RK4 integrates this power alongside θ and ω.",s.dissipated??0,"J","Computed from the power integral, independently of the mechanical-energy balance."),
+      c("budget","Accounted energy","E + D",`${n(E.pendulumEnergy(s,p).total)} J + ${n(s.dissipated??0)} J`,pendulumReadings(s,p).accounted,"J",`Release energy: ${n(pendulumReadings(s,p).initial)} J. Any difference is numerical integration error.`),
     ];
   } else if (type === "projectile") {
     const speed = Math.hypot(s.vx, s.vy);

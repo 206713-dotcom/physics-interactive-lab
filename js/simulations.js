@@ -3,6 +3,7 @@ import * as P from "./physics.js";
 import * as E from "./physics-extra.js";
 import { projectilePreview, collisionObservation } from "./kinematics-display.js";
 import { ADVANCED_SIMULATIONS } from "./advanced-simulations.js";
+import { pendulumPeriod } from './oscillation-physics.js';
 import {
   CURRICULUM_SIMULATIONS,
   curriculumRows,
@@ -115,6 +116,8 @@ export const SIMULATIONS = {
       v: s.v,
       a: P.springAcceleration(s, p),
       ...P.springEnergy(s, p),
+      dissipated:s.dissipated??0,
+      accounted:P.springEnergy(s,p).total+(s.dissipated??0),
     }),
     metrics: (s, p) => {
       const q = P.springInfo(p);
@@ -139,9 +142,10 @@ export const SIMULATIONS = {
         ],
       }),
       graph("energy", "Energy", ["kinetic", "potential", "total"], "J"),
+      graph("budget", "Energy balance", ["total", "dissipated", "accounted"], "J"),
     ],
     caption:
-      "Horizontal Hookean spring · ruler in m · block size illustrative · RK4, 1/240 s",
+      "Horizontal Hookean spring · fixed metre ruler · decorative mass, wire and dashpot dimensions · integrated damping power · RK4, 1/240 s. Vector-view switches change no physics.",
     equation: "m ẍ + b ẋ + kx = 0",
     insight: "Double the mass. Does the period double, or increase by √2?",
     supplementary: (s, p) => {
@@ -151,6 +155,7 @@ export const SIMULATIONS = {
         metric("Angular frequency ω₀", q.omega, "rad/s"),
         metric("Kinetic", e.kinetic, "J"),
         metric("Elastic potential", e.potential, "J"),
+        metric("Damping transfer",s.dissipated??0,"J","Integral of b v², not an energy-balance remainder"),
       ];
     },
   },
@@ -376,6 +381,7 @@ export const SIMULATIONS = {
     graphs: [
       graph("angle", "Angle", ["theta"], "°", { factor: 1 / E.DEG }),
       graph("energy", "Energy", ["kinetic", "potential", "total"], "J"),
+      graph("budget", "Energy balance", ["total", "dissipated", "accounted"], "J"),
     ],
     supplementary: (s, p) => {
       const e = E.pendulumEnergy(s, p);
@@ -383,10 +389,12 @@ export const SIMULATIONS = {
         metric("Kinetic", e.kinetic, "J"),
         metric("Gravitational potential", e.potential, "J"),
         metric("Total energy", e.total, "J"),
+        metric("Damping transfer",s.dissipated??0,"J"),
+        metric("Finite-angle period",pendulumPeriod(p),"s","Undamped reference at the release angle"),
       ];
     },
     caption:
-      "Nonlinear sin θ model · point bob, rigid massless link · RK4, 1/240 s",
+      "Nonlinear sin θ model · point bob, rigid massless link can pull or push · optional dashed linear prediction uses the same release and damping · damping power integrated independently · RK4, 1/240 s",
     equation: "θ̈ + βθ̇ + (g/L) sin θ = 0",
     insight: "Compare 10° and 100° releases. Which has the longer period?",
   },

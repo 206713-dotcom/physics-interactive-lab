@@ -88,7 +88,7 @@ export function createExtra(type, params = DEFAULTS[type]) {
       "Switch mode must be charging (0) or discharging (1).",
     );
   let state = { t: 0 };
-  if (type === "pendulum") state = { ...state, theta: p.angle * DEG, omega: 0 };
+  if (type === "pendulum") state = { ...state, theta: p.angle * DEG, omega: 0, dissipated:0 };
   if (type === "projectile")
     state = {
       ...state,
@@ -245,11 +245,12 @@ export function fieldLines(p) {
 }
 export function stepExtra(type, s, p, h) {
   if (type === "pendulum") {
-    const [theta, omega] = rk4([s.theta, s.omega], h, ([a, w]) => [
+    const [theta, omega, dissipated] = rk4([s.theta, s.omega, s.dissipated??0], h, ([a, w]) => [
       w,
       (-p.g / p.length) * Math.sin(a) - p.damping * w,
+      p.mass*p.length**2*p.damping*w*w,
     ]);
-    return { theta, omega, t: s.t + h };
+    return { theta, omega, dissipated, t: s.t + h };
   }
   if (type === "projectile") {
     if (s.landed) return s;
@@ -297,6 +298,8 @@ export function sampleExtra(type, s, p) {
       x: p.length * Math.sin(s.theta),
       y: -p.length * Math.cos(s.theta),
       ...pendulumEnergy(s, p),
+      dissipated:s.dissipated??0,
+      accounted:pendulumEnergy(s,p).total+(s.dissipated??0),
     };
   if (type === "projectile")
     return {

@@ -12,10 +12,10 @@ const metal={metalness:.8,roughness:.25},role=(o,name)=>{o.userData.role=name;re
 /** Three contiguous segments use the same release-energy scale. Dissipation
  * is the integral of damping power, NOT a fabricated E0-E remainder. */
 export function energyLedger(k,initial,y,z=0,width=7.2) {
-  k.box(width+.12,.22,.12,0x263c50,[0,y,z],{roughness:.85});
+  const track=k.box(width+.12,.22,.12,0x263c50,[0,y,z],{roughness:.85});
   const bars=[C.gold,C.cyan,C.red].map((color,i)=>role(k.box(width,.12,.15,color,[0,y,z+.08]),['energy-kinetic','energy-potential','energy-dissipated'][i])),
     reading=k.label('',[0,y+.48,z],'#bed7e3',7.7);
-  return {bars,reading,update(q,refresh=true){
+  return {bars,reading,track,update(q,refresh=true){
     let start=-width/2;
     [q.kinetic,q.potential,q.dissipated].forEach((value,i)=>{
       const fraction=initial>0?Math.max(0,value/initial):0;
@@ -43,15 +43,15 @@ export function createSpringBench(p,root,options={}) {
   const collar=k.cylinder(.18,.09,0xd0b28a,[-3.04,h,-.85],metal);collar.rotation.z=Math.PI/2;
   const piston=role(k.rod([-3,h,-.85],[0,h,-.85],0xc8d6db,.045),'spring-damper-piston'),
     bracket=k.rod([0,h,-.85],[0,h,0],0x8ea5b4,.03);
-  k.label(`Viscous damper · b = ${fmt(p.damping)} kg/s`,[-2.8,.13,-1.45],'#ba9e96',3.5);
+  const damperLabel=k.label(`Viscous damper · b = ${fmt(p.damping)} kg/s`,[-2.8,.13,-1.45],'#ba9e96',3.5);
   // A fixed displacement ruler, identical for every release amplitude.
   for(let i=-4;i<=4;i++) {
     const x=1+i*.2*SPRING_TRACK.scale;
     k.line([[x,.07,.9],[x,.07,1.15]],C.muted,.8);
-    k.label(`${Number((i*.2).toFixed(1))} m`,[x,.12,1.44],'#abc9d8',.8);
+    if(i%2===0)k.label(`${Number((i*.2).toFixed(1))} m`,[x,.12,1.44],'#abc9d8',.85);
   }
   dashedPath(k,[[1,.08,-1.15],[1,.08,1.2]],C.purple,.6);
-  k.label('Equilibrium · x = 0',[1,-.3,1.65],'#b3add6',2.8);
+  const equilibriumLabel=k.label('Equilibrium · x = 0',[1,-.3,1.65],'#b3add6',2.8);
   const xMark=role(k.line([[1,.18,1.0],[1,.18,1.0]],C.purple,.9),'spring-displacement'),
     arrows=[C.gold,C.purple,C.cyan,C.red,C.purple].map(c=>k.arrow([0,2,0],[1,0,0],c)),
     xLabel=k.label('',[-2.15,5.35,0],'#e0edf4',3.4),vLabel=k.label('',[2.15,5.35,0],'#ffc584',3.4),
@@ -59,7 +59,8 @@ export function createSpringBench(p,root,options={}) {
     restoringLabel=k.label('',[-2.65,3.0,0],'#64e8d1',2.5),dampingLabel=k.label('',[0,3.0,0],'#ff9e91',2.5),netLabel=k.label('',[2.65,3.0,0],'#c3a6ff',2.5),
     legend=k.label('',[0,3.55,0],'#b0cbd9',7.2),ledger=energyLedger(k,.5*p.k*p.displacement**2,4.08);
   let last=-Infinity,lastMode;
-  return {target:[0,2.75,0],radius:12.4,polar:1.32,azimuth:-.16,fitAspect:1.65,kit:k,update(lab){
+  const readouts=[xLabel,vLabel,regime,restoringLabel,dampingLabel,netLabel,legend,damperLabel,equilibriumLabel,ledger.reading,ledger.track,...ledger.bars];
+  return {target:[0,1.9,0],radius:9.4,polar:1.22,azimuth:-.17,fitAspect:1.65,kit:k,update(lab){
     const s=lab.state,q=springReadings(s,p),x=1+SPRING_TRACK.scale*s.x,motion=lab.oscillationVectors==='motion',
       refresh=!lab.running||s.t<last||s.t-last>=.08||lastMode!==motion;
     mass.position.set(x,.285-.045*1.2,0);cart.roll(x/1.2);
@@ -81,6 +82,7 @@ export function createSpringBench(p,root,options={}) {
     ledger.update(q,refresh);k.visibility(lab.showLabels!==false,lab.vectors!==false);
     arrows.forEach((a,i)=>a.visible=a.visible&&(i<2?motion:!motion));
     xMark.visible=lab.showLabels!==false;
+    if(lab.cleanPresentation)readouts.forEach(o=>o.visible=false);
   }};
 }
 
@@ -125,7 +127,8 @@ export function createPendulumBench(p,root,options={}) {
     referenceLabel=k.label('',[0,-1.14,1.0],'#c3a6ff',7.0),
     ledger=energyLedger(k,pendulumReadings({theta:p.angle*Math.PI/180,omega:0},p).initial,-.1,1.0,6.7);
   let last=-Infinity,lastMode,lastReference;
-  return {target:[0,2.83,0],radius:13.2,polar:1.42,azimuth:-.13,fitAspect:1.5,kit:k,update(lab){
+  const readouts=[thetaLabel,speedLabel,periodLabel,legend,forceLabel,referenceLabel,ledger.reading,ledger.track,...ledger.bars];
+  return {target:[0,3.55,0],radius:10.8,polar:1.47,azimuth:-.16,fitAspect:1.5,kit:k,update(lab){
     const s=lab.state,q=pendulumReadings(s,p),at=pendulumPoint(s.theta),motion=lab.oscillationVectors!=='forces',
       compare=lab.smallAngleReference===true,ref=smallAngleReference(p,s.t),refresh=!lab.running||s.t<last||s.t-last>=.08||motion!==lastMode||compare!==lastReference;
     bob.position.set(...at);putRod(rod,pivot,at);
@@ -147,5 +150,6 @@ export function createPendulumBench(p,root,options={}) {
     vectors.forEach((v,i)=>v.visible=v.visible&&(i<2?motion:!motion));
     referenceBob.visible=referenceRod.visible=compare;path.visible=lab.showTrail!==false;
     angle.visible=lab.showLabels!==false;
+    if(lab.cleanPresentation)readouts.forEach(o=>o.visible=false);
   }};
 }

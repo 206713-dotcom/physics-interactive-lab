@@ -10,6 +10,14 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 ## What is in the laboratory?
 
+### Version 14: a clearer visual laboratory
+
+The site now has an editorial homepage, original illustrated experiment covers, a featured starting collection, a searchable 57-lab library and compact links to the original course map and question bank. Manrope is bundled locally under the SIL Open Font License (see `assets/fonts/Manrope-OFL.txt`); no external font service is required. The white, navy and teal design extends to the experiment controls, graphs and expanded calculation inspector.
+
+**Spring and pendulum studios** now place live instrument readings in HTML panels, so changing the camera never shrinks the values. Kinetic, potential and independently integrated damping energy have a separate labelled bar. This replaces floating text and energy blocks inside the 3D scene while retaining metre/protractor markings, actual force indicators and calculated trails. Closer camera framing gives the apparatus more space. Both have new paper-style 2D diagrams with consistent physical transforms, shaded apparatus and the same SI values and vector scales as their 3D counterparts. Switching the view or inspector changes no physics or history. The remaining laboratories receive the shared page design, roomier viewer and studio backdrop.
+
+The original 57 experiments, lessons, worked questions, course links and model assumptions remain available. **241 automated tests** include a regression check that the clean presentation preserves body positions, force vectors, immutable states and scene geometry. Numerical models and supported parameter ranges are unchanged in this visual release.
+
 ### Version 13: spring and pendulum workbenches
 
 Two existing oscillation laboratories now have rebuilt apparatus and matching 2D diagrams. **Mass & spring** has a helical steel spring, a wheeled mass carriage, a schematic parallel viscous dashpot, a fixed metre ruler, damping-ratio classification and an energy ledger. Choose **Motion vectors** to compare velocity and acceleration, or **Force diagram** to compare spring, damping and resultant forces. Force arrows share one fixed linear scale per setup; velocity and acceleration use separate scales. The displacement ruler remains at 3.2 scene units per metre for every amplitude. Wire thickness, cart dimensions and damper construction are illustrative; no spring inertia, rolling resistance, wheel energy or fluid dynamics is added.

@@ -1,5 +1,7 @@
 /** Shared application shell for the simulation catalogue. Rendering never advances physics. */
 import { SIMULATIONS, CATEGORIES, spatialRows } from "./simulations.js";
+import { catalogueArt, homeHero } from "./catalogue-art.js";
+import { installPresentationStudio } from "./presentation-studio.js";
 import { LESSONS as ORIGINAL_LESSONS } from "./content.js";
 import { EXTRA_LESSONS } from "./content-extra.js";
 import { ADVANCED_LESSONS } from "./content-advanced.js";
@@ -83,6 +85,7 @@ let lab = null,
   vectorStudio = null,
   buoyancyUpdate = null,
   learningStudio = null,
+  presentationStudio = null,
   expandedView = null,
   hero = null,
   view = null,
@@ -167,11 +170,11 @@ function thumbnail(id) {
 }
 function card(id, preferredMode) {
   const d = SIMULATIONS[id];
-  return `<a class="simulation-card" href="#/${id}?level=${resolveMode(id, typeof preferredMode === "string" ? (preferredMode === "as" || preferredMode === "a2" ? "alevel" : preferredMode) : null)}" style="--accent:${d.color}"><div class="card-art">${thumbnail(id)}<span class="art-label">${d.category.toUpperCase()}</span><span class="card-dimension">${d.diagramOnly ? "INTERACTIVE DIAGRAM" : icon("cube") + " 3D + 2D"}</span></div><div class="card-body"><div class="card-meta">${levelBadges(id)}${d.isNew ? '<span class="new-lab-badge">NEW</span>' : ""}</div><h3>${d.short}</h3><p>${d.summary}</p><div class="card-bottom"><span class="card-equation">${d.formula}</span><span>Explore ${icon("arrow")}</span></div></div></a>`;
+  return `<a class="simulation-card" href="#/${id}?level=${resolveMode(id, typeof preferredMode === "string" ? (preferredMode === "as" || preferredMode === "a2" ? "alevel" : preferredMode) : null)}" style="--accent:${d.color}"><div class="card-art">${catalogueArt(id,thumbnail(id))}<span class="art-label">${d.category.toUpperCase()}</span><span class="card-dimension">${d.diagramOnly ? "INTERACTIVE DIAGRAM" : icon("cube") + " 3D + 2D"}</span></div><div class="card-body"><div class="card-meta">${levelBadges(id)}${d.isNew ? '<span class="new-lab-badge">NEW</span>' : ""}</div><h3>${d.short}</h3><p>${d.summary}</p><div class="card-bottom"><span class="card-equation">${d.formula}</span><span>Explore ${icon("arrow")}</span></div></div></a>`;
 }
 function home() {
   $("#main").innerHTML =
-    `<section class="hero"><div class="hero-copy"><div class="eyebrow"><span class="status-dot"></span> YOUR PHYSICS PLAYGROUND, IN 3D</div><h1>See the invisible.<br><em>Understand<br>the incredible.</em></h1><p>From the swing of a pendulum to the dance of an orbit. Step inside the physics, change the variables, and find your own answers.</p><div class="hero-actions"><a class="button" href="#simulations">Explore all ${LAB_COUNT} experiments ${icon("arrow")}</a><a class="hero-link" href="#/gravity">Enter the 3D orbit studio ↗</a></div><div class="hero-stats"><div><strong>${LAB_COUNT}</strong><span>interactive experiments</span></div><div><strong>${LAB_COUNT * 5}</strong><span>questions with answers</span></div><div><strong>${LAB_COUNT * 3}</strong><span>guided investigations</span></div></div></div><div class="hero-art"><canvas id="hero-canvas" tabindex="0" aria-label="Interactive 3D orbital preview. Drag to rotate, scroll to zoom, arrow keys to rotate, plus and minus to zoom."></canvas><div id="hero-fallback" hidden>${thumbnail("gravity")}</div><div class="hero-view-tag">${icon("cube")} THE ORBIT STUDIO <span>LIVE MODEL</span></div><div class="hero-art-label">Drag to orbit · Scroll to zoom<br><span>Planet appearance and satellite size illustrative</span></div><div class="hero-formula">F = <span>GMm</span> / r²</div></div></section><div class="page-width"><section id="simulations" class="catalogue"><div class="section-heading"><div><div class="eyebrow">FOLLOW YOUR CURIOSITY</div><h2>What will you discover today?</h2><p>A complete experiment in every card. Make a prediction, then put it to the test.</p></div><label class="library-search"><span aria-hidden="true">⌕</span><input type="search" id="search" aria-label="Search simulations" placeholder="Find an experiment…"></label></div><div class="catalogue-tools"><div class="category-filters" aria-label="Filter simulations">${CATEGORIES.map((c, i) => `<button class="${i === 0 ? "active" : ""}" data-category="${c}" aria-pressed="${i === 0}">${c}</button>`).join("")}</div><span id="result-count">${LAB_COUNT} experiments</span></div><div class="simulation-grid" id="cards">${Object.keys(SIMULATIONS).map(card).join("")}</div><p id="empty-results" hidden>No experiments match that search. Try a topic such as waves, light or motion.</p></section><section class="method-band"><div><div class="eyebrow">MORE THAN AN ANIMATION</div><h3>A little curiosity.<br>A deeper understanding.</h3></div>${[
+    `${homeHero(LAB_COUNT, LAB_COUNT*5+QUESTION_GROUPS.reduce((sum,g)=>sum+g.questions.length,0), icon)}<div class="page-width"><section id="simulations" class="catalogue"><div class="section-heading"><div><div class="eyebrow">FOLLOW YOUR CURIOSITY</div><h2>Find your next discovery.</h2><p>Explore the collection. Choose a question, change a variable, see what happens.</p></div><label class="library-search"><span aria-hidden="true">⌕</span><input type="search" id="search" aria-label="Search simulations" placeholder="Find an experiment…"></label></div><div class="catalogue-tools"><div class="category-filters" aria-label="Filter simulations">${CATEGORIES.map((c, i) => `<button class="${i === 0 ? "active" : ""}" data-category="${c}" aria-pressed="${i === 0}">${c}</button>`).join("")}</div><span id="result-count">${LAB_COUNT} experiments</span></div><div class="simulation-grid" id="cards">${Object.keys(SIMULATIONS).map(card).join("")}</div><p id="empty-results" hidden>No experiments match that search. Try a topic such as waves, light or motion.</p></section><section class="method-band"><div><div class="eyebrow">MORE THAN AN ANIMATION</div><h3>A little curiosity.<br>A deeper understanding.</h3></div>${[
       [
         "01",
         "Predict it.",
@@ -203,6 +206,15 @@ function home() {
     "beforebegin",
     '<section class="curriculum-banner question-banner"><div><div class="eyebrow">NEW · 312 ORIGINAL QUESTIONS · 26 TOPIC GROUPS</div><h2>Turn your experiments into understanding.</h2><p>A Level calculations, explanations, hints and worked solutions. Save your progress and print a practice set.</p></div><a class="button" href="#/questions">Enter the practice room ↗</a></section>',
   );
+  const featured=document.createElement('section');
+  featured.className='featured-experiments';
+  featured.innerHTML=`<div class="section-heading"><div><div class="eyebrow">A GOOD PLACE TO BEGIN</div><h2>Small experiments. Big ideas.</h2></div><a class="text-link" href="#simulations">Browse all ${LAB_COUNT} ${icon('arrow')}</a></div><div class="featured-grid">${['spring','pendulum','gravity','waves'].map(id=>card(id)).join('')}</div>`;
+  $('.hero').after(featured);
+  const learningHub=document.createElement('section');learningHub.className='learning-hub';
+  $('.catalogue').after(learningHub);
+  $$('.curriculum-banner').forEach(b=>learningHub.append(b));
+  $('.curriculum-banner .eyebrow').textContent='IGCSE · YOUR COURSE, CONNECTED';
+  $('.question-banner .eyebrow').textContent='A LEVEL · PRACTICE WITH PURPOSE';
   let category = "All experiments";
   $(".catalogue-tools").insertAdjacentHTML(
     "afterbegin",
@@ -263,7 +275,10 @@ function home() {
         heroView = new SceneView($("#hero-canvas"));
         heroView.azimuth = -0.5;
         heroView.polar = 0.9;
-        heroView.radius = 14;
+        heroView.radius = 9.8;
+        heroView.homeRadius = 9.8;
+        heroView.homePolar = 1.0;
+        heroView.homeAzimuth = -0.35;
       } catch {
         $("#hero-canvas").hidden = true;
         $("#hero-fallback").hidden = false;
@@ -316,6 +331,7 @@ function labPage(type, query) {
     showTrail: true,
     vectors: true,
     showLabels: true,
+    cleanPresentation: true,
     projectileFrame: query.get("frame")==="vacuum"?"vacuum":"actual",
     oscillationVectors: ["motion","forces"].includes(query.get("indicators"))?query.get("indicators"):type==="spring"?"forces":"motion",
     smallAngleReference:query.get("compare")==="1",
@@ -442,6 +458,7 @@ function labPage(type, query) {
     notes.append($("#stage-caption"));
   }
   installVisualGuide();
+  presentationStudio=installPresentationStudio($("#stage"),type);
   if(["spring","pendulum"].includes(type)) {
     const tools=document.createElement("div");
     tools.className="oscillation-tools";tools.setAttribute("aria-label","Oscillation indicators");
@@ -1250,6 +1267,7 @@ function updateReadouts() {
     s = lab.state;
   const metrics = d.metrics(s, p);
   vectorStudio?.update();
+  presentationStudio?.update(lab);
   learningStudio?.update();
   buoyancyUpdate?.(s, p);
   $("#metrics").innerHTML = metrics.map(metricMarkup).join("");
@@ -1561,6 +1579,7 @@ function route() {
   vectorStudio = null;
   buoyancyUpdate = null;
   learningStudio = null;
+  presentationStudio = null;
   routeToken++;
   viewToken++;
   view?.dispose();

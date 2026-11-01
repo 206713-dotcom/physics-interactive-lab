@@ -49,11 +49,11 @@ function textTexture(text, color) {
     Math.min(1900, Math.ceil(c.measureText(text).width) + 58),
   );
   canvas.height = 110;
-  c.fillStyle = "rgba(8,19,31,.86)";
+  c.fillStyle = "rgba(9,28,43,.76)";
   c.beginPath();
   c.roundRect(3, 3, canvas.width - 6, 104, 16);
   c.fill();
-  c.strokeStyle = "rgba(150,206,222,.16)";
+  c.strokeStyle = "rgba(150,206,222,.10)";
   c.lineWidth = 2;
   c.stroke();
   c.font = "500 60px Segoe UI,sans-serif";

@@ -123,6 +123,12 @@ export class SceneView {
     this.renderer.toneMapping = T.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
     this.scene = new T.Scene();
+    // A quiet studio backdrop adds depth without adding anything to the model.
+    const backdrop=document.createElement('canvas');backdrop.width=backdrop.height=512;
+    const backdropContext=backdrop.getContext('2d'),backdropPaint=backdropContext.createRadialGradient(256,180,0,256,230,400);
+    backdropPaint.addColorStop(0,'#173449');backdropPaint.addColorStop(.58,'#0d2335');backdropPaint.addColorStop(1,'#081725');
+    backdropContext.fillStyle=backdropPaint;backdropContext.fillRect(0,0,512,512);
+    this.studioBackdrop=new T.CanvasTexture(backdrop);this.studioBackdrop.colorSpace=T.SRGBColorSpace;
     this.scene.fog = new T.FogExp2(0x080f1b, 0.018);
     this.environmentTarget = studioEnvironment(this.renderer);
     this.scene.environment = this.environmentTarget.texture;
@@ -359,6 +365,8 @@ export class SceneView {
     this.type = type;
     this.key = JSON.stringify(p);
     const space = ["gravity", "earthmoon", "solarsystem", "stars", "binary", "threebody", "universe"].includes(type);
+    this.scene.background=space?null:this.studioBackdrop;
+    this.scene.fog.color.set(space?0x080f1b:0x10283c);
     this.ambient.intensity = type === "gravity" ? 0.12 : type === "earthmoon" ? 0.13 : 0.8;
     this.keyLight.intensity = type === "earthmoon" ? 0 : 2.6;
     this.rimLight.intensity = space ? 0 : 20;
@@ -884,6 +892,7 @@ export class SceneView {
     );
     this.renderer.dispose();
     this.environmentTarget.dispose();
+    this.studioBackdrop.dispose();
     this.renderer.forceContextLoss();
   }
 }

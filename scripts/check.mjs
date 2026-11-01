@@ -10,6 +10,7 @@ for (const name of (await readdir("js")).filter((name) => name.endsWith(".js")))
   assert.equal(imports[`./js/${name}`], `./js/${name}?v=${version}`, "Run npm run refresh-assets after a version/module change.");
 assert.ok(entryHTML.includes(`./js/app.js?v=${version}`));
 assert.ok(entryHTML.includes(`./cinematic.css?v=${version}`));
+assert.ok(entryHTML.includes(`./design.css?v=${version}`));
 for (const document of ["index.html", "integration.html", "solar-atlas.html"]) {
   const html = await readFile(document, "utf8");
   for (const match of html.matchAll(/(?:src|href)="(\.\/[^"?#]+)"/g))
@@ -65,6 +66,11 @@ for (const file of [
   "js/scene-kit.js",
   "js/scene-finish.js",
   "js/scene-precision.js",
+  "js/catalogue-art.js",
+  "js/presentation-studio.js",
+  "design.css",
+  "assets/fonts/Manrope-variable.ttf",
+  "assets/fonts/Manrope-OFL.txt",
   "js/oscillation-physics.js",
   "js/spring-helix.js",
   "js/scene-oscillation-benches.js",

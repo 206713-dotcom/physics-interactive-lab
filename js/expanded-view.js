@@ -52,7 +52,7 @@ export class ExpandedView {
         <aside class="expanded-variables" aria-label="Adjust model variables"></aside>
         <div class="expanded-model"></div>
         <aside class="expanded-calculations" aria-label="Live calculations">
-          <div class="calculation-heading"><span class="expanded-eyebrow">FOLLOW THE PHYSICS</span><h2>See the working.</h2><p>Choose a calculation. Its values follow the model.</p><div class="calculation-time"></div></div>
+          <div class="calculation-heading"><span class="expanded-eyebrow">LIVE CALCULATIONS</span><h2>Follow the physics.</h2><p>Every value, connected to the model.</p><div class="calculation-time"></div></div>
           <label class="calculation-choice-label" for="calculation-choice">Calculate</label>
           <select id="calculation-choice">${sheet.calculations.map((item) => `<option value="${mathHTML(item.id)}">${mathHTML(item.title)}</option>`).join("")}</select>
           <article class="worked-calculation calculation-primary">
@@ -83,7 +83,7 @@ export class ExpandedView {
     this.choice = root.querySelector("#calculation-choice");
     this.modeNote = document.createElement("p");
     this.modeNote.className = "calculation-level-scope";
-    root.querySelector(".calculation-heading").append(this.modeNote);
+    this.footnote.before(this.modeNote);
     this.choice.value = this.selectedId;
     this.resultNodes = Object.fromEntries(
       [

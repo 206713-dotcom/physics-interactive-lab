@@ -124,3 +124,19 @@ test('worked calculations and both energy-balance graphs expose the integrated S
  }
  assert.equal(LABS.gravity.graphs.some(g=>g.id==='budget'),false);
 });
+
+test('the clean presentation hides floating readouts without changing physical geometry or force indicators',()=>{
+ for(const id of ['spring','pendulum']){
+  const a=make(id,{damping:.5}),s=Object.freeze(stateAt(id,a.run.params,.5));Object.freeze(a.run.params);
+  a.update(s,{cleanPresentation:false,vectors:true,oscillationVectors:'forces'});
+  const body=nodes(a.root,id==='spring'?'spring-mass':'pendulum-bob')[0],before=body.position.clone(),
+    arrows=a.scene.kit.indicators.map(o=>({position:o.position.clone(),vector:vector(o),visible:o.visible})),saved=JSON.stringify(s),objects=[];
+  a.root.traverse(o=>objects.push([o,o.geometry]));
+  a.update(s,{cleanPresentation:true,vectors:true,oscillationVectors:'forces'});
+  close(body.position.distanceTo(before),0);
+  a.scene.kit.indicators.forEach((o,i)=>{close(o.position.distanceTo(arrows[i].position),0);close(vector(o).distanceTo(arrows[i].vector),0);assert.equal(o.visible,arrows[i].visible);});
+  for(const role of ['energy-kinetic','energy-potential','energy-dissipated'])assert.equal(nodes(a.root,role)[0].visible,false);
+  assert.ok(a.scene.kit.annotations.some(o=>o.visible),'calibrated ruler or protractor labels remain');
+  const after=[];a.root.traverse(o=>after.push([o,o.geometry]));assert.deepEqual(after,objects);assert.equal(JSON.stringify(s),saved);clean(a.root);
+ }
+});

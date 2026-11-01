@@ -1,62 +1,341 @@
-/** The calibrated 2D companion uses exactly the same readings and reference
- * model as the 3D benches. No physics is advanced by drawing. */
-import { springReadings,pendulumReadings,pendulumPeriod,smallAngleReference,oscillationScales } from './oscillation-physics.js';
-export function drawOscillation(canvas,lab) {
-  const width=canvas.clientWidth,height=canvas.clientHeight,dpr=Math.min(devicePixelRatio||1,2);
-  if(canvas.width!==Math.round(width*dpr)||canvas.height!==Math.round(height*dpr)){canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);}
-  const c=canvas.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);
-  const background=c.createLinearGradient(0,0,width,height);background.addColorStop(0,'#081827');background.addColorStop(1,'#132d3e');
-  c.fillStyle=background;c.fillRect(0,0,width,height);
-  const scale=Math.min(width/900,height/520);c.translate((width-900*scale)/2,(height-520*scale)/2);c.scale(scale,scale);
-  const gold='#ffc584',cyan='#64e8d1',purple='#c3a6ff',red='#ff8e7f',blue='#89baff',muted='#9fbfd0',p=lab.params,s=lab.state,
-    spring=lab.type==='spring',q=spring?springReadings(s,p):pendulumReadings(s,p),scales=oscillationScales(lab.type,p),
-    motion=spring?lab.oscillationVectors==='motion':lab.oscillationVectors!=='forces',
-    text=(t,x,y,col=muted,size=19,align='left')=>{c.fillStyle=col;c.font=`${size}px Inter,Segoe UI,sans-serif`;c.textAlign=align;c.fillText(t,x,y);},
-    line=(points,col=muted,lw=2,dash=[])=>{if(!points.length)return;c.beginPath();c.setLineDash(dash);points.forEach((v,i)=>i?c.lineTo(...v):c.moveTo(...v));c.strokeStyle=col;c.lineWidth=lw;c.stroke();c.setLineDash([]);},
-    circle=(x,y,r,col,fill=true)=>{c.beginPath();c.arc(x,y,r,0,2*Math.PI);if(fill){c.fillStyle=col;c.fill();}else{c.strokeStyle=col;c.lineWidth=3;c.stroke();}},
-    arrow=(at,v,col)=>{const len=Math.hypot(...v);if(len<.2)return;const end=at.map((x,i)=>x+v[i]),a=Math.atan2(v[1],v[0]),head=Math.min(10,len*.32);line([at,end],col,3);line([[end[0]-head*Math.cos(a-.4),end[1]-head*Math.sin(a-.4)],end,[end[0]-head*Math.cos(a+.4),end[1]-head*Math.sin(a+.4)]],col,3);};
-  text(spring?'MASS–SPRING BENCH':'NONLINEAR PENDULUM',40,33,cyan,17);
-  text(spring?`${q.regime} · ζ = ${q.zeta.toFixed(2)}`:`L ${p.length.toFixed(2)} m · rigid massless link`,860,33,muted,17,'right');
-  text(spring?`x = ${s.x.toFixed(3)} m · v = ${s.v.toFixed(3)} m/s`:`θ = ${(s.theta*180/Math.PI).toFixed(1)}° · speed = ${q.speed.toFixed(2)} m/s`,450,76,'#e0edf4',24,'center');
-  if(!spring&&lab.smallAngleReference)text('Dashed purple: linear prediction with the same release and damping',450,106,purple,16,'center');
-  if(spring) {
-    const origin=500,metres=230,x=origin+s.x*metres,y=326;
-    line([[65,y+31],[835,y+31]],'#5b7f94',4);
-    c.fillStyle='#385367';c.fillRect(75,y-52,18,82);
-    line([[93,y],[115,y],...Array.from({length:65},(_,i)=>[115+(x-35-115)*i/64,y+Math.sin(i/64*12*Math.PI)*15]),[x-28,y]],cyan,3);
-    c.fillStyle='#5ccbbb';c.beginPath();c.roundRect(x-30,y-25,60,44,7);c.fill();
-    circle(x-18,y+26,7,'#a5c1d2');circle(x+18,y+26,7,'#a5c1d2');
-    text(`${p.mass.toFixed(1)} kg`,x,y+2,'#092c37',15,'center');
-    line([[origin,295],[origin,409]],purple,1,[4,6]);
-    for(let i=-4;i<=4;i++){
-      const xx=origin+i*.2*metres;line([[xx,374],[xx,388]],muted,1);
-      text(`${Number((i*.2).toFixed(1))}`,xx,412,muted,17,'center');
-    }
-    text('x / m',810,412,muted,17,'right');
-    const values=motion?[s.v*scales.velocity,q.a*scales.acceleration]:[q.restoring*scales.force,q.damping*scales.force,q.net*scales.force],
-      colors=motion?[gold,purple]:[cyan,red,purple],names=motion?['Velocity','Acceleration']:['Spring force','Damping force','Resultant force'];
-    if(lab.vectors!==false)values.forEach((v,i)=>{arrow([x,155+i*55],[v*82,0],colors[i]);text(names[i],65,161+i*55,colors[i],18);});
-  } else {
-    // Full ±120° releases fit: both axes share the same metre-to-pixel scale.
-    const pivot=[450,215],length=155,pt=a=>[pivot[0]+length*Math.sin(a),pivot[1]+length*Math.cos(a)],at=pt(s.theta);
-    line([[pivot[0],pivot[1]],[pivot[0],pivot[1]+length]],muted,1,[4,6]);
-    for(let deg=-120;deg<=120;deg+=10){
-      const a=deg*Math.PI/180,r1=length+12,r2=r1+(deg%30===0?8:4);
-      line([[pivot[0]+r1*Math.sin(a),pivot[1]+r1*Math.cos(a)],[pivot[0]+r2*Math.sin(a),pivot[1]+r2*Math.cos(a)]],muted,1);
-      if(deg%30===0)text(`${deg}°`,pivot[0]+(r2+19)*Math.sin(a),pivot[1]+(r2+19)*Math.cos(a)+5,muted,15,'center');
-    }
-    if(lab.showTrail!==false)line((lab.trail??[]).map(v=>[pivot[0]+v.x*length/p.length,pivot[1]-v.y*length/p.length]),'#ffc58477',2);
-    if(lab.smallAngleReference){const r=pt(smallAngleReference(p,s.t).theta);line([pivot,r],purple,2,[7,6]);circle(...r,18,purple,false);}
-    line([pivot,at],'#b5cbd7',4);circle(...pivot,7,cyan);circle(...at,14,gold);
-    if(lab.vectors!==false){
-      const values=motion?[q.velocity,q.acceleration]:[q.weight,q.constraint,q.damping],colors=motion?[gold,purple]:[blue,cyan,red],factors=motion?[scales.velocity,scales.acceleration]:[scales.force,scales.force,scales.force];
-      values.forEach((v,i)=>arrow(at,[v[0]*factors[i]*82,-v[1]*factors[i]*82],colors[i]));
-    }
-    text(`T₀ ${ (2*Math.PI*Math.sqrt(p.length/p.g)).toFixed(2)} s · finite-angle ${pendulumPeriod(p).toFixed(2)} s (undamped)`,450,435,muted,18,'center');
+/** A paper-style scientific diagram. Geometry and arrows read the same SI
+ * state as the 3D scene. HTML instruments supply camera-independent readings. */
+import {
+  springReadings,
+  pendulumReadings,
+  smallAngleReference,
+  oscillationScales,
+} from "./oscillation-physics.js";
+export function drawOscillation(canvas, lab) {
+  const width = canvas.clientWidth,
+    height = canvas.clientHeight,
+    dpr = Math.min(devicePixelRatio || 1, 2);
+  if (
+    canvas.width !== Math.round(width * dpr) ||
+    canvas.height !== Math.round(height * dpr)
+  ) {
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
   }
-  const left=105,barWidth=690;
-  text(`K ${q.kinetic.toFixed(2)} J · U ${q.potential.toFixed(2)} J · damping ${q.dissipated.toFixed(2)} J`,450,464,'#d3e5ee',19,'center');
-  c.fillStyle='#294355';c.fillRect(left,479,barWidth,11);let offset=left;
-  [q.kinetic,q.potential,q.dissipated].forEach((v,i)=>{const w=q.initial>0?barWidth*Math.max(0,v/q.initial):0;c.fillStyle=[gold,cyan,red][i];c.fillRect(offset,479,w,11);offset+=w;});
-  text(motion?'Gold: velocity · purple: total acceleration · separate scales':spring?'Cyan: spring · coral: damping · purple: resultant · one force scale':'Blue: weight · cyan: link force · coral: damping · one force scale',450,513,muted,17,'center');
+  const c = canvas.getContext("2d");
+  c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const bg = c.createLinearGradient(0, 0, width, height);
+  bg.addColorStop(0, "#f7fbfd");
+  bg.addColorStop(1, "#e7f0f5");
+  c.fillStyle = bg;
+  c.fillRect(0, 0, width, height);
+  c.strokeStyle = "#bdceda30";
+  c.lineWidth = 1;
+  for (let x = 0; x < width; x += 28) {
+    c.beginPath();
+    c.moveTo(x, 0);
+    c.lineTo(x, height);
+    c.stroke();
+  }
+  for (let y = 0; y < height; y += 28) {
+    c.beginPath();
+    c.moveTo(0, y);
+    c.lineTo(width, y);
+    c.stroke();
+  }
+  const compact = width < 600,
+    virtualWidth = compact ? 620 : 900,
+    scale = Math.min(width / virtualWidth, height / 520);
+  c.translate((width - virtualWidth * scale) / 2, (height - 520 * scale) / 2);
+  c.scale(scale, scale);
+  c.lineCap = c.lineJoin = "round";
+  const gold = "#ad7729",
+    cyan = "#138d88",
+    purple = "#8c64b9",
+    red = "#c96d58",
+    blue = "#487eac",
+    ink = "#244e64",
+    muted = "#7c9aaa",
+    p = lab.params,
+    s = lab.state,
+    spring = lab.type === "spring",
+    q = spring ? springReadings(s, p) : pendulumReadings(s, p),
+    scales = oscillationScales(lab.type, p),
+    motion = spring
+      ? lab.oscillationVectors === "motion"
+      : lab.oscillationVectors !== "forces";
+  const text = (t, x, y, col = ink, size = 17, align = "left") => {
+      c.fillStyle = col;
+      c.font = `500 ${Math.max(size, compact ? 19 : 0)}px Manrope,Segoe UI,sans-serif`;
+      c.textAlign = align;
+      c.fillText(t, x, y);
+    },
+    line = (points, col = muted, lw = 2, dash = []) => {
+      if (!points.length) return;
+      c.beginPath();
+      c.setLineDash(dash);
+      points.forEach((v, i) => (i ? c.lineTo(...v) : c.moveTo(...v)));
+      c.strokeStyle = col;
+      c.lineWidth = lw;
+      c.stroke();
+      c.setLineDash([]);
+    },
+    disc = (x, y, r, fill, stroke = null) => {
+      c.beginPath();
+      c.arc(x, y, r, 0, 2 * Math.PI);
+      if (fill) {
+        c.fillStyle = fill;
+        c.fill();
+      }
+      if (stroke) {
+        c.strokeStyle = stroke;
+        c.lineWidth = 2;
+        c.stroke();
+      }
+    },
+    rounded = (x, y, w, h, fill, r = 7) => {
+      c.beginPath();
+      c.roundRect(x, y, w, h, r);
+      c.fillStyle = fill;
+      c.fill();
+    },
+    arrow = (at, v, col) => {
+      const len = Math.hypot(...v);
+      if (len < 0.3) return;
+      const end = at.map((x, i) => x + v[i]),
+        a = Math.atan2(v[1], v[0]),
+        head = Math.min(10, len * 0.32);
+      line([at, end], col, 3);
+      line(
+        [
+          [
+            end[0] - head * Math.cos(a - 0.4),
+            end[1] - head * Math.sin(a - 0.4),
+          ],
+          end,
+          [
+            end[0] - head * Math.cos(a + 0.4),
+            end[1] - head * Math.sin(a + 0.4),
+          ],
+        ],
+        col,
+        3,
+      );
+    };
+  if (!lab.cleanPresentation)
+    text(spring ? "MASS–SPRING BENCH" : "NONLINEAR PENDULUM", 40, 45, ink, 22);
+  if (spring) {
+    const origin = compact ? 350 : 500,
+      metres = compact ? 200 : 230,
+      x = origin + s.x * metres,
+      y = 338;
+    // The display cart is illustrative; displacement uses the metre ruler.
+    c.fillStyle = "#a5bfce35";
+    c.beginPath();
+    c.ellipse(
+      compact ? 310 : 449,
+      407,
+      compact ? 275 : 367,
+      15,
+      0,
+      0,
+      Math.PI * 2,
+    );
+    c.fill();
+    rounded(compact ? 35 : 65, 380, compact ? 550 : 770, 17, "#b8ceda");
+    rounded(compact ? 35 : 65, 380, compact ? 550 : 770, 7, "#f9fdff", 3);
+    for (const xx of compact ? [75, 540] : [103, 794])
+      rounded(xx, 397, 22, 15, "#7d9daa", 3);
+    rounded(compact ? 45 : 78, 277, 15, 103, "#365e74", 4);
+    rounded(compact ? 44 : 77, 276, 18, 5, "#88aebf", 3);
+    for (const yy of [293, 366]) disc(compact ? 52 : 85, yy, 3, "#acc5d0");
+    const coilStart = compact ? 78 : 116;
+    const springPath = [
+      [compact ? 63 : 96, y],
+      [coilStart, y],
+      ...Array.from({ length: 121 }, (_, i) => [
+        coilStart + ((x - 36 - coilStart) * i) / 120,
+        y + Math.sin((i / 120) * 12 * Math.PI) * 16,
+      ]),
+      [x - 33, y],
+    ];
+    line(springPath, "#39697a", 4);
+    line(springPath, "#94bcbf", 1.6);
+    const body = c.createLinearGradient(x - 35, y - 30, x + 35, y + 25);
+    body.addColorStop(0, "#7dd2c4");
+    body.addColorStop(0.55, "#359a98");
+    body.addColorStop(1, "#236d7a");
+    c.save();
+    c.shadowColor = "#2b617332";
+    c.shadowBlur = 15;
+    c.shadowOffsetY = 7;
+    rounded(x - 34, y - 29, 68, 55, body, 8);
+    c.restore();
+    rounded(x - 34, y - 29, 68, 7, "#9be0d0", 4);
+    rounded(x - 23, y - 36, 46, 7, "#c8ae80", 3);
+    for (const xx of [x - 21, x + 21]) {
+      disc(xx, y + 33, 10, "#31566d");
+      disc(xx, y + 33, 5, "#a8c4d1");
+      const a = (x - origin) / 10;
+      line(
+        [
+          [xx - 6 * Math.cos(a), y + 33 - 6 * Math.sin(a)],
+          [xx + 6 * Math.cos(a), y + 33 + 6 * Math.sin(a)],
+        ],
+        "#d3e4ec",
+        1,
+      );
+    }
+    text(`${p.mass.toFixed(1)} kg`, x, y + 5, "#e8fcf6", 15, "center");
+    line(
+      [
+        [origin, 310],
+        [origin, 451],
+      ],
+      "#9ba9c4",
+      1,
+      [4, 6],
+    );
+    for (let i = -4; i <= 4; i++) {
+      const xx = origin + i * 0.2 * metres;
+      line(
+        [
+          [xx, 418],
+          [xx, 431],
+        ],
+        muted,
+        1,
+      );
+      text(`${Number((i * 0.2).toFixed(1))}`, xx, 451, muted, 16, "center");
+    }
+    text("x / m", compact ? 590 : 813, 451, muted, 16, "right");
+    const values = motion
+        ? [s.v * scales.velocity, q.a * scales.acceleration]
+        : [
+            q.restoring * scales.force,
+            q.damping * scales.force,
+            q.net * scales.force,
+          ],
+      colors = motion ? [gold, purple] : [cyan, red, purple],
+      names = motion
+        ? ["Velocity  v", "Acceleration  a"]
+        : ["Spring  −kx", "Damping  −bv", "Resultant  F"];
+    if (lab.vectors !== false)
+      values.forEach((v, i) => {
+        arrow([x, 171 + i * 55], [v * 85, 0], colors[i]);
+        text(names[i], compact ? 25 : 65, 177 + i * 55, colors[i], 17);
+      });
+  } else {
+    c.save();
+    if (compact) c.translate(-140, 0);
+    // The complete ±120° envelope fits below the instrument strip. Both axes
+    // and the actual trail use the same physical length-to-pixel scale.
+    const pivot = [450, 268],
+      length = 180,
+      pt = (a) => [
+        pivot[0] + length * Math.sin(a),
+        pivot[1] + length * Math.cos(a),
+      ],
+      at = pt(s.theta);
+    c.fillStyle = "#a5bfce35";
+    c.beginPath();
+    c.ellipse(450, 473, 265, 15, 0, 0, 2 * Math.PI);
+    c.fill();
+    rounded(194, 461, 512, 10, "#9fbac9", 4);
+    for (const xx of [210, 690]) {
+      rounded(xx - 5, 172, 10, 290, "#86a5b5", 4);
+      rounded(xx - 28, 457, 56, 8, "#50788e", 3);
+    }
+    rounded(207, 169, 486, 9, "#52798e", 4);
+    line([[450, 179], pivot], "#759baa", 3);
+    line([pivot, [pivot[0], pivot[1] + length]], "#a9bdc8", 1, [4, 6]);
+    line(
+      Array.from({ length: 121 }, (_, i) => {
+        const a = ((-120 + i * 2) * Math.PI) / 180;
+        return [pivot[0] + 194 * Math.sin(a), pivot[1] + 194 * Math.cos(a)];
+      }),
+      "#b5cbd6",
+      1.4,
+    );
+    for (let deg = -120; deg <= 120; deg += 10) {
+      const a = (deg * Math.PI) / 180,
+        r1 = 188,
+        r2 = deg % 30 === 0 ? 199 : 194;
+      line(
+        [
+          [pivot[0] + r1 * Math.sin(a), pivot[1] + r1 * Math.cos(a)],
+          [pivot[0] + r2 * Math.sin(a), pivot[1] + r2 * Math.cos(a)],
+        ],
+        muted,
+        1.3,
+      );
+      if (deg % 30 === 0)
+        text(
+          `${deg}°`,
+          pivot[0] + 215 * Math.sin(a),
+          pivot[1] + 215 * Math.cos(a) + 5,
+          muted,
+          14,
+          "center",
+        );
+    }
+    if (lab.showTrail !== false)
+      line(
+        (lab.trail ?? []).map((v) => [
+          pivot[0] + (v.x * length) / p.length,
+          pivot[1] - (v.y * length) / p.length,
+        ]),
+        "#c3a27388",
+        2.2,
+      );
+    if (lab.smallAngleReference) {
+      const r = pt(smallAngleReference(p, s.t).theta);
+      line([pivot, r], purple, 2, [6, 6]);
+      disc(...r, 17, null, purple);
+    }
+    line([pivot, at], "#557b8e", 4);
+    line(
+      [
+        [pivot[0] - 1, pivot[1]],
+        [at[0] - 1, at[1]],
+      ],
+      "#b9d0da",
+      1,
+    );
+    c.save();
+    c.shadowColor = "#58778d44";
+    c.shadowBlur = 13;
+    c.shadowOffsetY = 5;
+    const metal = c.createRadialGradient(
+      at[0] - 6,
+      at[1] - 8,
+      0,
+      at[0],
+      at[1],
+      18,
+    );
+    metal.addColorStop(0, "#fff4d2");
+    metal.addColorStop(0.4, "#eac58e");
+    metal.addColorStop(1, "#a27643");
+    disc(...at, 18, metal);
+    c.restore();
+    disc(...pivot, 10, "#3d697e");
+    disc(...pivot, 5, "#b9d1dc");
+    line(
+      Array.from({ length: 33 }, (_, i) => {
+        const a = (s.theta * i) / 32;
+        return [pivot[0] + 42 * Math.sin(a), pivot[1] + 42 * Math.cos(a)];
+      }),
+      cyan,
+      2,
+    );
+    if (lab.vectors !== false) {
+      const values = motion
+          ? [q.velocity, q.acceleration]
+          : [q.weight, q.constraint, q.damping],
+        colors = motion ? [gold, purple] : [blue, cyan, red],
+        factors = motion
+          ? [scales.velocity, scales.acceleration]
+          : [scales.force, scales.force, scales.force];
+      values.forEach((v, i) =>
+        arrow(at, [v[0] * factors[i] * 87, -v[1] * factors[i] * 87], colors[i]),
+      );
+    }
+    c.restore();
+  }
 }

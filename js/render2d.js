@@ -5,6 +5,7 @@ import { ADVANCED_IDS } from "./physics-advanced.js";
 import { drawAdvanced } from "./render-advanced.js";
 import { CURRICULUM_IDS } from "./curriculum-physics.js";
 import { drawCurriculum } from "./render-curriculum.js";
+import { projectileLayout, projectilePreview } from "./kinematics-display.js";
 export function draw2D(canvas, lab) {
   if (CURRICULUM_IDS.includes(lab.type)) {
     drawCurriculum(canvas, lab);
@@ -143,12 +144,12 @@ export function draw2D(canvas, lab) {
     text(`L = ${p.length.toFixed(2)} m`, cx + 22, py + L * 0.45);
     text(`θ = ${(s.theta / E.DEG).toFixed(1)}°`, 24, h - 30);
   } else if (lab.type === "projectile") {
-    const r = E.projectileReference(p),
+    const r = E.projectileReference(p),layout=projectileLayout(p,lab.projectileFrame),
       sc = Math.min(
-        (w - 90) / Math.max(r.range, 10),
-        (h - 105) / Math.max(r.maxHeight, 5),
+        (w - 90) / layout.maxX,
+        (h - 105) / layout.maxY,
       ),
-      left = (w - r.range * sc) / 2,
+      left = (w - layout.maxX * sc) / 2,
       ground = h - 48,
       pt = (q) => [left + q.x * sc, ground - q.y * sc];
     line(
@@ -172,26 +173,32 @@ export function draw2D(canvas, lab) {
         }),
       );
     }
-    line(ref, "#6c829a", 1, [5, 5]);
+    c.save();c.beginPath();c.rect(left,ground-layout.maxY*sc,layout.maxX*sc,layout.maxY*sc);c.clip();
+    if(lab.showTrail)line(ref, "#6c829a", 1, [5, 5]);
+    c.restore();
     if (lab.showTrail) line((lab.trail || []).map(pt), "#b5a6ff", 2.5);
     const [x, y] = pt(s);
     ball(x, y, 8, "#b5a6ff");
-    if (lab.vectors) arrow(x, y, s.vx * 0.8, -s.vy * 0.8, G);
+    if (lab.vectors) {
+      const preview=projectilePreview(p),vs=55/preview.maxSpeed,as=45/Math.max(p.g,p.drag*preview.maxSpeed**2),v=Math.hypot(s.vx,s.vy);
+      arrow(x,y,s.vx*vs,-s.vy*vs,G);
+      if(!s.landed){arrow(x+10,y,0,p.g*as,B);arrow(x,y,-p.drag*v*s.vx*as,p.drag*v*s.vy*as,'#ff8e7f');}
+    }
     for (let i = 0; i <= 4; i++) {
-      const xx = (r.range * i) / 4;
+      const xx = (layout.maxX * i) / 4;
       text(
-        `${xx.toFixed(0)} m`,
+        `${Number(xx.toPrecision(3))} m`,
         left + xx * sc,
         ground + 24,
         "#94b7cb",
-        10,
+        14,
         "center",
       );
     }
-    text("Dashed: calculated vacuum reference", 24, 40);
+    text(lab.projectileFrame==='vacuum'?'Full vacuum comparison · dashed = vacuum':'Actual-flight frame · off-window vacuum reference clipped',24,40,'#abc5d5',13);
   } else if (lab.type === "collisions") {
-    const extent = Math.max(5, Math.abs(s.x1) + 1, Math.abs(s.x2) + 1),
-      sc = (w - 90) / (extent * 2),
+    const center=(s.x1+s.x2)/2,
+      sc = (w - 90) / 9,
       y = h * 0.57,
       cx = w / 2;
     line(
@@ -206,25 +213,29 @@ export function draw2D(canvas, lab) {
       [s.x1, s.v1, p.m1, C, "A"],
       [s.x2, s.v2, p.m2, G, "B"],
     ]) {
-      const px = cx + x * sc,
-        ww = Math.max(15, 0.8 * sc);
+      const px = cx + (x-center) * sc,
+        ww = 0.8 * sc;
       c.fillStyle = col;
       c.beginPath();
       c.roundRect(px - ww / 2, y - 20, ww, 40, 6);
       c.fill();
       text(name, px, y + 5, "#102b3e", 14, "center");
-      text(`${m.toFixed(1)} kg`, px, y + 58, "#bfd3df", 11, "center");
-      if (lab.vectors) arrow(px, y - 38, v * 17, 0, col);
+      text(`${m.toFixed(1)} kg`, px, y + 58, "#bfd3df", 14, "center");
+      if (lab.vectors) arrow(px, y - (name==='A'?42:72), v * 12, 0, col);
     }
     text(
-      s.hit ? "AFTER CONTACT" : "BEFORE CONTACT",
+      s.hit ? "AFTER CONTACT" : p.u1<=p.u2 ? "NO APPROACH · NO COLLISION" : "BEFORE CONTACT",
       w / 2,
       65,
       s.hit ? G : C,
-      11,
+      14,
       "center",
     );
-    text("Positive velocity →", 24, h - 30);
+    for(let value=Math.floor(center)-5;value<=Math.floor(center)+5;value++) {
+      const px=cx+(value-center)*sc;if(px<30||px>w-30)continue;
+      line([[px,y+34],[px,y+44]],'#63879c',1);text(`${value} m`,px,y+84,'#94b7cb',14,'center');
+    }
+    text("Camera follows pair · ruler and velocities use the lab frame",24,h-25,'#abc5d5',13);
   } else if (lab.type === "waves") {
     const left = 35,
       width = w - 70,

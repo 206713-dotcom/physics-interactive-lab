@@ -316,6 +316,7 @@ function labPage(type, query) {
     showTrail: true,
     vectors: true,
     showLabels: true,
+    projectileFrame: query.get("frame")==="vacuum"?"vacuum":"actual",
     vectorMethod: ["triangle", "parallelogram", "components"].includes(
       query.get("method"),
     )
@@ -438,6 +439,20 @@ function labPage(type, query) {
     notes.append($("#stage-caption"));
   }
   installVisualGuide();
+  if(type==="projectile") {
+    const framing=document.createElement("div");
+    framing.className="projectile-frame-tools";
+    framing.setAttribute("aria-label","Projectile observation frame");
+    framing.innerHTML='<span>Frame</span><button data-projectile-frame="actual">Actual flight</button><button data-projectile-frame="vacuum">Vacuum comparison</button>';
+    $("#camera-toolbar").classList.add("projectile-camera");
+    $("#camera-toolbar").append(framing);
+    const syncFrame=()=>framing.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.projectileFrame===lab.projectileFrame)));
+    framing.querySelectorAll("button").forEach(b=>b.onclick=()=>{
+      lab.projectileFrame=b.dataset.projectileFrame;syncFrame();
+      const full=$(".expanded-full-link");if(full)full.href=setupLink(false);
+    });
+    syncFrame();
+  }
   if (type === "buoyancy") {
     $("#stage").classList.add("buoyancy-stage");
     buoyancyUpdate = installBuoyancyStudio($("#stage"));
@@ -881,10 +896,11 @@ function setupLink(embed = false) {
     studyMode: lab.studyMode,
     syllabusCycle: lab.syllabusCycle,
   });
-  if (lab.type !== "vectors") return link;
+  if (!["vectors","projectile"].includes(lab.type)) return link;
   const [path, query = ""] = link.split("#"),
     [route, search = ""] = query.split("?"),
     args = new URLSearchParams(search);
+  if(lab.type==="projectile") {args.set("frame",lab.projectileFrame);return `${path}#${route}?${args}`;}
   args.set("method", lab.vectorMethod);
   args.set("components", lab.vectorComponents ? "1" : "0");
   args.set("grid", lab.vectorGrid ? "1" : "0");
@@ -905,7 +921,8 @@ async function setView(mode) {
   $("#simulation").hidden = mode === "3d";
   $("#camera-hint").hidden = mode !== "3d";
   $("#camera-reset").hidden = mode !== "3d";
-  $("#camera-toolbar").hidden = mode !== "3d";
+  $("#camera-toolbar").hidden = mode !== "3d" && lab.type!=="projectile";
+  $("#camera-toolbar").classList.toggle("is-diagram",mode!=="3d");
   $(".scene-equation").hidden = mode !== "3d";
   $$("[data-view]").forEach((b) =>
     b.setAttribute("aria-pressed", String(b.dataset.view === mode)),

@@ -1,6 +1,7 @@
 import * as P from "./curriculum-physics.js";
 import { chargedTiming } from "./field-geometry.js";
 import { heatingWindow, coolingClock } from "./thermal-geometry.js";
+import { MOTION_DURATION } from "./kinematics-display.js";
 import {
   PRACTICAL_LABS,
   PRACTICAL_PARAMETERS,
@@ -1721,6 +1722,9 @@ Object.assign(CURRICULUM_SIMULATIONS.measurement, {
   ],
 });
 Object.assign(CURRICULUM_SIMULATIONS.motion, {
+  window: MOTION_DURATION,
+  step: (s,p,h) => s.t>=MOTION_DURATION?s:P.stepCurriculum("motion",s,p,Math.min(h,MOTION_DURATION-s.t)),
+  ended: (s) => s.t>=MOTION_DURATION-1e-12 ? "Eight-second observation complete" : null,
   graphs: [
     dynamicGraph("position", "Displacement", ["x"], "m"),
     dynamicGraph("velocity", "Velocity", ["v"], "m/s"),

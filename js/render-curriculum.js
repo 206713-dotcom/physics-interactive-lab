@@ -6,6 +6,7 @@ import { drawVectorDiagram } from "./render-vectors.js";
 import { BUOYANCY_STATUS } from "./buoyancy-physics.js";
 import { chargedLayout, soundLayout } from "./field-geometry.js";
 import { phaseInventory } from "./thermal-geometry.js";
+import { drawMotionDiagram } from "./render-motion.js";
 const chargedViews = new WeakMap();
 const TAU = Math.PI * 2,
   CYAN = "#6be5d4",
@@ -239,85 +240,7 @@ export function drawCurriculum(canvas, lab) {
       break;
     }
     case "motion": {
-      title(
-        p.mode ? "Free-fall force laboratory" : "Newton’s motion track",
-        "Linear drag · exact solution",
-      );
-      if (p.mode) {
-        line(
-          [
-            [400, 70],
-            [400, 365],
-          ],
-          MUTED,
-          1,
-          [4, 6],
-        );
-        const y = 100 + ((Math.abs(q.x) * 12) % 240);
-        circle(400, y, 27, GOLD);
-        const max = Math.max(p.mass * p.g, Math.abs(p.drag * q.v), 1);
-        arrow(400, y + 30, 0, ((p.mass * p.g) / max) * 95, GOLD);
-        arrow(400, y - 30, 0, ((-p.drag * q.v) / max) * 95, CYAN);
-        text("Weight", 445, y + 60, GOLD);
-        text("Drag", 445, y - 60, CYAN);
-        text(
-          "Display follows the falling object; repeated window.",
-          80,
-          390,
-          MUTED,
-          16,
-        );
-      } else {
-        const x = 150 + ((((q.x * 25) % 530) + 530) % 530);
-        line(
-          [
-            [65, 300],
-            [780, 300],
-          ],
-          MUTED,
-          3,
-        );
-        for (let i = 0; i < 18; i++) {
-          const xx = 60 + i * 42 - ((q.x * 12) % 42);
-          line(
-            [
-              [xx, 307],
-              [xx - 10, 321],
-            ],
-            "#8faec244",
-          );
-        }
-        rect(x - 45, 236, 90, 50, "#6be5d455", CYAN);
-        circle(x - 28, 291, 9, BLUE);
-        circle(x + 28, 291, 9, BLUE);
-        const max = Math.max(Math.abs(p.force), Math.abs(p.drag * q.v), 1);
-        arrow(x, 218, (p.force / max) * 100, 0, GOLD);
-        arrow(x, 327, ((-p.drag * q.v) / max) * 100, 0, PURPLE);
-        text("Applied force", x, 198, GOLD, 17, "center");
-        text("Drag", x, 363, PURPLE, 17, "center");
-      }
-      if (!p.mode) {
-        const ticks = Array.from(
-          { length: 31 },
-          (_, i) => Math.floor(t * 50) / 50 - (30 - i) / 50,
-        )
-          .filter((x) => x >= 0)
-          .map((time) => P.sampleCurriculum("motion", { t: time }, p).x);
-        const lo = Math.min(...ticks),
-          hi = Math.max(...ticks);
-        text("50 Hz ticker tape · auto-fit", 65, 403, MUTED, 14);
-        for (const x of ticks)
-          circle(
-            310 + ((x - lo) / Math.max(hi - lo, 1e-8)) * 430,
-            393,
-            2,
-            CYAN,
-          );
-      }
-      foot(
-        `x = ${fmt(q.x)} m   ·   v = ${fmt(q.v)} m/s`,
-        `a = ${fmt(q.a)} m/s²`,
-      );
+      drawMotionDiagram({p,q,t,title,line,text,arrow,rect,circle,foot});
       break;
     }
     case "vectors": {

@@ -1,6 +1,7 @@
 import { PALETTE as C, putRod } from "./scene-kit.js";
 import { createVectorApparatus } from "./scene-vectors.js";
 import { createBuoyancyApparatus } from "./scene-buoyancy.js";
+import { createMotionBench } from "./scene-motion-benches.js";
 const TAU = Math.PI * 2;
 export const MECHANICAL_SCENES = {
   measurement(p, k) {
@@ -22,38 +23,7 @@ export const MECHANICAL_SCENES = {
     return () => {};
   },
   motion(p, k) {
-    k.stand(9, 2);
-    const cart = k.box(0.7, 0.55, 0.7, C.cyan, [0, 0.5, 0]);
-    for (const x of [-0.24, 0.24])
-      for (const z of [-0.4, 0.4]) {
-        const w = k.cylinder(0.13, 0.08, C.muted, [x, 0.2, z]);
-        w.rotation.x = Math.PI / 2;
-        cart.attach(w);
-      }
-    for (let i = -4; i <= 4; i++) k.box(0.025, 0.02, 1, C.muted, [i, 0.04, 0]);
-    const velocity = k.arrow([0, 1.5, 0], [1, 0, 0], C.gold),
-      force = k.arrow([0, 2.3, 0], [1, 0, 0], C.red);
-    k.label("Velocity · gold", [1.5, 3.2, 0], "#ffc584");
-    k.label("Resultant force · coral", [-1.5, 3.2, 0], "#ff9d91", 2.7);
-    if (p.mode)
-      k.label("Falling body · downward +", [0, 4.2, 0], "#cfe6ef", 3.5);
-    return (s, q) => {
-      const x = 3.7 * Math.tanh(q.x / 10);
-      cart.position.set(
-        p.mode ? 0 : x,
-        p.mode ? 2.7 - 2.2 * Math.tanh(q.x / 20) : 0.5,
-        0,
-      );
-      const at = [cart.position.x, cart.position.y + 1, 0],
-        v = 1.5 * Math.tanh(q.v / 10),
-        f = 1.5 * Math.tanh(q.net / 10);
-      k.setArrow(velocity, at, p.mode ? [0, -v, 0] : [v, 0, 0]);
-      k.setArrow(
-        force,
-        [at[0], at[1] + 0.65, 0],
-        p.mode ? [0, -f, 0] : [f, 0, 0],
-      );
-    };
+    return createMotionBench(p, k);
   },
   vectors(p, k) {
     return createVectorApparatus(p, k);

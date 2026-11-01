@@ -15,13 +15,13 @@ import { orbitalReference } from "./orbital-reference.js";
 import { createRefractionApparatus } from "./scene-optical-bench.js";
 import { createWaveBench } from "./scene-wave-bench.js";
 import { createRCBench } from "./scene-rc-bench.js";
+import { createCollisionBench } from "./scene-motion-benches.js";
+import { createProjectileBench } from "./scene-projectile-bench.js";
 import { centralRadius, orbitAcceleration } from "./physics.js";
 import {
   fieldLines,
   fieldAt,
   interferenceAt,
-  DEG,
-  projectileReference,
 } from "./physics-extra.js";
 const CYAN = 0x63efda,
   GOLD = 0xffc778,
@@ -401,10 +401,12 @@ export class SceneView {
       }
       return;
     }
-    if (["spring", "pendulum", "refraction", "waves", "circuits"].includes(type)) {
+    if (["spring", "pendulum", "refraction", "waves", "circuits", "projectile", "collisions"].includes(type)) {
       this.precision = type === "refraction" ? createRefractionApparatus(p, r, wavelengthRGB(p.wavelength * 1e9))
         : type === "waves" ? createWaveBench(p, r)
         : type === "circuits" ? createRCBench(p, r)
+        : type === "projectile" ? createProjectileBench(p, r)
+        : type === "collisions" ? createCollisionBench(p, r)
         : createDetailedMechanics(type, p, r);
       this.target.set(...this.precision.target);
       this.homeRadius = this.precision.radius;
@@ -561,70 +563,6 @@ export class SceneView {
       o.trail.material.dispose();
       o.trail.material = new T.LineBasicMaterial({ vertexColors: true });
       o.trail.frustumCulled = false;
-    } else if (type === "projectile") {
-      add("ball", sphere(0.12, 0xb7a6ff));
-      add(
-        "trail",
-        beam(
-          [
-            [0, 0, 0],
-            [0, 0, 0],
-          ],
-          0xa69bff,
-        ),
-      );
-      add(
-        "reference",
-        beam(
-          [
-            [0, 0, 0],
-            [0, 0, 0],
-          ],
-          0x456779,
-          0.7,
-        ),
-      );
-      add("launcher", box(0.3, 0.3, 0.5, 0x548c9c));
-      o.velocity = new T.ArrowHelper(
-        new T.Vector3(1, 1, 0).normalize(),
-        new T.Vector3(),
-        1,
-        GOLD,
-        0.2,
-        0.1,
-      );
-      r.add(o.velocity);
-    } else if (type === "collisions") {
-      add("rail", box(13, 0.13, 1.1, 0x27485a), [0, 0.05, 0]);
-      add("a", box(0.8, 0.5, 0.65, CYAN));
-      add("b", box(0.8, 0.5, 0.65, GOLD));
-      for (let cart of ["a", "b"])
-        for (let j = 0; j < 4; j++) {
-          const wheel = new T.Mesh(
-            new T.CylinderGeometry(0.11, 0.11, 0.09, 16),
-            material(0x839aab),
-          );
-          wheel.rotation.x = Math.PI / 2;
-          wheel.position.set(j < 2 ? -0.25 : 0.25, -0.27, j % 2 ? -0.37 : 0.37);
-          o[cart].add(wheel);
-        }
-      o.va = new T.ArrowHelper(
-        new T.Vector3(1, 0, 0),
-        new T.Vector3(),
-        1,
-        CYAN,
-        0.2,
-        0.1,
-      );
-      o.vb = new T.ArrowHelper(
-        new T.Vector3(1, 0, 0),
-        new T.Vector3(),
-        1,
-        GOLD,
-        0.2,
-        0.1,
-      );
-      r.add(o.va, o.vb);
     } else if (type === "interference") {
       const col = wavelengthRGB(p.wavelength * 1e9);
       o.opticalColor = col;
@@ -828,53 +766,6 @@ export class SceneView {
       o.radiusLabel.position.copy(o.satellite.position).multiplyScalar(0.5);
       o.radiusLabel.position.y = 1.16;
       o.radiusLabel.visible = Math.hypot(s.x, s.y) * sc > rad + 0.8;
-    } else if (type === "projectile") {
-      const ref = projectileReference(p),
-        sc = 9 / Math.max(10, ref.range, ref.maxHeight * 2),
-        offset = (-ref.range * sc) / 2;
-      const pt = (q) => [offset + q.x * sc, q.y * sc + 0.15, 0];
-      o.ball.position.set(...pt(s));
-      o.launcher.position.set(offset, p.height * sc, 0);
-      updateLine(o.trail, (lab.trail || []).map(pt));
-      o.trail.visible = lab.showTrail;
-      const a = [];
-      for (let i = 0; i <= 100; i++) {
-        const t = (ref.flightTime * i) / 100;
-        a.push(
-          pt({
-            x: p.speed * Math.cos(p.angle * DEG) * t,
-            y:
-              p.height +
-              p.speed * Math.sin(p.angle * DEG) * t -
-              0.5 * p.g * t * t,
-          }),
-        );
-      }
-      updateLine(o.reference, a);
-      o.velocity.position.copy(o.ball.position);
-      o.velocity.setDirection(new T.Vector3(s.vx, s.vy, 0).normalize());
-      o.velocity.setLength(
-        Math.min(1.5, Math.hypot(s.vx, s.vy) * 0.04),
-        0.15,
-        0.07,
-      );
-      o.velocity.visible = lab.vectors;
-    } else if (type === "collisions") {
-      const sc =
-        5.5 / Math.max(5.5, Math.abs(s.x1) + 0.5, Math.abs(s.x2) + 0.5);
-      o.a.position.set(s.x1 * sc, 0.48, 0);
-      o.b.position.set(s.x2 * sc, 0.48, 0);
-      o.a.scale.setScalar(sc);
-      o.b.scale.setScalar(sc);
-      for (const [key, v, mesh] of [
-        ["va", s.v1, o.a],
-        ["vb", s.v2, o.b],
-      ]) {
-        o[key].position.copy(mesh.position).add(new T.Vector3(0, 0.7, 0));
-        o[key].setDirection(new T.Vector3(v < 0 ? -1 : 1, 0, 0));
-        o[key].setLength(Math.max(0.01, Math.abs(v) * 0.5), 0.15, 0.08);
-        o[key].visible = lab.vectors && Math.abs(v) > 0.001;
-      }
     } else if (type === "interference") {
       for (const { ring, i, z } of o.rings) {
         const f = (s.t * 0.28 + i / 7) % 1;

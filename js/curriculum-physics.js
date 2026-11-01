@@ -14,6 +14,7 @@ import {
   stepBuoyancy,
   buoyancySample,
 } from "./buoyancy-physics.js";
+import { linearMotion } from "./linear-motion.js";
 export const C = 299792458,
   R = 8.314462618,
   K_B = 1.380649e-23;
@@ -345,22 +346,12 @@ export function sampleCurriculum(id, s, p) {
       break;
     }
     case "motion": {
-      const force = p.mode ? p.mass * p.g : p.force,
-        b = p.drag,
-        u = p.initial,
-        a0 = force / p.mass;
-      const v = b
-        ? force / b + (u - force / b) * Math.exp((-b * t) / p.mass)
-        : u + a0 * t;
-      const x = b
-        ? (force / b) * t +
-          (((u - force / b) * p.mass) / b) * -Math.expm1((-b * t) / p.mass)
-        : u * t + 0.5 * a0 * t * t;
+      const {x,v,a,net}=linearMotion(p,t);
       Object.assign(q, {
         x,
         v,
-        a: (force - b * v) / p.mass,
-        net: force - b * v,
+        a,
+        net,
         weight: p.mass * p.g,
         momentum: p.mass * v,
         kinetic: 0.5 * p.mass * v * v,

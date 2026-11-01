@@ -130,3 +130,8 @@
     font-size: 10px; white-space: normal; line-height: 1.5;
   }
 }
+.projectile-camera { flex-wrap: wrap; }
+.projectile-frame-tools { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; }
+.projectile-frame-tools > span { display: none; }
+.projectile-frame-tools button { padding: .45rem .7rem; border-radius: 7px; }
+.projectile-camera.is-diagram > div:first-child, .projectile-camera.is-diagram > label { display: none; }

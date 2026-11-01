@@ -250,7 +250,7 @@ export function calculationSheet(type, s, p) {
     ];
     if (s.landed)
       note =
-        "The run has stopped at ground contact. Velocity and energy are the values just before impact.";
+        "The run has stopped at ground contact. Velocity, energy and in-flight accelerations are evaluated just before impact; contact forces and subsequent motion are not modelled.";
   } else if (type === "collisions") {
     const prediction = E.collisionVelocities(
         p.m1,

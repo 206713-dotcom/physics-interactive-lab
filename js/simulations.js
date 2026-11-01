@@ -1,6 +1,7 @@
 /** Declarative simulation catalogue. Add a model here without duplicating the UI. */
 import * as P from "./physics.js";
 import * as E from "./physics-extra.js";
+import { projectilePreview, collisionObservation } from "./kinematics-display.js";
 import { ADVANCED_SIMULATIONS } from "./advanced-simulations.js";
 import {
   CURRICULUM_SIMULATIONS,
@@ -391,6 +392,10 @@ export const SIMULATIONS = {
   },
   projectile: {
     ...baseExtra("projectile"),
+    rateFor: (p) => projectilePreview(p).duration/8,
+    hFor: (p) => projectilePreview(p).step,
+    sampleEvery: (p) => projectilePreview(p).duration/600,
+    window: (p) => projectilePreview(p).duration,
     title: "Projectile motion",
     short: "Projectile motion",
     category: "Mechanics",
@@ -480,7 +485,7 @@ export const SIMULATIONS = {
       ];
     },
     caption:
-      "Uniform gravity · quadratic drag · dashed arc is the zero-drag prediction · RK4, 1/240 s",
+      "Uniform gravity · quadratic drag · dashed arc is the vacuum prediction · adaptive playback clock · RK4 step ≤ 1/240 s. The observation frame changes the display scale only.",
     equation: "v̇ = (0, −g) − β|v|v",
     insight:
       "Why is 45° no longer the best angle when drag or launch height changes?",
@@ -488,6 +493,11 @@ export const SIMULATIONS = {
   },
   collisions: {
     ...baseExtra("collisions"),
+    rateFor: (p) => collisionObservation(p).rate,
+    hFor: (p) => collisionObservation(p).step,
+    sampleEvery: (p) => collisionObservation(p).sampleEvery,
+    window: (p) => collisionObservation(p).duration,
+    step: (s,p,h) => E.stepExtra("collisions",s,p,Math.max(0,Math.min(h,collisionObservation(p).duration-s.t))),
     title: "Collisions & momentum",
     short: "Collisions",
     category: "Mechanics",
@@ -576,16 +586,16 @@ export const SIMULATIONS = {
       graph("momentum", "Momentum", ["momentum"], "kg m/s"),
       graph("energy", "Kinetic energy", ["kinetic"], "J"),
     ],
-    supplementary: (s) => [
+    supplementary: (s,p) => [
       metric("Velocity A", s.v1, "m/s"),
       metric("Velocity B", s.v2, "m/s"),
-      metric("Collision", s.hit ? "Complete" : "Pending", ""),
+      metric("Collision", s.hit ? "Complete" : p.u1<=p.u2 ? "No approach" : "Pending", ""),
     ],
     caption:
-      "1D instantaneous collision · 0.8 m cart length · frictionless rail · no wall collisions",
+      "1D instantaneous collision · 0.8 m carts on one fixed scale · camera follows the pair; ruler and velocity arrows use the lab frame · no wall collisions. Clock adapts to a six-second presentation.",
     equation: "m₁u₁ + m₂u₂ = m₁v₁ + m₂v₂",
     insight: "Set equal masses and e = 1. What happens to the velocities?",
-    ended: (s) => (s.t >= 10 ? "10 s observation complete" : null),
+    ended: (s,p) => s.t>=collisionObservation(p).duration-1e-12 ? (s.hit?"After-collision observation complete":"Observation complete · no contact") : null,
   },
   waves: {
     ...baseExtra("waves"),

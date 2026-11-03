@@ -715,7 +715,7 @@ body:has(.model-screen[open]) { overflow: hidden; }
     inset: auto 10px 10px;
     width: auto;
     max-width: none;
-    max-height: 58%;
+    height: min(58%, 330px);
   }
 }
 @container (min-width: 581px) and (max-width: 799px) {

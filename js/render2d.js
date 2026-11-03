@@ -210,7 +210,7 @@ function drawDiagram(canvas, lab) {
     text(
       s.hit ? "AFTER CONTACT" : p.u1<=p.u2 ? "NO APPROACH · NO COLLISION" : "BEFORE CONTACT",
       w / 2,
-      65,
+      w <= 580 ? 130 : 65,
       s.hit ? G : C,
       14,
       "center",

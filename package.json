@@ -1,9 +1,9 @@
 {
   "name": "physics-interactive-lab",
-  "version": "19.2.1",
+  "version": "19.3.0",
   "private": true,
   "type": "module",
-  "description": "57 browser-based physics laboratories, Cambridge 9702 textbook references and a FocusPhysics IGCSE course map.",
+  "description": "57 browser-based physics laboratories, Cambridge 9702 practice questions and a FocusPhysics IGCSE course map.",
   "scripts": {
     "dev": "node scripts/serve.mjs",
     "refresh-assets": "node scripts/refresh-assets.mjs",

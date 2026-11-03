@@ -205,7 +205,7 @@ function home() {
   );
   $(".catalogue").insertAdjacentHTML(
     "beforebegin",
-    '<section class="curriculum-banner question-banner"><div><div class="eyebrow">CAMBRIDGE 9702 · TEXTBOOK PRACTICE</div><h2>Practise with the textbook.</h2><p>Find exercises by topic and difficulty, then open the original pages from your own PDF.</p></div><a class="button" href="#/textbook">Browse textbook exercises ↗</a></section>',
+    '<section class="curriculum-banner question-banner"><div><div class="eyebrow">CAMBRIDGE 9702 · TEXTBOOK PRACTICE</div><h2>Practise with the textbook.</h2><p>Solve textbook-inspired questions grouped by topic and difficulty.</p></div><a class="button" href="#/textbook">Browse textbook exercises ↗</a></section>',
   );
   const learningHub=document.createElement('section');learningHub.className='learning-hub';
   $('.catalogue').after(learningHub);
@@ -1559,10 +1559,7 @@ function advance(count) {
     }
   }
 }
-let disposeTextbook;
 function route() {
-  disposeTextbook?.();
-  disposeTextbook = undefined;
   $("#main").onclick = null;
   $("#main").oninput = null;
   expandedView?.close();
@@ -1610,8 +1607,8 @@ function route() {
     document.title = "IGCSE course map · Physics Interactive Lab";
     renderCourse($("#main"));
   } else if (["textbook", "questions", "teacher"].includes(id)) {
-    document.title = "Textbook exercise index · Physics Interactive Lab";
-    disposeTextbook = renderTextbookLibrary($("#main"));
+    document.title = "A Level practice · Physics Interactive Lab";
+    renderTextbookLibrary($("#main"));
   } else home();
   window.scrollTo(0, 0);
   lastFrame = 0;

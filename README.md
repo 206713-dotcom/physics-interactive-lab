@@ -1,10 +1,10 @@
 # Physics Interactive Lab — IGCSE course & 3D studios
 
-**57 working laboratories. 76 indexed A Level textbook exercises. Live calculations you can follow.**
+**57 working laboratories. 45 textbook-inspired A Level questions. Live calculations you can follow.**
 
 [Open the live laboratory](https://206713-dotcom.github.io/physics-interactive-lab/) · [Browse the source](https://github.com/206713-dotcom/physics-interactive-lab) · [Automated checks](https://github.com/206713-dotcom/physics-interactive-lab/actions)
 
-A browser-only laboratory for IGCSE, A Level and extension exploration. The [IGCSE course navigator](https://206713-dotcom.github.io/physics-interactive-lab/#/course) maps 78 FocusPhysics lesson pages to interactive experiments. All **57 laboratories have WebGL 3D apparatus and a 2D diagram**. Each lab includes guided investigations, learning objectives, equations, assumptions and applications. The [A Level practice section](https://206713-dotcom.github.io/physics-interactive-lab/#/textbook) lists 76 exercises from the Extended tenth edition of Fundamentals of Physics.
+A browser-only laboratory for IGCSE, A Level and extension exploration. The [IGCSE course navigator](https://206713-dotcom.github.io/physics-interactive-lab/#/course) maps 78 FocusPhysics lesson pages to interactive experiments. All **57 laboratories have WebGL 3D apparatus and a 2D diagram**. Each lab includes guided investigations, learning objectives, equations, assumptions and applications. The [A Level practice section](https://206713-dotcom.github.io/physics-interactive-lab/#/textbook) offers 45 original questions based on skills from the Extended tenth edition of Fundamentals of Physics.
 
 This is an independent student prototype and a proposed contribution to [FocusPhysics](https://focusphysics.com), not an official or endorsed FocusPhysics integration.
 
@@ -208,7 +208,7 @@ All sixteen use the existing sliders, graphs, expanded model/variable/working wo
 
 ### A Level textbook practice
 
-Open [A Level practice](https://206713-dotcom.github.io/physics-interactive-lab/#/textbook) to filter and copy chapter, problem, page and figure references. Select your own 1,450-page Extended tenth edition PDF to view the corresponding original question page. The reader uses [PDF.js](https://mozilla.github.io/pdf.js/) and keeps the selected file in the browser.
+Open [A Level practice](https://206713-dotcom.github.io/physics-interactive-lab/#/textbook) to read and copy 45 textbook-inspired questions directly. Filter by Cambridge stage, topic or difficulty. Each question has newly written wording and uses a related Halliday problem as a skill reference.
 
 ### IGCSE course expansion
 
@@ -509,7 +509,7 @@ npm test
 npm run check
 ```
 
-There are **268 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
+There are **269 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
 
 - Default spring position against the analytic solution over 30 s, with maximum error below 10⁻⁶ m; default undamped energy drift below 10⁻⁷ over 120 s.
 - Worst supported spring frequency with energy drift below 0.04% over 120 s; damping and critical/overdamped behaviour.
@@ -570,7 +570,7 @@ js/curriculum-simulations.js Controls, readouts, calculations, graphs and units
 js/render-curriculum.js      Original Canvas instruments and catalogue thumbnails
 js/content-curriculum.js     132 investigations, 220 worked/conceptual questions
 js/textbook-index.js          Cambridge 9702 textbook exercise references
-js/textbook-library.js        Textbook filters, assignment copying and local PDF reader
+js/textbook-library.js        Question cards, filters and clipboard controls
 IGCSE-COVERAGE.md            Lesson-by-lesson mappings and scope limitations
 js/app.js                    Small application bootstrap
 js/studio-app.js             Routes, playback, controls, Chart.js, notebook, export

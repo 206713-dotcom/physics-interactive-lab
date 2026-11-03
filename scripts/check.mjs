@@ -53,6 +53,7 @@ for (const file of [
   "js/practical-labs.js",
   "js/render-practical.js",
   "js/textbook-index.js",
+  "js/textbook-practice.js",
   "js/textbook-library.js",
   "questions.css",
   "curriculum.css",

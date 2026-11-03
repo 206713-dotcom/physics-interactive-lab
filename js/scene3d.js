@@ -1,4 +1,4 @@
-import { apparatusBounds, frameApparatus, orbitBounds, diagramLabelVisible } from './scene-framing.js';
+import { apparatusBounds, frameApparatus, frameOrbit, diagramLabelVisible } from './scene-framing.js';
 import { sceneLabelAllowed } from './study-policy.js';
 /** Real WebGL scenes. Geometry follows the same state as graphs and the 2D view.
  * No physics is integrated here. Pointer/keyboard camera controls are visual only. */
@@ -12,7 +12,7 @@ import {
 import { setPath, createSceneKit } from "./scene-kit.js";
 import { roundedBox, studioEnvironment, studioGrid } from "./scene-finish.js";
 import { createDetailedMechanics } from "./scene-precision.js";
-import { cloudShell } from "../atlas/visual-detail.js";
+import { atmosphereMaterial, cloudShell, surfaceMaterial } from "../atlas/visual-detail.js";
 import { orbitalReference } from "./orbital-reference.js";
 import { createRefractionApparatus } from "./scene-optical-bench.js";
 import { createWaveBench } from "./scene-wave-bench.js";
@@ -89,24 +89,76 @@ function updateLine(line, points) {
 }
 function label(value, color = "#a9c8d9") {
   const canvas = document.createElement("canvas");
-  canvas.width = 512;
-  canvas.height = 96;
+  canvas.width = canvas.height = 128;
   const c = canvas.getContext("2d");
-  c.font = "30px Segoe UI,sans-serif";
+  c.beginPath();
+  c.roundRect(20, 20, 88, 88, 24);
+  c.fillStyle = "#0a2035";
+  c.fill();
+  c.strokeStyle = color;
+  c.lineWidth = 3;
+  c.stroke();
+  c.font = "italic 66px Georgia,serif";
   c.textAlign = "center";
+  c.textBaseline = "middle";
   c.fillStyle = color;
-  c.fillText(value, 256, 55);
+  c.fillText(value, 64, 61);
+  const map = new T.CanvasTexture(canvas);
+  map.colorSpace = T.SRGBColorSpace;
   const sprite = new T.Sprite(
     new T.SpriteMaterial({
-      map: new T.CanvasTexture(canvas),
+      map,
       transparent: true,
       depthWrite: false,
+      toneMapped: false,
     }),
   );
-  sprite.scale.set(2.5, 0.47, 1);
+  sprite.scale.set(0.64, 0.64, 1);
   sprite.userData.role = "label";
   sprite.userData.text = value;
   return sprite;
+}
+
+function makeOrbitBackdrop() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 320;
+  const context = canvas.getContext("2d");
+  const light = context.createRadialGradient(225, 145, 0, 225, 145, 310);
+  light.addColorStop(0, "#182f51");
+  light.addColorStop(0.46, "#0d1b33");
+  light.addColorStop(1, "#050910");
+  context.fillStyle = light;
+  context.fillRect(0, 0, 512, 320);
+  const texture = new T.CanvasTexture(canvas);
+  texture.colorSpace = T.SRGBColorSpace;
+  return texture;
+}
+
+function buildOrbitalSatellite(group) {
+  function part(width, height, depth, color, x, y, z) {
+    const mesh = box(width, height, depth, color);
+    mesh.position.set(x, y, z);
+    group.add(mesh);
+    return mesh;
+  }
+  const bus = part(0.28, 0.22, 0.33, 0xd6a44f, 0, 0, 0);
+  part(0.255, 0.035, 0.3, 0xd5e3ec, 0, 0.113, 0);
+  part(0.17, 0.13, 0.04, 0x142843, 0, 0, 0.175);
+  part(0.015, 0.29, 0.015, 0xe9f1f3, 0.09, 0.18, -0.08);
+  for (const side of [-1, 1]) {
+    part(0.28, 0.025, 0.048, 0x8395ac, side * 0.19, 0, 0);
+    part(0.49, 0.026, 0.34, 0x98b7d5, side * 0.44, 0, 0);
+    for (let column = 0; column < 4; column++) {
+      for (const row of [-1, 1]) {
+        const cell = part(0.107, 0.011, 0.143, column % 2 ? 0x336cbe : 0x245498,
+          side * (0.27 + column * 0.113), 0.015, row * 0.077);
+        cell.material.emissive.setHex(0x173d74);
+        cell.material.emissiveIntensity = 0.34;
+      }
+    }
+  }
+  return bus;
 }
 
 export class SceneView {
@@ -375,13 +427,14 @@ export class SceneView {
     this.type = type;
     this.key = JSON.stringify(p);
     const space = ["gravity", "earthmoon", "solarsystem", "stars", "binary", "threebody", "universe"].includes(type);
-    this.scene.background=space?null:this.studioBackdrop;
+    this.scene.background = type === "gravity" ? (this.orbitBackdrop ??= makeOrbitBackdrop()) : space ? null : this.studioBackdrop;
     this.scene.fog.color.set(space?0x080f1b:0x10283c);
     // Orbital lighting is illustrative, not a simulated day/night cycle.
-    this.ambient.intensity = type === "gravity" ? 0.72 : type === "earthmoon" ? 0.13 : 1.25;
+    this.ambient.intensity = type === "gravity" ? 0.42 : type === "earthmoon" ? 0.13 : 1.25;
     this.keyLight.intensity = type === "earthmoon" ? 0 : 3.2;
+    this.keyLight.position.set(-4, 9, type === "gravity" ? 3 : 6);
     this.rimLight.intensity = space ? 0 : 20;
-    this.fillLight.intensity = type === 'gravity' ? 0.65 : space ? 0.05 : 1.15;
+    this.fillLight.intensity = type === 'gravity' ? 0.45 : space ? 0.05 : 1.15;
     this.scene.environmentIntensity = type === 'gravity' ? 0.3 : space ? 0.08 : 0.9;
     this.stars.visible = space;
     const r = this.root,
@@ -441,91 +494,37 @@ export class SceneView {
       return;
     }
     if (type === "gravity") {
-      const planet = add("planet", sphere(1, 0x398ca8), [0, 1, 0]);
-      planet.geometry.dispose();
-      planet.geometry = new T.SphereGeometry(1, 64, 48);
-      planet.material.dispose();
+      const earth = { id: "earth", color: 0x4388bf };
+      const geometry = new T.SphereGeometry(1, 96, 64);
+      const planet = add("planet", new T.Group(), [0, 1, 0]);
+      const surface = new T.Mesh(geometry, surfaceMaterial(earth, null));
+      surface.rotation.z = 0.41;
+      planet.add(surface);
       const earthMap = new T.TextureLoader().load(new URL("../atlas/assets/earth-blue-marble.png", import.meta.url).href, (texture) => {
-        if (this.objects.planet !== planet) { texture.dispose(); return; }
-        planet.material.map = texture;
-        planet.material.color.setHex(0xffffff);
-        planet.material.needsUpdate = true;
+        if (this.objects.planet !== planet) {
+          texture.dispose();
+          return;
+        }
+        surface.material.map = texture;
+        surface.material.color.setHex(0xffffff);
+        surface.material.needsUpdate = true;
       }, undefined, () => earthMap.dispose());
       earthMap.colorSpace = T.SRGBColorSpace;
       earthMap.anisotropy = Math.min(8, this.renderer.capabilities.getMaxAnisotropy());
-      planet.material = new T.MeshStandardMaterial({
-        color: 0x356f8a,
-        metalness: 0.05,
-        roughness: 0.78,
-      });
-      planet.add(cloudShell(1.012));
-      const reference = add("reference", new T.Line(new T.BufferGeometry(), new T.LineDashedMaterial({ color: 0x89cada, transparent: true, opacity: 0.68, dashSize: 0.09, gapSize: 0.07, toneMapped: false })));
+      const clouds = cloudShell(1.012);
+      clouds.rotation.z = surface.rotation.z;
+      planet.add(clouds);
+      planet.add(new T.Mesh(new T.SphereGeometry(1.05, 96, 64), atmosphereMaterial(0x6bafff, 0.55)));
+      const reference = add("reference", new T.Line(new T.BufferGeometry(), new T.LineDashedMaterial({
+        color: 0x7f9ebd, transparent: true, opacity: 0.72, dashSize: 0.09, gapSize: 0.065, toneMapped: false,
+      })));
       reference.frustumCulled = false;
       o.referencePoints = orbitalReference(p);
-      // Procedural longitude/latitude lines are a coordinate texture, not surface data.
-      for (let j = -2; j <= 2; j++) {
-        const rr = Math.sqrt(1 - (j * 0.3) ** 2);
-        const ring = new T.Mesh(
-          new T.TorusGeometry(rr, 0.005, 6, 100),
-          new T.MeshBasicMaterial({
-            color: 0x78e0df,
-            transparent: true,
-            opacity: 0.025,
-          }),
-        );
-        ring.rotation.x = Math.PI / 2;
-        ring.position.y = j * 0.3;
-        planet.add(ring);
-      }
-      for (let j = 0; j < 6; j++) {
-        const ring = new T.Mesh(
-          new T.TorusGeometry(1.002, 0.004, 6, 100),
-          new T.MeshBasicMaterial({
-            color: 0x7ac6df,
-            transparent: true,
-            opacity: 0.02,
-          }),
-        );
-        ring.rotation.y = (j * Math.PI) / 6;
-        planet.add(ring);
-      }
-      const atmosphere = add("atmosphere", sphere(1.06, 0x53d5f7), [0, 1, 0]);
-      atmosphere.castShadow = false;
-      atmosphere.material.dispose();
-      atmosphere.material = new T.ShaderMaterial({
-        uniforms: { glowColor: { value: new T.Color(0x54cfee) } },
-        vertexShader: `varying vec3 n; varying vec3 eye;
-          void main(){vec4 p=modelViewMatrix*vec4(position,1.0);
-          n=normalize(normalMatrix*normal);eye=-p.xyz;gl_Position=projectionMatrix*p;}`,
-        fragmentShader: `uniform vec3 glowColor; varying vec3 n; varying vec3 eye;
-          void main(){float rim=pow(1.0-abs(dot(normalize(n),normalize(eye))),2.5);
-          gl_FragColor=vec4(glowColor,rim*0.5);}`,
-        transparent: true,
-        side: T.BackSide,
-        depthWrite: false,
-        blending: T.AdditiveBlending,
-      });
       const satellite = add("satellite", new T.Group());
-      satellite.scale.setScalar(1.2);
-      const body = box(0.18, 0.2, 0.24, 0xe8c889);
-      satellite.add(body);
-      o.satelliteBody = body;
-      for (const side of [-1, 1]) {
-        const panel = box(0.37, 0.025, 0.27, 0x3877b9);
-        panel.position.x = side * 0.32;
-        satellite.add(panel);
-        for (let j = -1; j <= 1; j++) {
-          const strip = box(0.004, 0.029, 0.27, 0x90bcdd);
-          strip.position.x = side * 0.32 + j * 0.1;
-          satellite.add(strip);
-        }
-      }
-      const antenna = box(0.018, 0.24, 0.018, 0xe9f1f3);
-      antenna.position.y = 0.2;
-      satellite.add(antenna);
-      add("radiusLabel", label("r", "#d4e6ef")).scale.set(3.8, 1, 1);
-      add("velocityLabel", label("v", "#ffcc84")).scale.set(3.8, 1, 1);
-      add("accelerationLabel", label("a", "#ff9d91")).scale.set(3.8, 1, 1);
+      o.satelliteBody = buildOrbitalSatellite(satellite);
+      add("radiusLabel", label("r", "#d4e6ef"));
+      add("velocityLabel", label("v", "#ffcc84"));
+      add("accelerationLabel", label("a", "#ff9d91"));
       add(
         "trail",
         beam(
@@ -709,7 +708,7 @@ export class SceneView {
       extent = Math.max(extent, Math.hypot(s.x, s.y) * 1.1);
       const sc = 5 / extent,
         rad = centralRadius(p) * sc;
-      this.orbitComposition = orbitBounds(lab.showTrail ? o.referencePoints : [], lab.showTrail ? lab.trail || [] : [], s, sc, rad);
+      this.orbitComposition = { reference: lab.showTrail ? o.referencePoints : [], trail: lab.showTrail ? lab.trail || [] : [], state: s, scale: sc, radius: rad };
       if (o.referenceScale !== sc) {
         setPath(o.reference, o.referencePoints.map(([x, y]) => [x * sc, 1, -y * sc]));
         o.reference.computeLineDistances();
@@ -717,7 +716,6 @@ export class SceneView {
       }
       o.reference.visible = lab.showTrail;
       o.planet.scale.setScalar(rad);
-      o.atmosphere.scale.setScalar(rad);
       o.satellite.position.set(s.x * sc, 1, -s.y * sc);
       const speed = Math.hypot(s.vx, s.vy),
         direction = new T.Vector3(s.vx, 0, -s.vy);
@@ -727,7 +725,7 @@ export class SceneView {
           direction.clone().normalize(),
         );
       o.satelliteBody.material.emissive.setHex(s.collided ? 0x9b271d : 0);
-      if (o.trailTime !== s.t) {
+      if (o.trailTime !== s.t || o.trailScale !== sc) {
         const points = [...(lab.trail || []).slice(-1200), s],
           g = o.trail.geometry;
         const position = g.attributes.position,
@@ -744,6 +742,7 @@ export class SceneView {
         color.needsUpdate = true;
         g.setDrawRange(0, points.length);
         o.trailTime = s.t;
+        o.trailScale = sc;
       }
       o.trail.visible = lab.showTrail;
       updateLine(o.separation, [
@@ -888,7 +887,8 @@ export class SceneView {
     }
     this.pendingFraming=null;
     if (type === 'gravity' && this.orbitComposition) {
-      const fit=frameApparatus(this.orbitComposition,{aspect:this.camera.aspect,azimuth:-.18,polar:.6,padding:1.1}),
+      const { reference, trail, state, scale, radius } = this.orbitComposition;
+      const fit = frameOrbit(reference, trail, state, scale, radius, this.camera.aspect),
         zoom=this.orbitNewModel ? 1 : this.radius / (this.homeRadius || fit.radius);
       this.target.set(...fit.target);
       this.homeRadius=fit.radius;this.homePolar=fit.polar;this.homeAzimuth=fit.azimuth;
@@ -931,6 +931,7 @@ export class SceneView {
     this.renderer.dispose();
     this.environmentTarget.dispose();
     this.studioBackdrop.dispose();
+    this.orbitBackdrop?.dispose();
     this.renderer.forceContextLoss();
   }
 }

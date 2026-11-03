@@ -273,7 +273,7 @@ export const SIMULATIONS = {
       graph("energy", "Energy", ["kinetic", "potential", "total"], "J"),
     ],
     caption:
-      "1× = 1 hour / real second · central-body camera · planar motion · auto zoom · satellite enlarged; vector lengths use separate capped scales",
+      "1× = 1 hour / real second · planar motion · auto zoom · satellite enlarged · Earth texture, clouds and lighting are illustrative · vector lengths use separate capped scales",
     equation: "r̈ = −G(M + m) r / |r|³",
     insight: "Try 0.80× circular speed. Where is the satellite moving fastest?",
     supplementary: (s, p) => [

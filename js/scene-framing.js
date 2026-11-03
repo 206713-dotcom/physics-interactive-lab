@@ -71,3 +71,31 @@ export function orbitBounds(reference, trail, state, scale, planetRadius) {
   include(state.x,state.y);
   return bounds.expandByScalar(.45);
 }
+
+/** Fit the visible orbit samples directly. A rectangular box around an orbit
+ * adds empty corners that take up much of a short workspace viewport. */
+export function frameOrbit(reference, trail, state, scale, planetRadius, aspect) {
+  const target = orbitBounds(reference, trail, state, scale, planetRadius).getCenter(new T.Vector3());
+  const azimuth = -0.18, polar = 0.55;
+  const outward = new T.Vector3(Math.sin(polar) * Math.sin(azimuth), Math.cos(polar), Math.sin(polar) * Math.cos(azimuth));
+  const right = new T.Vector3().crossVectors(new T.Vector3(0, 1, 0), outward).normalize();
+  const up = new T.Vector3().crossVectors(outward, right);
+  const verticalSlope = Math.tan(38 * Math.PI / 360) / 1.06;
+  const horizontalSlope = verticalSlope * aspect;
+  const relative = new T.Vector3();
+  let radius = 1;
+  function include(x, y, z, margin) {
+    relative.set(x, y, z).sub(target);
+    const depth = relative.dot(outward);
+    radius = Math.max(
+      radius,
+      depth + (Math.abs(relative.dot(right)) + margin * Math.hypot(1, horizontalSlope)) / horizontalSlope,
+      depth + (Math.abs(relative.dot(up)) + margin * Math.hypot(1, verticalSlope)) / verticalSlope,
+    );
+  }
+  include(0, 1, 0, planetRadius * 1.05);
+  for (const [x, y] of reference) include(x * scale, 1, -y * scale, 0.32);
+  for (const { x, y } of trail) include(x * scale, 1, -y * scale, 0.32);
+  include(state.x * scale, 1, -state.y * scale, 0.46);
+  return { target: target.toArray(), radius, polar, azimuth };
+}

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from '../vendor/three.module.min.js';
-import { frameApparatus,apparatusBounds,orbitBounds,diagramLabelVisible } from '../js/scene-framing.js';
+import { frameApparatus,apparatusBounds,orbitBounds,frameOrbit,diagramLabelVisible } from '../js/scene-framing.js';
 import { orbitalReference } from '../js/orbital-reference.js';
 import { G,centralRadius } from '../js/physics.js';
 import { createSceneKit } from '../js/scene-kit.js';
@@ -40,6 +40,36 @@ test('orbital composition fits circular, elliptical and escape paths without alt
 test('orbital camera bounds reject non-finite positions and invalid display scales',()=>{
   for(const scale of [0,-1,Infinity,NaN]) assert.throws(()=>orbitBounds([],[],{x:1,y:0},scale,1),RangeError);
   assert.throws(()=>orbitBounds([],[],{x:NaN,y:0},1,1),RangeError);
+});
+
+test('sampled orbit framing stays inside the viewport and removes empty corner padding', () => {
+  const base = { centralMass: 5.9722e24, bodyMass: 1000, distance: 15e6 };
+  const scale = 5 / (base.distance * 1.35);
+  const state = { x: base.distance, y: 0 };
+  for (const ratio of [0.7, 1, 1.25, 1.6]) {
+    const params = { ...base, velocity: ratio * Math.sqrt(G * (base.centralMass + base.bodyMass) / base.distance) };
+    const reference = orbitalReference(params);
+    const planetRadius = centralRadius(params) * scale;
+    for (const aspect of [0.55, 1.6, 2.5]) {
+      const fit = frameOrbit(reference, [], state, scale, planetRadius, aspect);
+      const camera = new T.PerspectiveCamera(38, aspect, 0.05, 200);
+      const target = new T.Vector3(...fit.target);
+      camera.position.set(Math.sin(fit.polar) * Math.sin(fit.azimuth), Math.cos(fit.polar), Math.sin(fit.polar) * Math.cos(fit.azimuth))
+        .multiplyScalar(fit.radius).add(target);
+      camera.lookAt(target);
+      camera.updateMatrixWorld(true);
+      for (const [x, y] of reference) {
+        const projected = new T.Vector3(x * scale, 1, -y * scale).project(camera);
+        assert.ok(Math.abs(projected.x) < 1 && Math.abs(projected.y) < 1);
+      }
+      if (ratio === 1 && aspect === 2.5) {
+        const oldFit = frameApparatus(orbitBounds(reference, [], state, scale, planetRadius), {
+          aspect, azimuth: -0.18, polar: 0.6, padding: 1.1,
+        });
+        assert.ok(fit.radius < oldFit.radius * 0.8);
+      }
+    }
+  }
 });
 test('all 44 curriculum apparatus bounds produce finite camera compositions without changing physics',()=>{
   for(const id of Object.keys(CURRICULUM_BUILDERS)) {

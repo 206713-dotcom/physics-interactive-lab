@@ -50,15 +50,15 @@ function textTexture(text, color, theme = 'dark') {
   );
   canvas.height = 110;
   if (theme !== 'ink') {
-    c.fillStyle = theme === 'paper' ? 'rgba(250,253,255,.96)' : 'rgba(9,28,43,.76)';
+    c.fillStyle = theme === 'paper' ? 'rgba(250,253,255,.96)' : 'rgba(7,23,36,.88)';
     c.beginPath();
     c.roundRect(3, 3, canvas.width - 6, 104, 16);
     c.fill();
-    c.strokeStyle = theme === 'paper' ? 'rgba(77,111,137,.25)' : 'rgba(150,206,222,.10)';
+    c.strokeStyle = theme === 'paper' ? 'rgba(77,111,137,.25)' : 'rgba(150,206,222,.30)';
     c.lineWidth = 2;
     c.stroke();
   }
-  c.font = "500 60px Segoe UI,sans-serif";
+  c.font = "600 60px Segoe UI,sans-serif";
   c.textAlign = "center";
   c.textBaseline = "middle";
   c.fillStyle = color;

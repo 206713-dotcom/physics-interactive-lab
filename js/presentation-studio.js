@@ -11,8 +11,8 @@ export function installPresentationStudio(stage, controls, id, title, show3D) {
   panel.className = 'instrument-hud';
   panel.setAttribute('aria-label','Live model readings');
   panel.setAttribute('aria-live','off');
-  panel.innerHTML = '<div class="instrument-values"></div><span class="instrument-context"></span>';
-  stage.querySelector('.transport').before(panel);
+  panel.innerHTML = '<div class="instrument-values"></div><div class="instrument-observe"><strong>What to watch</strong><span class="instrument-context"></span></div>';
+  stage.querySelector('.transport').after(panel);
   const values = panel.querySelector('.instrument-values'), context = panel.querySelector('.instrument-context');
   const toolbar = stage.querySelector('.stage-views');
   const scene = stage.querySelector('.scene-container');

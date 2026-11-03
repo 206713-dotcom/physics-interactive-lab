@@ -1336,3 +1336,11 @@ export function syllabusLink(mode, ref, cycle = "current") {
     SYLLABUS_SOURCES[key].url + "#page=" + (SYLLABUS_SECTIONS[key][ref] || 1)
   );
 }
+
+/** A short relationship for the scene; the lesson retains the full context. */
+export function sceneRelationship(id, mode) {
+  if (id === "collisions") return "m₁u₁ + m₂u₂ = m₁v₁ + m₂v₂";
+  if (id === "moments" && mode !== "igcse") return "τnet = τanticlockwise − τclockwise";
+  if (id === "doublependulum") return "E = K + U = constant";
+  return getProfile(id, mode).equation.split(";")[0];
+}

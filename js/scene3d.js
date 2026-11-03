@@ -181,7 +181,9 @@ export class SceneView {
     // A quiet studio backdrop adds depth without adding anything to the model.
     const backdrop=document.createElement('canvas');backdrop.width=backdrop.height=512;
     const backdropContext=backdrop.getContext('2d'),backdropPaint=backdropContext.createRadialGradient(256,180,0,256,230,400);
-    backdropPaint.addColorStop(0,'#24485d');backdropPaint.addColorStop(.58,'#142f44');backdropPaint.addColorStop(1,'#0b1c2b');
+    backdropPaint.addColorStop(0,'#31586b');
+    backdropPaint.addColorStop(.47,'#18394f');
+    backdropPaint.addColorStop(1,'#071522');
     backdropContext.fillStyle=backdropPaint;backdropContext.fillRect(0,0,512,512);
     this.studioBackdrop=new T.CanvasTexture(backdrop);this.studioBackdrop.colorSpace=T.SRGBColorSpace;
     this.scene.fog = new T.FogExp2(0x080f1b, 0.018);
@@ -193,7 +195,7 @@ export class SceneView {
     this.azimuth = -0.38;
     this.polar = 1.05;
     this.radius = 15;
-    this.ambient = new T.HemisphereLight(0xc6deed, 0x142033, 0.8);
+    this.ambient = new T.HemisphereLight(0xd5eaf8, 0x182938, 0.88);
     this.scene.add(this.ambient);
     const key = new T.DirectionalLight(0xffefde, 2.6);
     key.position.set(-4, 9, 6);
@@ -208,7 +210,7 @@ export class SceneView {
     key.shadow.camera.top = 12;
     key.shadow.camera.bottom = -12;
     this.scene.add(key);
-    const rim = new T.PointLight(0x8acfea, 20, 25);
+    const rim = new T.PointLight(0x8acfea, 26, 25);
     rim.position.set(4, 5, -4);
     this.rimLight = rim;
     this.scene.add(rim);
@@ -223,17 +225,19 @@ export class SceneView {
   addEnvironment() {
     const floor = new T.Mesh(
       new T.PlaneGeometry(200, 200),
-      material(0x1a3041, { roughness: 0.95, metalness: 0, envMapIntensity: 0.15 }),
+      new T.ShadowMaterial({ color: 0x020b15, opacity: 0.42, depthWrite: false }),
     );
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = -0.82;
     floor.receiveShadow = true;
+    // Catch shadows without an opaque horizon cutting across the apparatus.
+    floor.renderOrder = -1;
     this.scene.add(floor);
     this.floor = floor;
     const grid = studioGrid();
     grid.position.y = -0.8;
     grid.material.transparent = true;
-    grid.material.opacity = 0.3;
+    grid.material.opacity = 0.23;
     this.scene.add(grid);
     this.grid = grid;
     const points = [];
@@ -434,7 +438,7 @@ export class SceneView {
     this.keyLight.intensity = type === "solarsystem" ? 0 : 3.2;
     this.keyLight.position.set(-4, 9, type === "gravity" ? 3 : 6);
     if (type === "earthmoon") this.keyLight.position.set(-10, 0, 0);
-    this.rimLight.intensity = space ? 0 : 20;
+    this.rimLight.intensity = space ? 0 : 26;
     this.fillLight.intensity = type === 'gravity' ? 0.45 : space ? 0.05 : 1.15;
     this.scene.environmentIntensity = type === 'gravity' ? 0.3 : space ? 0.08 : 0.9;
     this.stars.visible = space;
@@ -448,7 +452,7 @@ export class SceneView {
     this.floor.visible = !space && type !== "vectors";
     this.grid.visible = !space && type !== "vectors";
     this.grid.position.y = type === "gravity" ? 1 : this.grid.position.y;
-    this.grid.material.opacity = 0.3;
+    this.grid.material.opacity = 0.23;
     const add = (name, mesh, pos) => {
       o[name] = mesh;
       if (pos) mesh.position.set(...pos);

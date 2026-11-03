@@ -12,13 +12,14 @@ import { curriculumThumbnail } from "./render-curriculum.js";
 import { renderCourse, relatedLessons } from "./course.js";
 import { renderTextbookLibrary } from "./textbook-library.js";
 import { draw2D } from "./render2d.js";
-import { ExpandedView } from "./expanded-view.js";
+import { CalculationView } from "./expanded-view.js";
 import { SCENE_GUIDES } from "./scene-guides.js";
 import { visualState } from "./visual-state.js";
 import { VectorStudio } from "./vector-studio.js";
 import { installBuoyancyStudio } from "./buoyancy-studio.js";
 import { LearningStudio, levelBadges } from "./learning-studio.js";
 import {
+  sceneRelationship,
   availableModes,
   resolveMode,
   getProfile,
@@ -86,7 +87,7 @@ let lab = null,
   buoyancyUpdate = null,
   learningStudio = null,
   presentationStudio = null,
-  expandedView = null,
+  calculationView = null,
   hero = null,
   view = null,
   heroView = null,
@@ -339,7 +340,7 @@ function labPage(type, query) {
   };
   if (!Array.isArray(lab.notebook)) lab.notebook = [];
   $("#main").innerHTML =
-    `<div class="page-width lab-page"><div class="breadcrumb"><a href="#/">The laboratory</a><span>/</span><span>${d.category}</span><span>/</span><span>${d.short}</span></div><div class="lab-title-row"><div><div class="eyebrow"><span class="subject-dot" style="background:${d.color}"></span>${d.category.toUpperCase()} <span class="pill">${levelBadges(type)}</span></div><h1>${d.title}</h1><p>${d.summary}</p></div><div class="toolbar-buttons"><button class="small-button" id="share">${icon("share")} Share setup</button><button class="small-button" id="export">${icon("download")} Export data</button></div></div><div class="lab-grid"><aside class="panel controls" aria-label="Simulation parameters"><div class="controls-heading"><h2>Your experiment</h2><span>01 / SET UP</span></div>${d.controls.map((c) => controlMarkup(studyControl(type,studyMode,c), params)).join("")}<p id="control-error" class="control-error" role="alert"></p><div class="preset-block"><h3 class="panel-label">Start with a scenario</h3><div class="preset-row">${d.presets.map(([name], i) => `<button class="preset-button" data-preset="${i}" aria-pressed="false">${name}</button>`).join("")}</div></div><p class="control-footnote">A parameter change starts a fresh run.<br>All graphs use the calculated state.</p><button class="model-shortcut" id="model-shortcut">See the physics behind it ↓</button></aside><div class="workspace"><section class="stage" id="stage" aria-label="Interactive simulation studio"><div class="stage-top"><span class="running-status"><span class="status-dot"></span><span id="run-status">RUNNING</span></span><div class="stage-views" aria-label="View mode"><button data-view="3d" aria-pressed="true">${icon("cube")} 3D</button><button data-view="2d" aria-pressed="false">2D diagram</button><button id="fullscreen" aria-label="Fullscreen simulation">${icon("expand")}</button></div></div><div class="camera-toolbar" id="camera-toolbar" aria-label="3D camera presets"><div><button data-camera="perspective" aria-pressed="true">Perspective</button><button data-camera="front" aria-pressed="false">Front</button><button data-camera="above" aria-pressed="false">Above</button></div><label><input type="checkbox" id="scene-labels" checked> Labels</label></div><div class="scene-container"><canvas id="scene-3d" tabindex="0" role="img" aria-label="Interactive 3D ${d.short}. Drag to rotate, scroll to zoom. Arrow keys rotate, plus and minus zoom, zero resets the camera."></canvas><canvas id="simulation" role="img" aria-label="Calibrated 2D ${d.short} diagram" hidden></canvas><div class="scene-camera-hint" id="camera-hint">DRAG TO ROTATE <span>·</span> SCROLL TO ZOOM</div><div class="scene-equation">${d.formula}</div><button class="camera-reset" id="camera-reset" aria-label="Reset 3D camera">${icon("reset")}</button></div><div class="transport"><button id="play" class="play-button">${icon("pause")} Pause</button><button id="step" class="reset-button" aria-label="Advance one frame">${icon("step")} Step</button><button id="reset" class="reset-button">${icon("reset")} Reset</button><span id="time-readout" class="time-readout"></span><label class="speed-select">Speed <select id="speed" aria-label="Simulation speed"><option value=".25">0.25×</option><option value=".5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label></div></section><p class="stage-caption" id="stage-caption">${d.caption}</p><div class="live-metrics" id="metrics"></div><section class="panel graph-panel" aria-label="Live graphs"><div class="graph-header"><div><span class="section-kicker">02 / OBSERVE</span><h2>Follow the evidence.</h2></div><div class="segmented" aria-label="Graph selection">${d.graphs.map((g) => `<button data-graph="${g.id}" aria-pressed="${g.id === lab.graph}" class="${g.id === lab.graph ? "active" : ""}">${g.label}</button>`).join("")}</div></div><div class="stage-options"><label><input id="vectors" type="checkbox" checked> Vectors / indicators</label>${["gravity", "pendulum", "projectile", ...ADVANCED_IDS].includes(type) ? '<label><input id="trail" type="checkbox" checked> Motion trail</label>' : ""}<span id="graph-mode-label"></span></div><div id="plots"></div><div class="energy-summary" id="energy-summary"></div><p class="graph-note" id="graph-note"></p></section><div class="insight-strip"><span>TRY THIS</span><p>${d.insight}</p><button id="record" class="small-button">${icon("record")} Record reading</button></div><details class="notebook panel"><summary>Your lab notebook <span id="notebook-count">0 readings</span></summary><div id="notebook-content"></div></details></div></div><section class="lesson-area" id="lesson-area"><div class="lesson-intro"><span class="section-kicker">03 / UNDERSTAND</span><h2>Make the connection.</h2></div><div class="lesson-tabs" role="tablist" aria-label="Learning resources">${[
+    `<div class="page-width lab-page"><div class="breadcrumb"><a href="#/">The laboratory</a><span>/</span><span>${d.category}</span><span>/</span><span>${d.short}</span></div><div class="lab-title-row"><div><div class="eyebrow"><span class="subject-dot" style="background:${d.color}"></span>${d.category.toUpperCase()} <span class="pill">${levelBadges(type)}</span></div><h1>${d.title}</h1><p>${d.summary}</p></div><div class="toolbar-buttons"><button class="small-button" id="share">${icon("share")} Share setup</button><button class="small-button" id="export">${icon("download")} Export data</button></div></div><div class="lab-grid"><aside class="panel controls" aria-label="Simulation parameters"><div class="controls-heading"><h2>Your experiment</h2><span>01 / SET UP</span></div>${d.controls.map((c) => controlMarkup(studyControl(type,studyMode,c), params)).join("")}<p id="control-error" class="control-error" role="alert"></p><div class="preset-block"><h3 class="panel-label">Start with a scenario</h3><div class="preset-row">${d.presets.map(([name], i) => `<button class="preset-button" data-preset="${i}" aria-pressed="false">${name}</button>`).join("")}</div></div><p class="control-footnote">A parameter change starts a fresh run.<br>All graphs use the calculated state.</p><button class="model-shortcut" id="model-shortcut">See the physics behind it ↓</button></aside><div class="workspace"><section class="stage" id="stage" aria-label="Interactive simulation studio"><div class="stage-top"><span class="running-status"><span class="status-dot"></span><span id="run-status">RUNNING</span></span><div class="stage-views" aria-label="View mode"><button data-view="3d" aria-pressed="true">${icon("cube")} 3D</button><button data-view="2d" aria-pressed="false">2D diagram</button><button id="fullscreen" aria-label="Fullscreen simulation">${icon("expand")}</button></div></div><div class="camera-toolbar" id="camera-toolbar" aria-label="3D camera presets"><div><button data-camera="perspective" aria-pressed="true">Perspective</button><button data-camera="front" aria-pressed="false">Front</button><button data-camera="above" aria-pressed="false">Above</button></div><label><input type="checkbox" id="scene-labels" checked> Labels</label></div><div class="scene-container"><canvas id="scene-3d" tabindex="0" role="img" aria-label="Interactive 3D ${d.short}. Drag to rotate, scroll to zoom. Arrow keys rotate, plus and minus zoom, zero resets the camera."></canvas><canvas id="simulation" role="img" aria-label="Calibrated 2D ${d.short} diagram" hidden></canvas><div class="scene-camera-hint" id="camera-hint">DRAG TO ROTATE <span>·</span> SCROLL TO ZOOM</div><div class="scene-equation"><span class="scene-equation-label"></span><span class="scene-equation-content"></span></div><button class="camera-reset" id="camera-reset" aria-label="Reset 3D camera">${icon("reset")}</button></div><div class="transport"><button id="play" class="play-button">${icon("pause")} Pause</button><button id="step" class="reset-button" aria-label="Advance one frame">${icon("step")} Step</button><button id="reset" class="reset-button">${icon("reset")} Reset</button><span id="time-readout" class="time-readout"></span><label class="speed-select">Speed <select id="speed" aria-label="Simulation speed"><option value=".25">0.25×</option><option value=".5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label></div></section><p class="stage-caption" id="stage-caption">${d.caption}</p><div class="live-metrics" id="metrics"></div><section class="panel graph-panel" aria-label="Live graphs"><div class="graph-header"><div><span class="section-kicker">02 / OBSERVE</span><h2>Follow the evidence.</h2></div><div class="segmented" aria-label="Graph selection">${d.graphs.map((g) => `<button data-graph="${g.id}" aria-pressed="${g.id === lab.graph}" class="${g.id === lab.graph ? "active" : ""}">${g.label}</button>`).join("")}</div></div><div class="stage-options"><label><input id="vectors" type="checkbox" checked> Vectors / indicators</label>${["gravity", "pendulum", "projectile", ...ADVANCED_IDS].includes(type) ? '<label><input id="trail" type="checkbox" checked> Motion trail</label>' : ""}<span id="graph-mode-label"></span></div><div id="plots"></div><div class="energy-summary" id="energy-summary"></div><p class="graph-note" id="graph-note"></p></section><div class="insight-strip"><span>TRY THIS</span><p>${d.insight}</p><button id="record" class="small-button">${icon("record")} Record reading</button></div><details class="notebook panel"><summary>Your lab notebook <span id="notebook-count">0 readings</span></summary><div id="notebook-content"></div></details></div></div><section class="lesson-area" id="lesson-area"><div class="lesson-intro"><span class="section-kicker">03 / UNDERSTAND</span><h2>Make the connection.</h2></div><div class="lesson-tabs" role="tablist" aria-label="Learning resources">${[
       ["learn", "Understand the physics"],
       ["experiments", "Guided experiments"],
       ...(studyMode === "igcse" ? [["questions", "Test your understanding"]] : []),
@@ -498,7 +499,9 @@ function labPage(type, query) {
   if(['dc','refraction'].includes(type) || type==='waves' && studyMode==='igcse')
     $('[data-camera="above"]').textContent='Isometric';
   $(".lab-page").classList.add('consolidated-lab');
-  $(".scene-equation").textContent = getProfile(type,studyMode).equation;
+  const relationship = sceneRelationship(type, studyMode);
+  $(".scene-equation-label").textContent = /[=∝≈]/.test(relationship) ? "Key formula" : "Key idea";
+  $(".scene-equation-content").textContent = relationship;
   $("#metrics").hidden = true;
   $('.graph-header').append($('#record'));
   $('.notebook').hidden = !courseGraphs.length;
@@ -527,6 +530,7 @@ function labPage(type, query) {
     links.forEach(node => resources.append(node));
     $('#lesson-area').after(resources);
   }
+  calculationView = new CalculationView({ stage: $("#stage"), getSnapshot: () => lab });
   sample();
   createCharts();
   updateReadouts();
@@ -540,7 +544,6 @@ function labPage(type, query) {
   setView(lab.view === "2d" ? "2d" : "3d");
   if (invalid)
     toast("That shared setup was invalid. Safe defaults have been restored.");
-  if (embedded) $("#fullscreen").click();
 }
 /** Keep the existing controls and calculations; regroup their DOM for reading.
  * The scene and live measurements form the experiment, with interpretation and
@@ -783,58 +786,11 @@ function bindControls() {
       }),
   );
   $("#scene-labels").onchange = (e) => (lab.showLabels = e.target.checked);
-  const expandButton = $("#fullscreen");
-  expandButton.innerHTML = `${icon("expand")}<span class="expand-label">Workspace</span>`;
-  expandButton.setAttribute("aria-label", "Expand simulation and calculations");
-  expandButton.setAttribute("aria-expanded", "false");
-  expandButton.title = "Expand the model, variables and live calculations";
-  expandButton.onclick = () => {
-    if (expandedView) {
-      expandedView.close();
-      return;
-    }
-    expandButton.setAttribute("aria-expanded", "true");
-    expandButton.title = "Return to normal view";
-    expandButton.setAttribute("aria-label", "Close expanded view");
-    expandedView = new ExpandedView({
-      title: studyTitle(lab.type,lab.studyMode,lab.definition.short),
-      workspace: $(".workspace"),
-      extraGraph: lab.type === "gravity" ? $(".graph-panel") : null,
-      getSnapshot: () => ({
-        type: lab.type,
-        studyMode: lab.studyMode,
-        syllabusCycle: lab.syllabusCycle,
-        state: lab.state,
-        params: lab.params,
-        running: lab.running,
-        ended: lab.ended,
-      }),
-      onPlayback: () => $("#play").click(),
-      embedded,
-      fullURL: () => setupLink(),
-      onClose: () => {
-        expandedView = null;
-        expandButton.title =
-          "Expand the model, variables and live calculations";
-        expandButton.setAttribute("aria-expanded", "false");
-        expandButton.setAttribute(
-          "aria-label",
-          "Expand simulation and calculations",
-        );
-      },
-      onLayout: () =>
-        requestAnimationFrame(() =>
-          charts.forEach(({ chart }) => chart.resize()),
-        ),
-    });
-  };
-  const calculationLaunch = document.createElement("button");
-  calculationLaunch.className = "small-button calculation-launch";
-  calculationLaunch.innerHTML = `${icon("expand")} ${lab.studyMode === "igcse" ? "Model & explanation" : "Live calculations"}`;
-  calculationLaunch.title =
-    "Open the model, variables and worked calculations together";
-  calculationLaunch.onclick = () => expandButton.click();
-  $(".toolbar-buttons").prepend(calculationLaunch);
+  const calculationButton = $("#fullscreen");
+  calculationButton.textContent = lab.studyMode === "igcse" ? "Explanation ↓" : "Calculations ↓";
+  calculationButton.removeAttribute("aria-label");
+  calculationButton.setAttribute("aria-controls", "live-calculations");
+  calculationButton.onclick = () => calculationView?.reveal();
   const embedLink = document.createElement("a");
   embedLink.className = "small-button";
   embedLink.textContent = "</> Embed";
@@ -955,7 +911,6 @@ async function setView(mode) {
   $("#camera-reset").hidden = mode !== "3d";
   $("#camera-toolbar").hidden = mode !== "3d" && !["projectile","spring","pendulum"].includes(lab.type);
   $("#camera-toolbar").classList.toggle("is-diagram",mode!=="3d");
-  $(".scene-equation").hidden = mode !== "3d";
   $$("[data-view]").forEach((b) =>
     b.setAttribute("aria-pressed", String(b.dataset.view === mode)),
   );
@@ -1031,7 +986,7 @@ function syncPlay() {
       ? "CONSTRUCTION DEMO"
       : "READY TO EXPLORE";
   }
-  expandedView?.refresh();
+  calculationView?.refresh();
 }
 function sample() {
   const row = lab.definition.sample(lab.state, lab.params);
@@ -1329,7 +1284,7 @@ function updateReadouts() {
       $('#volume-slider').closest('.control').hidden = p.state !== 2;
     }
   }
-  expandedView?.refresh();
+  calculationView?.refresh();
   if (embedded) $("#embed-open").href = setupLink();
 }
 function showLesson(tab) {
@@ -1562,7 +1517,7 @@ function route() {
   $("#main").onclick = null;
   $("#main").oninput = null;
   presentationStudio?.dispose();
-  expandedView?.close();
+  calculationView = null;
   vectorStudio?.dispose();
   vectorStudio = null;
   buoyancyUpdate = null;
@@ -1714,7 +1669,7 @@ if (embedded) {
   const bar = document.createElement("div");
   bar.id = "embed-bar";
   bar.innerHTML =
-    '<span>PHYSICS INTERACTIVE LAB</span><button type="button" id="embed-expand">Model & calculations</button><a id="embed-open" target="_blank" rel="noopener">Open full lab ↗</a>';
+    '<span>PHYSICS INTERACTIVE LAB</span><button type="button" id="embed-expand">Calculations ↓</button><a id="embed-open" target="_blank" rel="noopener">Open full lab ↗</a>';
   $("#main").before(bar);
   $("#embed-expand").onclick = () => $("#fullscreen")?.click();
 }

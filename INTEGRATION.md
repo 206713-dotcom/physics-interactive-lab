@@ -31,13 +31,13 @@ For orbital mechanics, a minimal embed is:
 </p>
 ```
 
-For the spring, change `#/gravity` to `#/spring`. All **57 models** work in the embed generator. Every model offers 3D apparatus and a 2D diagram. The embed generator preserves the selected view; devices without WebGL fall back to the complete 2D experiment. Camera presets, visual walkthroughs, variables and live calculations also work in the expanded embed. New routes include `#/photoelectric`, `#/driven`, `#/gasprocess`, `#/filament` and `#/resonance`.
+For the spring, change `#/gravity` to `#/spring`. All **57 models** work in the embed generator. Every model offers 3D apparatus and a 2D diagram. The embed generator preserves the selected view; devices without WebGL fall back to the complete 2D experiment. Camera presets, visual walkthroughs, variables and live calculations work in the embed. New routes include `#/photoelectric`, `#/driven`, `#/gasprocess`, `#/filament` and `#/resonance`.
 
 The separate [A Level practice room](https://206713-dotcom.github.io/physics-interactive-lab/#/questions) can be linked directly from a lesson. For a specific twelve-question group, use a URL such as `https://206713-dotcom.github.io/physics-interactive-lab/#/questions?topic=quantum` or `...?topic=capacitors`. Question progress is stored in the student's browser; browser privacy settings may block persistence inside third-party iframes, so a full-tab link is recommended for practice.
 
 Use the [IGCSE course map](https://206713-dotcom.github.io/physics-interactive-lab/#/course) to find the experiment supporting each of the 78 original lesson pages. For example, use `#/calorimetry` for heating and phase changes, `#/dc` for circuits and dividers, `#/lenses` for ray constructions, `#/radioactivity` for half-life, and `#/earthmoon` for seasons and Moon phases. The map links back to existing FocusPhysics notes and resources. Detailed scope and mappings are in [IGCSE-COVERAGE.md](IGCSE-COVERAGE.md).
 
-The embed loads **paused** with the model, parameters, current values and worked calculations. It omits the main site's header and footer. **Lessons & notes** reveals the existing learning resources inside the frame; **Open full lab** opens the full lesson in another tab. Expanding a model fills its iframe, rather than covering the host website. The simulation never reads or modifies its parent page and uses no cross-frame messages.
+The embed loads **paused** with the model first. The **Change variables** controls are inside the scene; worked calculations and learning resources are below. It omits the main site's header and footer. **Open full lab** opens the full lesson in another tab. **Full screen** fills the iframe. The simulation never reads or modifies its parent page and uses no cross-frame messages.
 
 The vector workbench also works in an iframe, with draggable tips in either view and an optional construction animation. For a particular method, add `method=triangle`, `method=parallelogram` or `method=components` to the route query; for example, `?embed=1#/vectors?view=3d&method=parallelogram`. Shared vector setup links also preserve coordinate-grid, angle-marker and component-guide settings. The construction animation reveals fixed vectors; it does not simulate forces changing in time.
 
@@ -50,7 +50,7 @@ The vector workbench also works in an iframe, with draggable tips in either view
 
 These are editor-independent steps, not a claim about which platform FocusPhysics uses. See the [HTML iframe reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/iframe) for the element and its attributes.
 
-Use a wide lesson section if possible. At 1,280 px and above the expanded view has three panes; between 761 and 1,279 px it has a model and tabbed inspector; smaller frames stack the content. A height of 860 px is a useful starting point. Change **both** the `height` attribute and `height` in the inline style to fit the lesson. Keep the full-tab link for students using a small screen.
+Use a wide lesson section if possible. The model fills the frame width, with calculations below it. A height of 860 px is a useful starting point. Change **both** the `height` attribute and `height` in the inline style to fit the lesson. Keep the full-tab link for students using a small screen.
 
 The host page's Content Security Policy, if present, must permit frames from `https://206713-dotcom.github.io` (its `frame-src` directive). A restrictive host-added iframe sandbox can block scripts, storage, new tabs or downloads. The provided snippet requires no camera, microphone or account access. Optional clipboard and notebook storage features have fallbacks when unavailable.
 
@@ -82,7 +82,7 @@ This is an **example installation path**, not an existing FocusPhysics page. Inc
 1. Open the actual FocusPhysics lesson on desktop and tablet. Confirm the frame loads and is tall enough.
 2. Start the model, change a parameter, pause, step and reset.
 3. Choose another calculation and confirm its values change with the model.
-4. Try 3D and 2D, graph selection, Lessons & notes and the full-tab link.
+4. Try 3D and 2D, graph selection, the learning tabs and the full-tab link.
 5. Check the embed does not obscure the surrounding lesson. Verify CSV export and notebook storage if the school needs them.
 
 The repository's `npm test` and `npm run check` validate the numerical models, generated URLs, HTML escaping and local assets. Star and double-pendulum extension labs include energy diagnostics, numerical guards or parameter-dependent step sizes, and full assumptions in their lesson resources. The embed generator provides a real iframe preview for integration testing. The final host-page check requires Mr Rowland's website editor access.

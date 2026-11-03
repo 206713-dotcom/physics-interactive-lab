@@ -10,6 +10,10 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 ## What is in the laboratory?
 
+### Version 20.1: model-first layout
+
+All 57 labs open with a wide, tall stage. Change variables inside the scene and look for the key relationship on the diagram. Scroll below the model for live worked calculations, values and related results. Full screen keeps the model and its controls together without the worked steps.
+
 ### Version 19.8: double pendulum
 
 The main and comparison runs now sit side by side in both views. They share the same position scale and time. The lower-bob trails follow the two integrated states, and tip separation compares coordinates relative to each run’s pivot.
@@ -271,15 +275,15 @@ Open <http://localhost:4173/physics-interactive-lab/>. No install or build step,
 
 - **3D:** drag / touch to rotate and scroll to zoom. With the canvas focused, arrow keys rotate, `+` / `−` zoom, and `0` resets the camera. A reset-camera button is also provided.
 - **2D diagram:** switch at any time without restarting the physics. Diagram mode also serves browsers without working WebGL2.
-- **Playback:** pause/resume, reset, single-step, 0.25×–4× speed and an expanded workspace. Space toggles playback when focus is not in a form control.
-- **Expanded calculations:** choose **Expand** on the animation or **Live calculations** beside the page title. Select a calculation to keep its equation, substitution and highlighted result together; all other results and current variable values remain available below. Scientific notation uses readable powers of ten. **Copy this working** captures that calculation and its values at the instant clicked. The original canvas and controls move into this view, so expansion and exit preserve the run. Desktop uses three panes; tablets have Parameters/Calculations inspector buttons, and phones have jump buttons. A header playback button stays accessible while scrolling. Press **Esc** or **Exit expanded view** to return.
+- **Playback:** pause/resume, reset, single-step, 0.25×–4× speed and a full-screen model. Space toggles playback when focus is not in a form control.
+- **Live calculations:** scroll below the model or use the **Calculations ↓** / **Explanation ↓** button. Select a calculation for the equation, substitution, result and current values. **Copy this working** captures that instant. **Full screen** keeps the 3D scene and in-scene controls together. Press **Esc** to return to the page without resetting the experiment.
 - **Parameters:** sliders and editable numbers use explicit units. Enter or blur commits a numeric edit. Invalid inputs show an explanation and restore the valid value. Parameters and presets start a fresh run.
 - **Graphs:** choose time histories or explicitly labelled spatial/parameter curves. Zero is included to avoid visually magnifying tiny round-off changes in a circular orbit. Wave components use the same colours in the scene and graph.
 - **Readable workspace:** main copy uses 16–17 px text, parameter labels 15 px, editable values 18 px, and larger measurement cards. Graph labels are enlarged too. On the gravitation page, the scene and live measurements sit together; graphs and trajectory interpretation share the next row. Tablet and phone layouts put the scene first and keep measurement values intact.
 - **Notebook:** record actual readings to compare different setups. Up to 12 readings per experiment are kept in this device's browser storage, with their numerical state and initial parameters. Nothing is uploaded. Clear readings from the notebook when needed.
 - **CSV:** export up to 1,200 recent calculated time samples, or the selected calculated spatial/parameter curve. The first line gives the parameters, and headers label the units. Missing values near an excluded point charge or beyond a critical angle stay blank. No fabricated detections or experimental measurements are added.
 - **Share:** copy a link that contains the current initial parameters, graph and camera mode. It opens a fresh run; it does not include the notebook or elapsed state.
-- **Embed:** open the [embed generator](https://206713-dotcom.github.io/physics-interactive-lab/integration.html), or choose **Embed** from an experiment to preserve its initial setup. The working iframe preview and copyable HTML make it ready for an existing lesson page. `?embed=1#/gravity` opens a paused, compact model with calculations; **Lessons & notes** reveals its learning resources. See [INTEGRATION.md](INTEGRATION.md) for FocusPhysics handover, host-page checks and self-hosting. No changes to FocusPhysics itself are made by this repository.
+- **Embed:** open the [embed generator](https://206713-dotcom.github.io/physics-interactive-lab/integration.html), or choose **Embed** from an experiment to preserve its initial setup. The working iframe preview and copyable HTML make it ready for an existing lesson page. `?embed=1#/gravity` opens a paused, compact model with calculations; Scroll below the stage for calculations and learning resources. See [INTEGRATION.md](INTEGRATION.md) for FocusPhysics handover, host-page checks and self-hosting. No changes to FocusPhysics itself are made by this repository.
 - **Library:** search by topic or filter by subject. The experiment selector makes it easy to move between studios.
 
 Reduced-motion preference starts experiments paused and keeps the home orbit preview still. Background tabs do not accumulate simulation time. Tiny nonzero readouts use scientific notation; CSV exports retain their full numerical values. All IGCSE instruments retain their calibrated 2D diagrams alongside the 3D apparatus.

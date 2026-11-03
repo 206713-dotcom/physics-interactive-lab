@@ -6,6 +6,7 @@ import {
   availableModes,
   resolveMode,
   getProfile,
+  sceneRelationship,
   stageFor,
   SYLLABUS_SECTIONS,
   syllabusLink,
@@ -115,4 +116,12 @@ test("recommended starters expose the intended physical regime rather than silen
   );
   assert.match(getProfile("bragg", "alevel").scope, /Bragg.*extensions/);
   assert.match(getProfile("buoyancy", "igcse").scope, /Archimedes.*AS/);
+});
+
+test("every model and available course has a concise in-scene relationship", () => {
+  for (const id of Object.keys(SIMULATIONS))
+    for (const mode of availableModes(id))
+      assert.match(sceneRelationship(id, mode), /^[^;\n]{3,90}$/u, `${id}/${mode}`);
+  assert.equal(sceneRelationship("bragg", "alevel"), "λ = h/p");
+  assert.match(sceneRelationship("gravity", "alevel"), /GMm\/r²/);
 });

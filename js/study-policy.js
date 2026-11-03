@@ -140,8 +140,7 @@ export function studyControl(id, mode, control) {
   };
   return { ...control, ...overrides[key] };
 }
-export function studySheet(id, state, params, mode) {
-  const full = calculationSheet(id,state,params);
+export function studySheet(id, state, params, mode, full = calculationSheet(id,state,params)) {
   if (mode !== 'igcse') return full;
   const keys = new Set(visibleControlKeys(id,mode)),
     codes = new Set(['mode','state','alpha','exponent','decay','seed','restitution','field','charge','planet','stage','conductance']),

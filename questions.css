@@ -865,7 +865,8 @@
 .teacher-tools [role="status"]:empty {
   display: none;
 }
-#teacher-manual textarea {
+#teacher-manual textarea,
+#book-manual textarea {
   display: block;
   width: 100%;
   font: inherit;

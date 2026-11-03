@@ -27,7 +27,7 @@ export function renderTeacherPacks(container) {
           <div class="eyebrow">TEACHER WORKSHEETS · CAMBRIDGE 9702</div>
           <h1>Build a physics worksheet.</h1>
           <p>Choose a topic and difficulty, then copy the questions and worked answers separately into your lesson.</p>
-          <div class="question-hero-actions"><a href="${syllabusUrl}" target="_blank" rel="noopener">Cambridge syllabus · 2025–2027 ↗</a><a href="${bookUrl}" target="_blank" rel="noopener">Wiley chapter guide ↗</a></div>
+          <div class="question-hero-actions"><a class="button" href="#/textbook">Browse actual textbook exercises ↗</a><a href="${syllabusUrl}" target="_blank" rel="noopener">Cambridge syllabus · 2025–2027 ↗</a><a href="${bookUrl}" target="_blank" rel="noopener">Wiley chapter guide ↗</a></div>
         </div>
         <div class="teacher-hero-count"><strong>${teacherSets.length * levels.length}</strong>original questions<span>${teacherSets.length} topics · AS and A2</span></div>
       </section>

@@ -12,6 +12,7 @@ import { curriculumThumbnail } from "./render-curriculum.js";
 import { renderCourse, relatedLessons } from "./course.js";
 import { renderQuestionBank } from "./question-bank.js";
 import { renderTeacherPacks } from "./teacher-packs.js";
+import { renderTextbookLibrary } from "./textbook-library.js";
 import { QUESTION_GROUPS } from "./question-data.js";
 import { draw2D } from "./render2d.js";
 import { ExpandedView } from "./expanded-view.js";
@@ -1598,7 +1599,7 @@ function route() {
       a.dataset.nav ===
       (id === "course" || id === "syllabus"
         ? "course"
-        : id === "questions" || id === "teacher"
+        : id === "questions" || id === "teacher" || id === "textbook"
           ? "questions"
           : !type
             ? "home"
@@ -1620,6 +1621,9 @@ function route() {
   } else if (id === "teacher") {
     document.title = "Teacher worksheets · Physics Interactive Lab";
     renderTeacherPacks($("#main"));
+  } else if (id === "textbook") {
+    document.title = "Textbook exercise index · Physics Interactive Lab";
+    renderTextbookLibrary($("#main"));
   } else home();
   window.scrollTo(0, 0);
   lastFrame = 0;

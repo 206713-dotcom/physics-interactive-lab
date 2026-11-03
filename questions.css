@@ -835,3 +835,66 @@
     font-size: 9pt;
   }
 }
+.teacher-page .teacher-hero {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
+}
+.teacher-hero-count {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 0.35rem;
+  padding: 1.5rem;
+  border: 1px solid #5f9ca9;
+  border-radius: 1rem;
+  color: #d9faf9;
+  background: #123d50;
+}
+.teacher-hero-count strong {
+  font-size: clamp(2rem, 6vw, 4rem);
+  line-height: 1;
+}
+.teacher-hero-count span {
+  color: #b9dce3;
+}
+.teacher-tools {
+  margin-block: 1.5rem 2rem;
+}
+.teacher-tools .question-filters {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.teacher-tools [role="status"]:empty {
+  display: none;
+}
+#teacher-manual textarea {
+  display: block;
+  width: 100%;
+  font: inherit;
+}
+.teacher-level-section {
+  margin-block: 2.5rem;
+}
+.teacher-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 23rem), 1fr));
+  gap: 1rem;
+}
+.teacher-card {
+  margin: 0;
+}
+.teacher-card .teacher-prompt {
+  font-size: 1rem;
+  line-height: 1.65;
+}
+.teacher-chapter {
+  color: #476277;
+  font-size: 0.875rem;
+}
+.teacher-source {
+  margin-bottom: 3rem;
+}
+@media (max-width: 650px) {
+  .teacher-page .teacher-hero,
+  .teacher-tools .question-filters {
+    grid-template-columns: 1fr;
+  }
+}

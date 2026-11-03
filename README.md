@@ -622,3 +622,6 @@ To add an experiment, implement a pure model, register its parameters, presets, 
 Each lesson links to a supporting reference or original derivation. Standard topics use [OpenStax University Physics](https://openstax.org/subjects/science); the advanced references are linked above. Further references: [NIST gravitational constant](https://physics.nist.gov/cgi-bin/cuu/Value?bg), [Chart.js](https://www.chartjs.org/docs/latest/), [Three.js](https://threejs.org/docs/).
 
 Original source is MIT licensed; see [LICENSE](LICENSE). Chart.js and Three.js retain their separate MIT licences in `vendor/Chart.LICENSE.md` and `vendor/Three.LICENSE.txt`.
+## Teacher worksheets
+
+Open [Teacher worksheets](https://206713-dotcom.github.io/physics-interactive-lab/#/teacher) from A Level practice. The section has 24 original questions across eight topics, with AS and A2 placement checked against the [2025–2027 Cambridge 9702 syllabus](https://www.cambridgeinternational.org/Images/664565-2025-2027-syllabus.pdf). Each topic has Foundation, Standard and Challenge questions and worked answers. Use the filters to build a set and copy the worksheet and answer key separately. The [Wiley chapter guide](https://bcs.wiley.com/he-bcs/Books?action=contents&bcsId=8262&itemId=1118230728) provides reading references for the tenth extended edition of *Fundamentals of Physics*.

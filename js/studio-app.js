@@ -11,6 +11,7 @@ import { CURRICULUM_LESSONS } from "./content-curriculum.js";
 import { curriculumThumbnail } from "./render-curriculum.js";
 import { renderCourse, relatedLessons } from "./course.js";
 import { renderQuestionBank } from "./question-bank.js";
+import { renderTeacherPacks } from "./teacher-packs.js";
 import { QUESTION_GROUPS } from "./question-data.js";
 import { draw2D } from "./render2d.js";
 import { ExpandedView } from "./expanded-view.js";
@@ -1597,7 +1598,7 @@ function route() {
       a.dataset.nav ===
       (id === "course" || id === "syllabus"
         ? "course"
-        : id === "questions"
+        : id === "questions" || id === "teacher"
           ? "questions"
           : !type
             ? "home"
@@ -1616,6 +1617,9 @@ function route() {
   } else if (id === "questions") {
     document.title = "A Level practice · Physics Interactive Lab";
     renderQuestionBank($("#main"), new URLSearchParams(query));
+  } else if (id === "teacher") {
+    document.title = "Teacher worksheets · Physics Interactive Lab";
+    renderTeacherPacks($("#main"));
   } else home();
   window.scrollTo(0, 0);
   lastFrame = 0;

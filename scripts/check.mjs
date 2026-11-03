@@ -55,6 +55,7 @@ for (const file of [
   "js/textbook-index.js",
   "js/textbook-practice.js",
   "js/textbook-variants.js",
+  "js/textbook-answers.js",
   "js/olympiad-practice.js",
   "js/textbook-library.js",
   "questions.css",

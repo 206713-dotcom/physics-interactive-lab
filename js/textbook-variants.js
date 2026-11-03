@@ -24,7 +24,7 @@ const templates = [
   [
     (n) => `A point on a sinusoidal string wave takes ${12 + n} ms to move from a crest to its next equilibrium crossing. Find the period and frequency.`,
     (n) => `Two pulses leave a source together, moving at 300 m/s and 500 m/s along the same path. At a detector the arrivals are ${3 + n} ms apart. Calculate the distance to the source.`,
-    (n) => `Adjacent nodes on a string are ${18 + n} cm apart. An antinode goes from equilibrium to its next maximum displacement in 7.0 ms. Determine the wavelength and speed of the progressive waves that produce the stationary wave.`,
+    (n) => `Adjacent nodes on a string are ${18 + n} cm apart. An antinode takes 7.0 ms to travel from equilibrium to its first extreme position. Determine the wavelength and speed of the progressive waves that produce the stationary wave.`,
   ],
   [
     (n) => `The adjacent displacement nodes of a stationary sound wave are ${15 + n} cm apart. The sound speed is 343 m/s. Determine its frequency.`,
@@ -39,7 +39,7 @@ const templates = [
   [
     (n) => `Two point masses of 14 kg and ${18 + n} kg are separated by 0.65 m. Find their gravitational force using G = 6.67 × 10⁻¹¹ N m²/kg².`,
     (n) => `Two probes orbit the same planet in circles. The outer radius is ${2 + n} times the inner radius. Find the ratios of outer to inner orbital speed and period.`,
-    (n) => `Two spherical bodies of masses M and 16M have centres ${450 + 25 * n} km apart. Find the distance from the smaller body to the point between them where their gravitational fields cancel.`,
+    (n) => `Two bodies of masses M and 16M are treated as point masses ${450 + 25 * n} km apart. Find the distance from the smaller body to the point between them where their gravitational fields cancel.`,
   ],
   [
     (n) => `A sensor oscillates in SHM at 11 Hz with amplitude ${2 + n} mm. Calculate its maximum acceleration.`,

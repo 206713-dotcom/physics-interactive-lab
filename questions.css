@@ -43,6 +43,27 @@
 #book-pagination[hidden] {
   display: none;
 }
+.practice-view-tabs {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background: #e4edf3;
+  border-radius: 0.7rem;
+}
+.practice-view-tabs button {
+  border: 0;
+  border-radius: 0.5rem;
+  padding: 0.65rem 1.1rem;
+  background: transparent;
+  color: #173a50;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.practice-view-tabs button[aria-selected="true"] {
+  color: white;
+  background: #12666e;
+}
 .question-hero {
   background:
     radial-gradient(ellipse at 90% 30%, #194b66, transparent 65%), #0b253b;

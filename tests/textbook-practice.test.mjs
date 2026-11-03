@@ -30,3 +30,14 @@ test("the A Level bank has 1000 unique prompts with all three levels in every ma
     }
   }
 });
+
+test("all A Level entries have worked answers, including numerically checked representative variants", () => {
+  assert.equal(aLevelQuestions.filter(({ answer }) => answer?.trim() && !/NaN|Infinity|undefined/.test(answer)).length, 1000);
+  const answer = (topic, level, variant) =>
+    aLevelQuestions.find((entry) => entry.topic === topic && entry.level === level && entry.variant === variant).answer;
+  assert.match(answer("DC circuits", 3, 1), /6\.825 V.*2\.297 W/);
+  assert.match(answer("Air columns", 3, 0), /720\.8 Hz, 961\.1 Hz and 1201\.4 Hz/);
+  assert.match(answer("Straight-line motion", 3, 1), /They make contact/);
+  assert.match(answer("Straight-line motion", 3, 21), /They stop without touching/);
+  assert.match(answer("Magnetic flux and induction", 3, 0), /0\.648 V.*zero.*1\.296 V/);
+});

@@ -208,7 +208,7 @@ All sixteen use the existing sliders, graphs, expanded model/variable/working wo
 
 ### A Level textbook practice
 
-Open [A Level practice](https://206713-dotcom.github.io/physics-interactive-lab/#/textbook) to read and copy 1,000 textbook-inspired questions directly. Choose an AS or A2 topic, then filter by difficulty. Each topic has a shareable link. The bank includes 45 original prompts and 955 numerical variants. Each card identifies a related Halliday problem. The separate [Olympiad section](https://206713-dotcom.github.io/physics-interactive-lab/#/olympiad) contains 18 original problems across six topics, grouped into Entry, Advanced and Stretch.
+Open [A Level practice](https://206713-dotcom.github.io/physics-interactive-lab/#/textbook) to read and copy 1,000 textbook-inspired questions directly. Choose an AS or A2 topic, then filter by difficulty. Each topic has a shareable link and a separate Answers tab with worked solutions and copy controls. The bank includes 45 original prompts and 955 numerical variants. Each card identifies a related Halliday problem. The separate [Olympiad section](https://206713-dotcom.github.io/physics-interactive-lab/#/olympiad) contains 18 original problems across six topics, grouped into Entry, Advanced and Stretch.
 
 ### IGCSE course expansion
 
@@ -509,7 +509,7 @@ npm test
 npm run check
 ```
 
-There are **270 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
+There are **271 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
 
 - Default spring position against the analytic solution over 30 s, with maximum error below 10⁻⁶ m; default undamped energy drift below 10⁻⁷ over 120 s.
 - Worst supported spring frequency with energy drift below 0.04% over 120 s; damping and critical/overdamped behaviour.

@@ -1,25 +1,40 @@
 /** GPU-only views of the advanced states. Every trail vertex is a sampled state. */
 import * as T from "../vendor/three.module.min.js";
 import { SOLAR_MASS, stellarTime, doublePosition } from "./physics-advanced.js";
+import { atmosphereMaterial, stellarMaterial } from "../atlas/visual-detail.js";
 const PALETTE = [0xffc37d, 0x85d6ff, 0xc39aff];
 function textSprite(text, color = "#b7cedf") {
   const canvas = document.createElement("canvas");
-  canvas.width = 512;
-  canvas.height = 96;
   const c = canvas.getContext("2d");
-  c.font = "500 31px Segoe UI";
+  const font = "600 48px Segoe UI,sans-serif";
+  c.font = font;
+  canvas.width = Math.ceil(c.measureText(text).width) + 40;
+  canvas.height = 82;
+  c.fillStyle = "#10243ce8";
+  c.beginPath();
+  c.roundRect(2, 2, canvas.width - 4, 78, 13);
+  c.fill();
+  c.strokeStyle = "#a7c2e144";
+  c.lineWidth = 2;
+  c.stroke();
+  c.font = font;
   c.textAlign = "center";
+  c.textBaseline = "middle";
   c.fillStyle = color;
-  c.fillText(text, 256, 60);
+  c.fillText(text, canvas.width / 2, 41);
+  const map = new T.CanvasTexture(canvas);
+  map.colorSpace = T.SRGBColorSpace;
   const sprite = new T.Sprite(
     new T.SpriteMaterial({
-      map: new T.CanvasTexture(canvas),
+      map,
       transparent: true,
       depthWrite: false,
+      toneMapped: false,
     }),
   );
-  sprite.scale.set(2.6, 0.49, 1);
+  sprite.scale.set(0.48 * canvas.width / canvas.height, 0.48, 1);
   sprite.userData.role = "label";
+  sprite.userData.text = text;
   return sprite;
 }
 function glowTexture() {
@@ -36,45 +51,23 @@ function glowTexture() {
   c.fillRect(0, 0, 256, 256);
   return new T.CanvasTexture(canvas);
 }
-const starVertex = `varying vec3 pos; varying vec3 normalView; varying vec3 eye;
-void main(){pos=position; vec4 p=modelViewMatrix*vec4(position,1.0); normalView=normalize(normalMatrix*normal);eye=-p.xyz;gl_Position=projectionMatrix*p;}`;
-const noise = `float hash(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}
-float noise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);}`;
 function stellarBody(color) {
-  const group = new T.Group(),
-    base = new T.Color(color);
-  const material = new T.ShaderMaterial({
-    uniforms: { t: { value: 0 }, tint: { value: base } },
-    vertexShader: starVertex,
-    fragmentShader: `uniform float t; uniform vec3 tint;varying vec3 pos;varying vec3 normalView;varying vec3 eye;${noise}
-void main(){vec3 p=normalize(pos);float grain=noise(p*9.0+vec3(t*.12,0.,0.));float flow=noise(p*4.0+vec3(0.,t*.16,0.));float limb=pow(max(0.0,dot(normalize(normalView),normalize(eye))),.3);float hot=smoothstep(.15,.9,grain+flow*.2);vec3 surface=mix(tint*.8,vec3(1.25,1.22,1.16),.2+hot*.4);gl_FragColor=vec4(surface*(.72+.4*limb),1.);}`,
-  });
-  group.add(new T.Mesh(new T.SphereGeometry(1, 64, 48), material));
-  const coronaMaterial = new T.ShaderMaterial({
-    uniforms: { t: { value: 0 }, tint: { value: base } },
-    vertexShader: starVertex,
-    fragmentShader: `uniform float t;uniform vec3 tint;varying vec3 pos;varying vec3 normalView;varying vec3 eye;${noise}
-void main(){float rim=pow(1.-abs(dot(normalize(normalView),normalize(eye))),2.2);float rays=.5+.5*noise(normalize(pos)*12.+vec3(0.,t*.15,0.));gl_FragColor=vec4(tint,rim*rays*.5);}`,
+  const group = new T.Group();
+  const material = stellarMaterial(color);
+  group.add(new T.Mesh(new T.SphereGeometry(1, 80, 48), material));
+  const rim = atmosphereMaterial(color, 0.54);
+  group.add(new T.Mesh(new T.SphereGeometry(1.1, 56, 36), rim));
+  const halo = new T.Sprite(new T.SpriteMaterial({
+    map: glowTexture(),
+    color,
     transparent: true,
     depthWrite: false,
-    side: T.BackSide,
     blending: T.AdditiveBlending,
-  });
-  const corona = new T.Mesh(new T.SphereGeometry(1.22, 48, 32), coronaMaterial);
-  group.add(corona);
-  const halo = new T.Sprite(
-    new T.SpriteMaterial({
-      map: glowTexture(),
-      color,
-      transparent: true,
-      depthWrite: false,
-      blending: T.AdditiveBlending,
-      opacity: 0.9,
-    }),
-  );
-  halo.scale.set(8, 8, 1);
+    opacity: 0.48,
+  }));
+  halo.scale.set(5.1, 5.1, 1);
   group.add(halo);
-  return { group, material, coronaMaterial };
+  return { group, material };
 }
 function bufferedTrail(color) {
   const geometry = new T.BufferGeometry();
@@ -179,11 +172,9 @@ export function createAdvancedScene(type, p, view) {
   };
   if (type === "binary" || type === "threebody") {
     view.floor.visible = false;
-    view.grid.visible = true;
-    view.grid.position.y = 0.96;
-    view.grid.material.opacity = 0.085;
+    view.grid.visible = false;
     view.target.set(0, 1, 0);
-    view.homeRadius = 12.5;
+    view.homeRadius = type === "binary" ? 11.8 : 13.6;
     view.homePolar = 0.55;
     view.homeAzimuth = -0.05;
     view.home();
@@ -198,7 +189,6 @@ export function createAdvancedScene(type, p, view) {
             ["#ffdab0", "#b6eaff", "#dfc8ff"][i],
           ),
         );
-        name.scale.set(3.2, 0.6, 1);
         const trail = bufferedTrail(PALETTE[i]);
         add(trail.line);
         const arrow = add(
@@ -234,9 +224,8 @@ export function createAdvancedScene(type, p, view) {
         0.7,
       ),
     );
-    const centreLabel = add(textSprite("BARYCENTRE", "#7795ac"));
+    const centreLabel = add(textSprite("Centre of mass", "#c9d9ef"));
     centreLabel.position.set(0, 0.7, 0.6);
-    centreLabel.scale.set(1.8, 0.34, 1);
     const triangle = add(
       line(
         Array.from({ length: type === "binary" ? 2 : 4 }, () => [0, 1, 0]),
@@ -244,6 +233,7 @@ export function createAdvancedScene(type, p, view) {
         0.18,
       ),
     );
+    triangle.frustumCulled = false;
     return {
       update(lab) {
         const { state: s, params: p } = lab;
@@ -264,8 +254,7 @@ export function createAdvancedScene(type, p, view) {
         stars.forEach((star, i) => {
           const b = s.bodies[i];
           star.group.position.set(b.x * scale, 1, -b.y * scale);
-          star.material.uniforms.t.value = s.t / stellarTime(type, p);
-          star.coronaMaterial.uniforms.t.value = star.material.uniforms.t.value;
+          star.material.uniforms.time.value = s.t / stellarTime(type, p);
           // Billboard the offset as well as the label, keeping it above the star
           // on screen when the student rotates the orbital plane.
           star.name.position

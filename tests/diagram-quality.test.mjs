@@ -8,6 +8,22 @@ import { createSceneKit } from '../js/scene-kit.js';
 import { createCurriculumScene,CURRICULUM_BUILDERS } from '../js/scene-curriculum.js';
 import { SIMULATIONS } from '../js/simulations.js';
 import { paperInk } from '../js/diagram-theme.js';
+import { lunarLitInterval, solarDisplayRadius } from '../js/space-display.js';
+
+test('phase disc matches the lit fraction and switches sides from waxing to waning', () => {
+  for (const phase of [0, Math.PI / 5, Math.PI / 2, Math.PI, 1.5 * Math.PI, 2 * Math.PI]) {
+    const [left, right] = lunarLitInterval(2, phase);
+    assert.ok(Math.abs((right - left) / 4 - (1 - Math.cos(phase)) / 2) < 1e-12);
+  }
+  assert.equal(lunarLitInterval(2, Math.PI / 2)[1], 2);
+  assert.equal(lunarLitInterval(2, 1.5 * Math.PI)[0], -2);
+});
+
+test('the orrery display is monotonic and compresses wider orbital gaps', () => {
+  assert.ok(solarDisplayRadius(0.387) < solarDisplayRadius(1));
+  assert.ok(solarDisplayRadius(1) < solarDisplayRadius(30));
+  assert.ok(solarDisplayRadius(30) - solarDisplayRadius(29) < solarDisplayRadius(2) - solarDisplayRadius(1));
+});
 function checkFrame(bounds,options) {
   const before=bounds.clone(),fit=frameApparatus(bounds,options),camera=new T.PerspectiveCamera(options.fov||38,options.aspect,.01,1000),target=new T.Vector3(...fit.target);
   camera.position.set(Math.sin(fit.polar)*Math.sin(fit.azimuth),Math.cos(fit.polar),Math.sin(fit.polar)*Math.cos(fit.azimuth)).multiplyScalar(fit.radius).add(target);

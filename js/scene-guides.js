@@ -236,10 +236,10 @@ export const SCENE_GUIDES = {
     "Every dot represents one model nucleus. Detector values are calculated rates, not invented detection events. Spatial layout is arbitrary.",
   ],
   earthmoon: [
-    "Use Above view to follow the Moon relative to Earth and the Sun.",
+    "Use Above view to follow the Moon’s orbit, then compare its position with the View from Earth disc.",
     "The Moon is half illuminated by sunlight; the fraction visible from Earth changes with lunar phase.",
     "Compare new, quarter and full Moon using the lunar-day parameter.",
-    "Sizes and separations are enlarged separately. Earth rotation is illustrative; seasonal daylight is calculated from latitude, day and axial tilt.",
+    "Sizes and separations are enlarged separately. The phase disc shows the calculated sunlit fraction with parallel sunlight. Eclipses are outside this model. Earth rotation is illustrative; seasonal daylight is calculated from latitude, day and axial tilt.",
   ],
   solarsystem: [
     "Follow all eight planets around the Sun. The selected orbit is highlighted; open the full Solar Atlas for dated elliptical positions and interiors.",
@@ -251,7 +251,7 @@ export const SCENE_GUIDES = {
     "Compare the selected stages and the temperature-dependent main-sequence colour.",
     "The simple main-sequence scaling links mass to luminosity and approximate lifetime.",
     "Increase main-sequence mass and compare luminosity with lifetime.",
-    "Stages are a storyboard, not an integrated stellar-evolution calculation. The mass–luminosity estimate applies to the main sequence. Sizes are illustrative.",
+    "The cloud and ejecta layers illustrate the selected stage. Their motion and sizes are schematic. The mass–luminosity estimate applies to the main sequence.",
   ],
   universe: [
     "Gold arrows illustrate the distance–recession relationship; purple shows redshift.",

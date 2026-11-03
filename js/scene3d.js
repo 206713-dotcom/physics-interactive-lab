@@ -427,12 +427,13 @@ export class SceneView {
     this.type = type;
     this.key = JSON.stringify(p);
     const space = ["gravity", "earthmoon", "solarsystem", "stars", "binary", "threebody", "universe"].includes(type);
-    this.scene.background = type === "gravity" ? (this.orbitBackdrop ??= makeOrbitBackdrop()) : space ? null : this.studioBackdrop;
+    this.scene.background = space ? (this.orbitBackdrop ??= makeOrbitBackdrop()) : this.studioBackdrop;
     this.scene.fog.color.set(space?0x080f1b:0x10283c);
     // Orbital lighting is illustrative, not a simulated day/night cycle.
-    this.ambient.intensity = type === "gravity" ? 0.42 : type === "earthmoon" ? 0.13 : 1.25;
-    this.keyLight.intensity = type === "earthmoon" ? 0 : 3.2;
+    this.ambient.intensity = { gravity: 0.42, earthmoon: 0.38, solarsystem: 0.65 }[type] ?? 1.25;
+    this.keyLight.intensity = type === "solarsystem" ? 0 : 3.2;
     this.keyLight.position.set(-4, 9, type === "gravity" ? 3 : 6);
+    if (type === "earthmoon") this.keyLight.position.set(-10, 0, 0);
     this.rimLight.intensity = space ? 0 : 20;
     this.fillLight.intensity = type === 'gravity' ? 0.45 : space ? 0.05 : 1.15;
     this.scene.environmentIntensity = type === 'gravity' ? 0.3 : space ? 0.08 : 0.9;
@@ -444,8 +445,8 @@ export class SceneView {
       -0.38;
     this.grid.position.y = this.floor.position.y + 0.02;
     // A spatial reference in the orbital plane, not a ground beneath the planet.
-    this.floor.visible = !["gravity", "vectors"].includes(type);
-    this.grid.visible = !["vectors", "gravity"].includes(type);
+    this.floor.visible = !space && type !== "vectors";
+    this.grid.visible = !space && type !== "vectors";
     this.grid.position.y = type === "gravity" ? 1 : this.grid.position.y;
     this.grid.material.opacity = 0.3;
     const add = (name, mesh, pos) => {

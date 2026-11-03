@@ -10,6 +10,10 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 ## What is in the laboratory?
 
+### Version 19.7: space simulations
+
+Earth–Moon now shows a textured Earth and Moon with a separate Earth-facing phase disc. The Solar System comparison uses Atlas planet materials, a ringed Saturn and the same logarithmic display scale in both views. Stellar evolution, binary stars and three-body stars use Atlas stellar surfaces and clearer labels. The cloud and ejecta layers illustrate selected stages without changing the model clocks or readings.
+
 ### Version 19.6: orbital mechanics
 
 The 3D orbital lab uses the Muon Atlas Earth surface material, cloud shell and atmospheric rim. A larger illustrative satellite and compact vector labels make the motion easier to follow. The camera fits the visible trajectory samples and central body directly to use more of the viewport. The orbit, distances and measurements use the existing physical model.
@@ -513,7 +517,7 @@ npm test
 npm run check
 ```
 
-There are **272 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
+There are **274 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
 
 - Default spring position against the analytic solution over 30 s, with maximum error below 10⁻⁶ m; default undamped energy drift below 10⁻⁷ over 120 s.
 - Worst supported spring frequency with energy drift below 0.04% over 120 s; damping and critical/overdamped behaviour.

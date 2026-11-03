@@ -7,6 +7,7 @@ import { BUOYANCY_STATUS } from "./buoyancy-physics.js";
 import { chargedLayout, soundLayout } from "./field-geometry.js";
 import { phaseInventory } from "./thermal-geometry.js";
 import { drawMotionDiagram } from "./render-motion.js";
+import { lunarLitInterval, solarDisplayRadius } from "./space-display.js";
 const chargedViews = new WeakMap();
 const TAU = Math.PI * 2,
   CYAN = "#168e87",
@@ -1492,13 +1493,12 @@ export function drawCurriculum(canvas, lab) {
       c.arc(720, 185, 37, 0, TAU);
       c.fill();
       for (let yy = -37; yy <= 37; yy++) {
-        const edge = Math.sqrt(Math.max(0, 37 ** 2 - yy ** 2)),
-          term = edge * Math.cos(q.phase),
-          waxing = Math.sin(q.phase) >= 0;
+        const edge = Math.sqrt(Math.max(0, 37 ** 2 - yy ** 2));
+        const [left, right] = lunarLitInterval(edge, q.phase);
         line(
           [
-            [720 + (waxing ? term : -edge), 185 + yy],
-            [720 + (waxing ? edge : -term), 185 + yy],
+            [720 + left, 185 + yy],
+            [720 + right, 185 + yy],
           ],
           "#d9eef4",
           1.2,
@@ -1529,7 +1529,7 @@ export function drawCurriculum(canvas, lab) {
       circle(cx, cy, 22, GOLD, true);
       for (let i = 0; i < 8; i++) {
         const planet = P.PLANETS[i],
-          r = 47 + i * 19 + (i === p.planet ? Math.log(p.scale) * 15 : 0),
+          r = 30 * solarDisplayRadius(planet[1] * (i === p.planet ? p.scale : 1)),
           period =
             (2 * Math.PI * Math.sqrt((planet[1] * P.AU) ** 3 / (P.G * P.SUN))) /
             P.YEAR,

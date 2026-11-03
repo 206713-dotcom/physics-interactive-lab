@@ -4,10 +4,105 @@ import * as T from "../vendor/three.module.min.js";
 import { PALETTE as C, clamp, setPath } from "./scene-kit.js";
 import { PLANETS, AU, G, SUN, YEAR } from "./curriculum-physics.js";
 import { planckSpectrum } from "./practical-physics.js";
+import { lunarLitInterval, solarDisplayRadius } from "./space-display.js";
+import { BODY_MAP } from "../atlas/astronomy-data.js";
+import { paintedTexture } from "../atlas/planet-texture.js";
+import { atmosphereMaterial, cloudShell, plasmaShell, stellarMaterial, surfaceMaterial } from "../atlas/visual-detail.js";
 const TAU = Math.PI * 2;
 function starColor(temperature) {
   const u = clamp((temperature - 2500) / 7500, 0, 1);
   return new T.Color(0xffa775).lerp(new T.Color(0xa9caff), u);
+}
+
+function world(k, id, radius, position) {
+  const data = BODY_MAP[id];
+  const group = k.add(new T.Group(), position);
+  group.userData.world = id;
+  const tilt = new T.Group();
+  group.add(tilt);
+  tilt.rotation.z = (data.tilt || 0) * Math.PI / 180;
+  const map = typeof document !== "undefined" && id !== "earth" ? paintedTexture(data) : null;
+  const material = surfaceMaterial(data, map);
+  const globe = new T.Mesh(new T.SphereGeometry(radius, 64, 40), material);
+  tilt.add(globe);
+  if (id === "earth") {
+    if (typeof document !== "undefined") {
+      const texture = new T.TextureLoader().load(new URL("../atlas/assets/earth-blue-marble.png", import.meta.url).href, (loaded) => {
+        if (group.parent !== k.root) {
+          loaded.dispose();
+          return;
+        }
+        material.map = loaded;
+        material.color.setHex(0xffffff);
+        material.needsUpdate = true;
+      }, undefined, () => texture.dispose());
+      texture.colorSpace = T.SRGBColorSpace;
+    }
+    tilt.add(cloudShell(radius * 1.011));
+  }
+  if (["earth", "venus", "uranus", "neptune"].includes(id)) {
+    group.add(new T.Mesh(new T.SphereGeometry(radius * 1.045, 48, 32), atmosphereMaterial(id === "earth" ? 0x6bafff : data.color, 0.52)));
+  }
+  if (id === "saturn") {
+    const ring = new T.Group();
+    ring.rotation.x = -Math.PI / 2;
+    tilt.add(ring);
+    for (const [inner, outer, color, opacity] of [[1.25, 1.52, 0xd4b283, 0.64], [1.54, 1.84, 0xf5d7a0, 0.83], [1.9, 2.15, 0xd5b58e, 0.56]]) {
+      ring.add(new T.Mesh(new T.RingGeometry(radius * inner, radius * outer, 96),
+        new T.MeshBasicMaterial({ color, transparent: true, opacity, side: T.DoubleSide, depthWrite: false })));
+    }
+  }
+  return { group, globe, tilt };
+}
+
+function luminousBody(k, radius, color, position, opacity = 0.43) {
+  const group = k.add(new T.Group(), position);
+  const surface = stellarMaterial(color);
+  group.add(new T.Mesh(new T.SphereGeometry(radius, 80, 48), surface));
+  group.add(new T.Mesh(new T.SphereGeometry(radius * 1.08, 56, 36), atmosphereMaterial(color, opacity)));
+  return { group, surface };
+}
+
+function orbitRing(k, radius, position, color, opacity) {
+  const ring = new T.Mesh(new T.TorusGeometry(radius, 0.013, 6, 128),
+    new T.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false, toneMapped: false, fog: false }));
+  ring.rotation.x = Math.PI / 2;
+  return k.add(ring, position);
+}
+
+// The disc is an Earth-facing view. At new Moon the projected lit area is zero.
+function lunarDisc(k, position) {
+  if (typeof document === "undefined") return () => {};
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 160;
+  const ctx = canvas.getContext("2d");
+  const texture = new T.CanvasTexture(canvas);
+  texture.colorSpace = T.SRGBColorSpace;
+  const disc = k.add(new T.Sprite(new T.SpriteMaterial({ map: texture, transparent: true, depthWrite: false, toneMapped: false })), position);
+  disc.scale.set(1.72, 1.72, 1);
+  let lastPhase;
+  return (phase) => {
+    const sample = Math.round(phase * 180 / Math.PI) % 360;
+    if (sample === lastPhase) return;
+    lastPhase = sample;
+    ctx.clearRect(0, 0, 160, 160);
+    ctx.fillStyle = "#14243c";
+    ctx.beginPath();
+    ctx.arc(80, 80, 72, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = "#e5edf4";
+    for (let y = -71; y <= 71; y++) {
+      const half = Math.sqrt(72 ** 2 - y ** 2);
+      const [left, right] = lunarLitInterval(half, phase);
+      ctx.fillRect(80 + left, 80 + y, right - left, 1);
+    }
+    ctx.strokeStyle = "#8ca6bf";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(80, 80, 72, 0, TAU);
+    ctx.stroke();
+    texture.needsUpdate = true;
+  };
 }
 export const SPACE_SCENES = {
   atom(p, k) {
@@ -74,117 +169,100 @@ export const SPACE_SCENES = {
     };
   },
   earthmoon(p, k) {
-    const earth = k.ball(1, C.blue, [0, 1.8, 0], { roughness: 0.8 });
-    const moon = k.ball(0.28, 0xb9c6cc, [-2.8, 1.8, 0], { roughness: 1 });
-    const sun = k.ball(0.55, C.gold, [-4.5, 1.8, 0], {
-      emissive: C.gold,
-      emissiveIntensity: 1.1,
-    });
-    const light = new T.PointLight(0xffffff, 3.5, 25, 0);
-    k.add(light, [-4.5, 1.8, 0]);
-    k.ring(2.8, C.muted, [0, 1.8, 0]);
-    const axis = k.rod([0, 0.4, 0], [0, 3.2, 0], C.white, 0.018);
-    axis.rotation.z = (-p.tilt * Math.PI) / 180;
-    k.label("Sunlight →", [-3.4, 3.6, 0], "#ffc584", 2.2);
-    k.label("Earth", [0, 0.25, 0], "#89baff", 1.3);
-    k.label("Sizes and distances not to scale", [0, 4.5, 0], "#b7cedc", 4.6);
-    return (s, q) => {
-      moon.position.set(-2.8 * Math.cos(q.phase), 1.8, 2.8 * Math.sin(q.phase));
-      earth.rotation.y = s.t * 0.3;
+    const y = 1.8, orbit = 2.85;
+    const earth = world(k, "earth", 1.13, [0, y, 0]);
+    const moon = world(k, "moon", 0.36, [-orbit, y, 0]);
+    const sun = luminousBody(k, 0.67, 0xffbb63, [-5.1, y, 0]);
+    orbitRing(k, orbit, [0, y, 0], 0x86b5e0, 0.42);
+    for (const z of [-0.62, 0, 0.62]) k.arrow([-4.24, y, z], [0.93, 0, 0], C.gold);
+    const axis = new T.Line(
+      new T.BufferGeometry().setFromPoints([new T.Vector3(0, -1.43, 0), new T.Vector3(0, 1.43, 0)]),
+      new T.LineBasicMaterial({ color: 0x9dcdf3 }),
+    );
+    earth.tilt.add(axis);
+    k.label("Sun", [-5.1, 0.83, 0], "#ffcc90", 1.1);
+    k.label("Earth", [0, 0.22, 0], "#a4d5ff", 1.22);
+    const moonLabel = k.label("Moon", [0, 0, 0], "#d6e8f5", 1.12);
+    const phase = lunarDisc(k, [4.5, 2.0, 0]);
+    k.label("View from Earth", [4.5, 0.93, 0], "#d1e6f7", 2.12);
+    const north = new T.Vector3(), vertical = new T.Vector3(0, 1, 0);
+    const tilt = p.tilt * Math.PI / 180;
+    return {
+      camera: { target: [-0.2, y, 0], radius: 11.2, polar: 0.91, azimuth: -0.53 },
+      update(s, q) {
+        moon.group.position.set(-orbit * Math.cos(q.phase), y, orbit * Math.sin(q.phase));
+        moon.globe.rotation.y = q.phase;
+        moonLabel.position.copy(moon.group.position).add(new T.Vector3(0, 0.64, 0));
+        const towardSun = Math.sin(q.declination * Math.PI / 180);
+        north.set(-towardSun, Math.cos(tilt), Math.sign(Math.cos(q.longitude - TAU * 80 / 365.25)) *
+          Math.sqrt(Math.max(0, Math.sin(tilt) ** 2 - towardSun ** 2)));
+        earth.tilt.quaternion.setFromUnitVectors(vertical, north);
+        earth.globe.rotation.y = s.t * 0.3;
+        sun.surface.uniforms.time.value = s.t;
+        phase(q.phase);
+      },
     };
   },
   solarsystem(p, k) {
-    k.ball(0.45, C.gold, [0, 1.7, 0], {
-      emissive: C.gold,
-      emissiveIntensity: 1.5,
+    const y = 1.7;
+    const sun = luminousBody(k, 0.58, 0xffbf69, [0, y, 0]);
+    // Constant intensity keeps all eight small bodies readable despite compressed distances.
+    k.add(new T.PointLight(0xffebd4, 2.9, 0, 0), [0, y, 0]);
+    const bodies = PLANETS.map(([name, distance], i) => {
+      const selected = i === p.planet;
+      const au = distance * (selected ? p.scale : 1);
+      const radius = solarDisplayRadius(au);
+      const period = TAU * Math.sqrt((au * AU) ** 3 / (G * SUN)) / YEAR;
+      orbitRing(k, radius, [0, y, 0], selected ? C.cyan : 0x547396, selected ? 0.8 : 0.38);
+      const size = [0.12, 0.17, 0.18, 0.14, 0.38, 0.31, 0.23, 0.23][i];
+      const planet = world(k, name.toLowerCase(), size * (selected ? 1.28 : 1), [radius, y, 0]);
+      return { ...planet, radius, period, size, name };
     });
-    const colors = [
-        0xa6a5a0,
-        0xd9b780,
-        C.blue,
-        0xe8916c,
-        0xdcb58c,
-        0xead4a4,
-        0x92d9dd,
-        0x7b9bff,
-      ],
-      radius = (i) =>
-        0.7 +
-        Math.log1p(PLANETS[i][1] * (i === p.planet ? p.scale : 1) * 2) * 0.9,
-      bodies = PLANETS.map((planet, i) => {
-        const r = radius(i),
-          selected = i === p.planet;
-        k.ring(
-          r,
-          selected ? C.cyan : C.muted,
-          [0, 1.7, 0],
-          "y",
-          selected ? 0.7 : 0.22,
-        );
-        const size = [0.075, 0.11, 0.12, 0.09, 0.25, 0.22, 0.16, 0.16][i],
-          body = k.ball(size, colors[i], [r, 1.7, 0], { roughness: 0.75 });
-        if (i === 5) {
-          const ring = k.ring(0.35, C.gold, [r, 1.7, 0]);
-          body.attach(ring);
-          ring.rotation.z = 0.45;
-        }
-        return body;
-      }),
-      label = k.label(
-        PLANETS[p.planet][0] + " · selected orbit",
-        [0, 4.3, 0],
-        "#cfe6ef",
-        4.5,
-      );
-    k.label(
-      "Eight planets · logarithmic distances",
-      [0, 0.2, 2.1],
-      "#b7cedc",
-      4.8,
-    );
-    k.label("Body sizes enlarged separately", [0, -0.2, 2.1], "#b7cedc", 4.1);
-    return (s, q) => {
-      for (let i = 0; i < 8; i++) {
-        const r = radius(i),
-          aAU = PLANETS[i][1] * (i === p.planet ? p.scale : 1),
-          period = (TAU * Math.sqrt((aAU * AU) ** 3 / (G * SUN))) / YEAR,
-          phase = (TAU * s.t) / period + i * 0.9;
-        bodies[i].position.set(r * Math.cos(phase), 1.7, -r * Math.sin(phase));
-      }
+    const chosen = bodies[p.planet];
+    const marker = k.label(chosen.name, [0, 0, 0], "#adf6ed", 1.64);
+    return {
+      camera: { target: [0, y, 0], radius: 17.5 + Math.max(0, Math.max(...bodies.map(({ radius }) => radius)) - 5.16) * 3,
+        polar: 0.53, azimuth: -0.14 },
+      update(s) {
+        sun.surface.uniforms.time.value = s.t;
+        bodies.forEach(({ group, globe, radius, period }, i) => {
+          const angle = TAU * s.t / period + i * 0.9;
+          group.position.set(radius * Math.cos(angle), y, -radius * Math.sin(angle));
+          globe.rotation.y = 0.6 + s.t * 0.09;
+        });
+        marker.position.copy(chosen.group.position);
+        marker.position.y += chosen.size + 0.56;
+      },
     };
   },
   stars(p, k) {
-    const colors = [C.red, starColor(p.temperature), C.red, C.blue, C.purple],
-      sizes = [1.5, 1.1, 2.1, 0.45, 0.24],
-      size = sizes[p.stage],
-      body = k.ball(size, colors[p.stage], [0, 2.3, 0], {
-        emissive: colors[p.stage],
-        emissiveIntensity: 0.45,
-        roughness: 0.85,
-      });
-    if (p.stage === 4) {
-      const halo = k.ring(1.2, C.gold, [0, 2.3, 0]);
-      halo.rotation.z = 0.3;
+    const heavy = p.mass >= 8, stage = p.stage, centre = [0, 2.35, 0];
+    const colors = [0xffb177, starColor(p.temperature), 0xff9565, 0xadd5ff, 0xb6d8ff];
+    const sizes = [0.5, 1.22, 1.85, 0.32, 0.29];
+    const core = luminousBody(k, sizes[stage], colors[stage], centre);
+    const layers = [];
+    if (stage === 0 || stage === 3) {
+      const colors = stage === 0 ? [0x9562e3, 0x4a99d9, 0xefaa80] : [0x58c9e2, 0x8563f4, 0xff9c78];
+      for (let i = 0; i < colors.length; i++) {
+        const material = plasmaShell(colors[i], stage === 0 ? 0.56 : 0.62);
+        const shell = k.add(new T.Mesh(new T.SphereGeometry(1.2 + i * 0.45, 48, 32), material), centre);
+        shell.scale.set(1, stage === 0 ? 0.54 + i * 0.09 : 0.64 + i * 0.08, 0.8 + i * 0.1);
+        shell.rotation.set(0.45 + i * 0.47, i * 1.7, 0.2 + i * 0.36);
+        layers.push(shell);
+      }
     }
-    k.label(
-      [
-        "Cloud collapse",
-        "Main sequence",
-        "Giant / supergiant",
-        "Stellar remnant",
-        "Compact remnant",
-      ][p.stage],
-      [0, 5, 0],
-      "#cfe6ef",
-      4.4,
-    );
-    k.label(
-      "Stage illustration · not an evolution timescale",
-      [0, 0.3, 1.5],
-      "#b7cedc",
-      5.8,
-    );
-    return () => {};
+    const stageName = [
+      "Cloud and protostar", "Main sequence", heavy ? "Red supergiant" : "Red giant",
+      heavy ? "Supernova ejecta" : "Planetary nebula", heavy ? "Compact remnant" : "White dwarf",
+    ][stage];
+    k.label(stageName, [0, 4.64, 0], "#d3e9f8", 2.9);
+    return {
+      camera: { target: [0, 2.52, 0], radius: 9.0, polar: 1.19, azimuth: -0.16 },
+      update(s) {
+        core.surface.uniforms.time.value = s.t;
+        for (const shell of layers) shell.material.uniforms.time.value = s.t;
+      },
+    };
   },
   universe(p, k) {
     const points = k.instances(25, 0.1, C.blue);

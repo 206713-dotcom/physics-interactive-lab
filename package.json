@@ -1,6 +1,6 @@
 {
   "name": "physics-interactive-lab",
-  "version": "19.6.0",
+  "version": "19.7.0",
   "private": true,
   "type": "module",
   "description": "57 browser-based physics laboratories, Cambridge 9702 practice questions and a FocusPhysics IGCSE course map.",

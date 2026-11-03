@@ -600,7 +600,7 @@ export const SIMULATIONS = {
       metric("Collision", s.hit ? "Complete" : p.u1<=p.u2 ? "No approach" : "Pending", ""),
     ],
     caption:
-      "1D instantaneous collision · 0.8 m carts on one fixed scale · camera follows the pair; ruler and velocity arrows use the lab frame · no wall collisions. Clock adapts to a six-second presentation.",
+      "1D instantaneous collision · 0.8 m carts on one fixed scale · fixed laboratory ruler fitted at release; velocity arrows use the lab frame · no wall collisions. Clock adapts to a six-second presentation.",
     equation: "m₁u₁ + m₂u₂ = m₁v₁ + m₂v₂",
     insight: "Set equal masses and e = 1. What happens to the velocities?",
     ended: (s,p) => s.t>=collisionObservation(p).duration-1e-12 ? (s.hit?"After-collision observation complete":"Observation complete · no contact") : null,

@@ -13,7 +13,7 @@ import { setPath, createSceneKit } from "./scene-kit.js";
 import { roundedBox, studioEnvironment, studioGrid } from "./scene-finish.js";
 import { createDetailedMechanics } from "./scene-precision.js";
 import { atmosphereMaterial, cloudShell, surfaceMaterial } from "../atlas/visual-detail.js";
-import { orbitalReference } from "./orbital-reference.js";
+import { orbitalDisplayReference, orbitalDisplayExtent } from "./orbital-reference.js";
 import { createRefractionApparatus } from "./scene-optical-bench.js";
 import { createWaveBench } from "./scene-wave-bench.js";
 import { createRCBench } from "./scene-rc-bench.js";
@@ -89,20 +89,22 @@ function updateLine(line, points) {
 }
 function label(value, color = "#a9c8d9") {
   const canvas = document.createElement("canvas");
-  canvas.width = canvas.height = 128;
+  const word = value.length > 2;
+  canvas.height = 128;
+  canvas.width = word ? 320 : 128;
   const c = canvas.getContext("2d");
   c.beginPath();
-  c.roundRect(20, 20, 88, 88, 24);
+  c.roundRect(20, 20, canvas.width-40, 88, 24);
   c.fillStyle = "#0a2035";
   c.fill();
   c.strokeStyle = color;
   c.lineWidth = 3;
   c.stroke();
-  c.font = "italic 66px Georgia,serif";
+  c.font = word ? "600 48px Segoe UI,sans-serif" : "italic 66px Georgia,serif";
   c.textAlign = "center";
   c.textBaseline = "middle";
   c.fillStyle = color;
-  c.fillText(value, 64, 61);
+  c.fillText(value, canvas.width/2, 61, canvas.width-55);
   const map = new T.CanvasTexture(canvas);
   map.colorSpace = T.SRGBColorSpace;
   const sprite = new T.Sprite(
@@ -113,7 +115,7 @@ function label(value, color = "#a9c8d9") {
       toneMapped: false,
     }),
   );
-  sprite.scale.set(0.64, 0.64, 1);
+  sprite.scale.set(word ? 1.18 : 0.64, word ? 0.472 : 0.64, 1);
   sprite.userData.role = "label";
   sprite.userData.text = value;
   return sprite;
@@ -146,6 +148,14 @@ function buildOrbitalSatellite(group) {
   part(0.255, 0.035, 0.3, 0xd5e3ec, 0, 0.113, 0);
   part(0.17, 0.13, 0.04, 0x142843, 0, 0, 0.175);
   part(0.015, 0.29, 0.015, 0xe9f1f3, 0.09, 0.18, -0.08);
+  const dish = new T.Mesh(new T.SphereGeometry(.112,24,12,0,Math.PI*2,0,Math.PI/2),
+    material(0xd9e7f5,{metalness:.48,roughness:.25,side:T.DoubleSide}));
+  dish.scale.y=.29;
+  dish.rotation.z=Math.PI*.8;
+  dish.position.set(-.07,.18,-.047);
+  group.add(dish);
+  for (const x of [-.141,.141])
+    for (let i=0;i<4;i++) part(.013,.125,.018,0x344560,x,.015,-.09+.055*i);
   for (const side of [-1, 1]) {
     part(0.28, 0.025, 0.048, 0x8395ac, side * 0.19, 0, 0);
     part(0.49, 0.026, 0.34, 0x98b7d5, side * 0.44, 0, 0);
@@ -434,9 +444,10 @@ export class SceneView {
     this.scene.background = space ? (this.orbitBackdrop ??= makeOrbitBackdrop()) : this.studioBackdrop;
     this.scene.fog.color.set(space?0x080f1b:0x10283c);
     // Orbital lighting is illustrative, not a simulated day/night cycle.
-    this.ambient.intensity = { gravity: 0.42, earthmoon: 0.38, solarsystem: 0.65 }[type] ?? 1.25;
+    this.ambient.intensity = { gravity: 0.36, earthmoon: 0.38, solarsystem: 0.65 }[type] ?? 1.25;
     this.keyLight.intensity = type === "solarsystem" ? 0 : 3.2;
     this.keyLight.position.set(-4, 9, type === "gravity" ? 3 : 6);
+    if (type === "gravity") this.keyLight.position.set(-9, 7, 2);
     if (type === "earthmoon") this.keyLight.position.set(-10, 0, 0);
     this.rimLight.intensity = space ? 0 : 26;
     this.fillLight.intensity = type === 'gravity' ? 0.45 : space ? 0.05 : 1.15;
@@ -517,14 +528,29 @@ export class SceneView {
       earthMap.colorSpace = T.SRGBColorSpace;
       earthMap.anisotropy = Math.min(8, this.renderer.capabilities.getMaxAnisotropy());
       const clouds = cloudShell(1.012);
+      clouds.material.uniforms.opacity.value = .19;
       clouds.rotation.z = surface.rotation.z;
       planet.add(clouds);
-      planet.add(new T.Mesh(new T.SphereGeometry(1.05, 96, 64), atmosphereMaterial(0x6bafff, 0.55)));
+      planet.add(new T.Mesh(new T.SphereGeometry(1.045, 96, 64), atmosphereMaterial(0x6bafff, 0.64)));
       const reference = add("reference", new T.Line(new T.BufferGeometry(), new T.LineDashedMaterial({
         color: 0x7f9ebd, transparent: true, opacity: 0.72, dashSize: 0.09, gapSize: 0.065, toneMapped: false,
       })));
       reference.frustumCulled = false;
-      o.referencePoints = orbitalReference(p);
+      o.orbitGuide = orbitalDisplayReference(p);
+      o.distanceRings = [1,2].map(multiple => {
+        const points=Array.from({length:193},(_,i)=>{
+          const a=i/192*Math.PI*2;
+          return new T.Vector3(Math.cos(a),0,Math.sin(a));
+        });
+        const ring=new T.Line(new T.BufferGeometry().setFromPoints(points),
+          new T.LineBasicMaterial({color:0x729cc7,transparent:true,opacity:multiple===1?.24:.34,toneMapped:false,depthWrite:false}));
+        ring.position.y=.985;
+        r.add(ring);
+        return ring;
+      });
+      add("launch",new T.Mesh(new T.SphereGeometry(.047,16,12),
+        new T.MeshBasicMaterial({color:0xb2d8fa})));
+      add("launchLabel",label("Launch", "#b2d8fa"));
       const satellite = add("satellite", new T.Group());
       o.satelliteBody = buildOrbitalSatellite(satellite);
       add("radiusLabel", label("r", "#d4e6ef"));
@@ -707,18 +733,28 @@ export class SceneView {
     else if (this.precision) this.precision.update(lab);
     else if (this.advanced) this.advanced.update(lab);
     else if (type === "gravity") {
-      let extent = p.distance * 1.35;
-      for (const q of lab.trail || [])
-        extent = Math.max(extent, Math.abs(q.x) * 1.18, Math.abs(q.y) * 1.18);
-      extent = Math.max(extent, Math.hypot(s.x, s.y) * 1.1);
+      const extent=orbitalDisplayExtent(p,s,lab.trail);
       const sc = 5 / extent,
         rad = centralRadius(p) * sc;
-      this.orbitComposition = { reference: lab.showTrail ? o.referencePoints : [], trail: lab.showTrail ? lab.trail || [] : [], state: s, scale: sc, radius: rad };
-      if (o.referenceScale !== sc) {
-        setPath(o.reference, o.referencePoints.map(([x, y]) => [x * sc, 1, -y * sc]));
+      const guide=o.orbitGuide.points;
+      const stop=o.orbitGuide.closed ? -1 : guide.findIndex(([x,y])=>Math.hypot(x,y)>extent*1.23);
+      const count=stop===-1?guide.length:stop;
+      if (o.referenceScale !== sc || o.referenceCount !== count) {
+        o.visibleGuide=guide.slice(0,count);
+        setPath(o.reference, o.visibleGuide.map(([x, y]) => [x * sc, 1, -y * sc]));
         o.reference.computeLineDistances();
         o.referenceScale = sc;
+        o.referenceCount = count;
       }
+      this.orbitComposition = { reference: lab.showTrail ? o.visibleGuide : [], trail: lab.showTrail ? lab.trail || [] : [], state: s, scale: sc, radius: rad };
+      o.distanceRings.forEach((ring,i)=>{
+        const distance=p.distance*(i+1);
+        ring.scale.setScalar(distance*sc);
+        ring.visible=distance<=extent*1.06;
+      });
+      o.launch.position.set(p.distance*sc,1,0);
+      o.launchLabel.position.set(p.distance*sc,1.3,0);
+      o.launchLabel.visible=Math.hypot(s.x-p.distance,s.y)>.16*p.distance;
       o.reference.visible = lab.showTrail;
       o.planet.scale.setScalar(rad);
       o.satellite.position.set(s.x * sc, 1, -s.y * sc);

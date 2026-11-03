@@ -1,5 +1,6 @@
 /** High-DPI Canvas views. All motion positions come from the numerical models. */
 import { centralRadius, orbitAcceleration } from "./physics.js";
+import { orbitalDisplayReference, orbitalDisplayExtent } from "./orbital-reference.js";
 const TAU = Math.PI * 2;
 function line(c, x1, y1, x2, y2, color, width = 1) {
   c.beginPath();
@@ -129,25 +130,33 @@ export function drawOrbit(canvas, lab) {
   const { c, w, h } = setup(canvas),
     s = lab.state,
     p = lab.params;
-  let extent = p.distance * 1.25;
-  for (const pt of lab.trail)
-    extent = Math.max(extent, Math.abs(pt.x) * 1.18, Math.abs(pt.y) * 1.18);
-  extent = Math.max(extent, Math.abs(s.x) * 1.18, Math.abs(s.y) * 1.18);
+  const backdrop=c.createRadialGradient(w*.49,h*.48,0,w*.49,h*.48,Math.max(w,h)*.65);
+  backdrop.addColorStop(0,"#152d4a"); backdrop.addColorStop(1,"#070e1c");
+  c.fillStyle=backdrop; c.fillRect(0,0,w,h);
+  const extent=orbitalDisplayExtent(p,s,lab.trail);
   const scale = Math.min(w * 0.44, h * 0.43) / extent,
     cx = w / 2,
     cy = h * 0.51;
   const screen = (pt) => [cx + pt.x * scale, cy - pt.y * scale];
   c.setLineDash([2, 6]);
-  for (const multiple of [1, 2, 3]) {
+  for (const multiple of [1, 2]) {
     const rr = p.distance * multiple * scale;
     c.beginPath();
     c.arc(cx, cy, rr, 0, TAU);
-    c.strokeStyle = "#7197a526";
+    c.strokeStyle = "#77b4dc48";
     c.stroke();
   }
   c.setLineDash([]);
   line(c, 25, cy, w - 25, cy, "#7591a016");
   line(c, cx, 45, cx, h - 25, "#7591a016");
+  if (lab.showTrail) {
+    const {points}=orbitalDisplayReference(p);
+    c.setLineDash([5,5]);
+    c.beginPath();
+    points.forEach(([x,y],i)=>{const [px,py]=screen({x,y});i?c.lineTo(px,py):c.moveTo(px,py);});
+    c.strokeStyle="#9ab8ebbb"; c.lineWidth=1.3; c.stroke();
+    c.setLineDash([]);
+  }
   if (lab.showTrail && lab.trail.length > 1) {
     c.beginPath();
     lab.trail.forEach((pt, i) => {
@@ -202,8 +211,12 @@ export function drawOrbit(canvas, lab) {
   c.restore();
   const [sx, sy] = screen(s);
   c.setLineDash([3, 5]);
-  line(c, cx, cy, sx, sy, "#bed4df32");
+  line(c, cx, cy, sx, sy, "#cde7f6a0");
   c.setLineDash([]);
+  const launchX=cx+p.distance*scale;
+  c.strokeStyle="#a7ccf0"; c.lineWidth=1.25;
+  c.strokeRect(launchX-3,cy-3,6,6);
+  if (launchX<w-42) text(c,"Launch",launchX+8,cy+19,"#b6cce8",11);
   if (Math.hypot(s.x, s.y) * scale > radius * 2.2)
     text(c, "r", (cx + sx) / 2 + 5, (cy + sy) / 2 - 7, "#b9d4e3", 12);
   if (lab.vectors && !s.collided) {
@@ -221,7 +234,7 @@ export function drawOrbit(canvas, lab) {
       );
     const a = orbitAcceleration(s, p),
       magnitude = Math.hypot(a.x, a.y),
-      aScale = Math.min(75, magnitude * 22) / magnitude;
+      aScale = magnitude ? Math.min(75, magnitude * 22) / magnitude : 0;
     arrow(c, sx, sy, a.x * aScale, -a.y * aScale, "#ff9d91");
     text(c, "a", sx + a.x * aScale + 6, sy - a.y * aScale - 6, "#ff9d91", 12);
   }

@@ -10,6 +10,10 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 ## What is in the laboratory?
 
+### Version 20.2: fixed collision ruler and orbital guidance
+
+The collision ruler is fitted before release and stays fixed in both views. The moving carts and fixed metre marks share one scale for the whole run. Orbital Mechanics marks the launch position and adds distance rings; the 2D and 3D views distinguish the computed trail from the predicted Kepler path. The readings compare current distance and gravitational force with their launch values.
+
 ### Version 20.1: model-first layout
 
 All 57 labs open with a wide, tall stage. Change variables inside the scene and look for the key relationship on the diagram. Scroll below the model for live worked calculations, values and related results. Full screen keeps the model and its controls together without the worked steps.
@@ -113,7 +117,7 @@ Model references: [OpenStax University Physics, §15.4 Pendulums](https://openst
 
 Three existing mechanics laboratories have been rebuilt. **Motion and forces** now has a detailed cart with rotating wheel spokes, a fixed displacement ruler and separate velocity, applied-force, drag and resultant indicators. The entire eight-second observation, including a reversal, shares one position scale. Vertical mode uses a falling body and defines positive displacement downwards; it has no ground-impact model. The exact constant-force/linear-drag solution now uses stable phi-function limits, so tiny nonzero drag no longer causes cancellation of large terms. Body dimensions and mass blocks are illustrative; the ruler and numerical quantities are calibrated. The 2D diagram uses the same fixed range and calculated 50 Hz position marks, without wrapping the body back to the start.
 
-**Collisions** has machined carts, bumpers, visible wheel motion, mass/velocity labels and kinetic-energy accounting. Cart length is 0.8 m including the bumpers, and cart length and separation share a fixed metre scale. The camera follows the pair's midpoint while a labelled laboratory ruler moves past; velocity readings and arrows remain in the laboratory frame. Carts meet without overlap or changing size. Inelastic kinetic-energy loss is labelled as internal transfer. Contact remains an exact instantaneous event, with no deformation or continuous collision-force model; wheel rotation adds no rotational energy. Separating carts receive no invented impulse. The observation stops at 7 m centre separation, at most two seconds after contact, or after ten simulated seconds. Its explicit SI clock is fitted to a nominal six-second presentation at 1×. The 2D view follows the same ruler and cart dimensions.
+**Collisions** has machined carts, bumpers, visible wheel motion, mass/velocity labels and kinetic-energy accounting. Cart length is 0.8 m including the bumpers, and cart length and separation share a fixed metre scale. The fixed lab ruler fits the whole observation before release; the moving carts and arrows remain in the laboratory frame. Carts meet without overlap or changing size. Inelastic kinetic-energy loss is labelled as internal transfer. Contact remains an exact instantaneous event, with no deformation or continuous collision-force model; wheel rotation adds no rotational energy. Separating carts receive no invented impulse. The observation stops at 7 m centre separation, at most two seconds after contact, or after ten simulated seconds. Its explicit SI clock is fitted to a nominal six-second presentation at 1×. The 2D view follows the same ruler and cart dimensions.
 
 **Projectiles** now has a calibrated observation bench, a separate angle-setting instrument, a solid sampled trail, velocity/gravity/drag indicators and mechanical-energy readings per kilogram. Both 3D and 2D have **Actual flight / Vacuum comparison** controls. Actual flight keeps strong-drag motion visible and clips off-window pieces of the dashed vacuum prediction; the comparison fits both full flights. The clipping never connects disjoint pieces with a false line. Switching frames changes neither state nor history and is preserved by share/embed links (`frame=actual` or `frame=vacuum`). Both axes share one length scale. A cached calculation using the same RK4 model chooses the frame and nominal eight-second playback clock; the solid trail still contains live solver samples. Steps are at most 1/240 s, with smaller steps for short flights. The enlarged marker receives a visual lift equal to its radius so it meets the display ground; numerical height remains the point-model height. At impact the retained velocity is incoming, acceleration arrows disappear, and no bounce is modelled.
 
@@ -456,7 +460,7 @@ v₂ − v₁ = e(u₁ − u₂)
 Kloss = ½[m₁m₂/(m₁ + m₂)](1 − e²)(u₁ − u₂)²
 ```
 
-Both carts translate exactly between events. The model solves contact time within a display step and applies the simultaneous conservation/restitution equations once. The rail has no external horizontal force or wall collision. Cart length is 0.8 m, initial centre positions are −2 and +2 m, and the observation ends after 10 s. The camera may zoom as carts separate. Restitution is limited to 0–1.
+Both carts translate exactly between events. The model solves contact time within a display step and applies the simultaneous conservation/restitution equations once. The rail has no external horizontal force or wall collision. Cart length is 0.8 m, initial centre positions are −2 and +2 m, and the observation ends after 10 s. The ruler does not move or zoom during playback. Restitution is limited to 0–1.
 
 ### Waves and superposition
 

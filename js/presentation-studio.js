@@ -122,6 +122,19 @@ export function installPresentationStudio(stage, controls, id, title, show3D) {
               ? 'Sinking · Weight exceeds the greatest possible upthrust.'
               : 'Suspended · Equal densities give balanced forces.';
       }
+      if (id === 'collisions') {
+        const {state:s,params:p}=lab;
+        context.textContent = s.hit
+          ? p.restitution===0 ? 'After contact: both carts have the same velocity. Follow them past the fixed ruler.'
+            : 'After contact: compare the two new velocities with their launch values. The ruler stays fixed.'
+          : p.u1>p.u2 ? 'Before contact: the gap closes. Use the fixed metre marks to compare how far each cart travels.'
+            : 'The carts are not closing the gap, so no collision impulse is applied.';
+      }
+      if (id === 'gravity') {
+        const {state:s,params:p}=lab, r=Math.hypot(s.x,s.y), ratio=r/p.distance;
+        context.textContent = s.collided ? 'Surface impact: the model stops at the central body.'
+          : `Distance is ${ratio.toFixed(2)}× the launch separation. Gravity is ${(1/ratio**2).toPrecision(3)}× its launch strength. Gold shows velocity; coral points inward.`;
+      }
       stage.dataset.studyMode = lab.studyMode;
     },
   };

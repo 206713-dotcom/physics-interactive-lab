@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import * as T from '../vendor/three.module.min.js';
 import { SIMULATIONS as LABS } from '../js/simulations.js';
 import { linearMotion, motionTurningTime } from '../js/linear-motion.js';
-import { motionLayout, collisionObservation, COLLISION_SCALE, projectilePreview, projectileLayout, vacuumPoint, clipFlightSegment } from '../js/kinematics-display.js';
+import { motionLayout, collisionObservation, collisionLayout, projectilePreview, projectileLayout, vacuumPoint, clipFlightSegment } from '../js/kinematics-display.js';
 import { createCurriculumScene } from '../js/scene-curriculum.js';
 import { createCollisionBench } from '../js/scene-motion-benches.js';
 import { createProjectileBench } from '../js/scene-projectile-bench.js';
@@ -58,10 +58,35 @@ test('collision carts retain a physical 0.8 m length and touch exactly without o
   contact=collisionObservation(p).contact,s=a.d.step(a.run.state,p,contact);
  a.update(s);a.root.updateMatrixWorld(true);
  const A=nodes(a.root,'collision-a')[0],B=nodes(a.root,'collision-b')[0],ba=new T.Box3().setFromObject(A),bb=new T.Box3().setFromObject(B);
- close(ba.max.x-ba.min.x,.8*COLLISION_SCALE,1e-7);close(bb.max.x-bb.min.x,.8*COLLISION_SCALE,1e-7);close(ba.max.x,bb.min.x,1e-7);
+ const {scale}=collisionLayout(p);
+ close(ba.max.x-ba.min.x,.8*scale,1e-7);close(bb.max.x-bb.min.x,.8*scale,1e-7);close(ba.max.x,bb.min.x,1e-7);
  const width=ba.max.x-ba.min.x,after=a.d.step(s,p,.1);a.update(after);a.root.updateMatrixWorld(true);
  close(new T.Box3().setFromObject(A).getSize(new T.Vector3()).x,width,1e-7);
  assert.ok(new T.Box3().setFromObject(B).min.x>=new T.Box3().setFromObject(A).max.x-1e-7);clean(a.root);
+});
+
+test('collision ruler stays in lab coordinates through impact and same-direction drift',()=>{
+ for(const [u1,u2] of [[5,5],[-5,-5],[5,4],[5,-5],[-5,5],[0,0]]){
+  const a=make('collisions',{u1,u2,m1:5,m2:.2,restitution:.7}),p=a.run.params,
+    layout=collisionLayout(p),{duration}=collisionObservation(p),
+    ticks=nodes(a.root,'collision-ruler-tick'),
+    marks=ticks.map(n=>n.geometry.attributes.position.getX(0));
+  let s=a.run.state;
+  for(let i=0;i<=160;i++){
+   if(i) s=a.d.step(s,p,duration/160);
+   a.update(s);
+   for(const [id,x] of [['collision-a',s.x1],['collision-b',s.x2]]){
+    assert.ok(x-.4>=layout.low-1e-7 && x+.4<=layout.high+1e-7);
+    close(nodes(a.root,id)[0].position.x,layout.point(x));
+   }
+   ticks.forEach((n,j)=>{
+    close(n.position.x,0);
+    close(n.geometry.attributes.position.getX(0),marks[j]);
+    close(marks[j],layout.point(n.userData.metres),1e-7);
+   });
+  }
+  assert.ok(layout.ticks.includes(0)); clean(a.root);
+ }
 });
 
 test('collision windows preserve the event, cap separation at 7 m and do not invent contact for separating carts',()=>{

@@ -272,10 +272,10 @@ export const SCENE_GUIDES = {
     "Displacement and the ruler use 3.2 scene units per metre in every setup. Cart, coil, wheel and dashpot dimensions are illustrative; no rolling resistance, rotational energy, spring inertia or fluid dynamics is added. Arrows have fixed linear scales per setup. Zero energy produces no coloured bar. E + transferred energy should match the release energy within RK4 numerical error, which is not labelled as heat.",
   ],
   gravity: [
-    "Follow the satellite, its tangential velocity and inward acceleration.",
+    "Follow the gold velocity arrow and the coral acceleration arrow. Acceleration always points toward the central body.",
     "Gravity changes velocity continuously; energy and angular momentum determine the orbit.",
     "Compare circular, elliptical and escape launch speeds at the same separation.",
-    "The orbit is planar. The solid trail contains integrated samples; the dashed curve is an analytic Kepler reference, stopped at the surface or six release distances. The display fits the trail; r is measured centre to centre. The Earth surface uses the Muon Atlas NASA Blue Marble asset. Its Earth appearance is illustrative when changing mass. Clouds and glow do not add atmospheric drag.",
+    "The orbit is planar. The solid trail contains integrated samples; the dashed curve is an analytic Kepler reference, stopped at the surface or six release distances. Faint rings show one and two launch separations where visible. The display fits the trajectory; r is measured centre to centre. The Earth surface uses the Muon Atlas NASA Blue Marble asset. Its Earth appearance is illustrative when changing mass. Clouds and glow do not add atmospheric drag.",
   ],
   pendulum: [
     "The protractor reads the angle from the downward vertical. Motion vectors show gold tangential velocity and purple total acceleration, including its inward component. Force diagram shows blue weight, cyan signed link force and coral tangential damping on one common force scale.",
@@ -290,10 +290,10 @@ export const SCENE_GUIDES = {
     "Both position axes share one fixed scale for the chosen frame. Off-window vacuum segments are clipped and labelled. The clock fits a nominal eight-second presentation, with its SI rate shown below the scene. A cached RK4 preview chooses framing and timing only; the visible solid trail uses actual solver samples. RK4 steps are at most 1/240 s. Marker size is enlarged and its centre is visually lifted by its radius for ground contact; heights refer to the point model. At impact, the retained velocity is incoming and acceleration arrows disappear; no bounce or contact dynamics are modelled.",
   ],
   collisions: [
-    "The cyan and gold carts keep the same size throughout the run. The camera follows their midpoint while the metre ruler slides past; velocity arrows and readings are always in the laboratory frame.",
+    "Watch the cyan and gold carts pass the fixed metre marks. Compare the directions of their velocity arrows before and after contact.",
     "Momentum of the isolated pair is conserved. Restitution gives relative separation speed divided by approach speed. The energy bar compares remaining kinetic energy with energy transferred internally by an inelastic collision.",
     "Try equal masses with e = 1, then e = 0. Compare the velocity exchange with motion together after contact. Set carts moving apart: the model should report no approach and apply no collision impulse.",
-    "Both cart length (0.8 m, including bumpers) and separation use one fixed metre scale. Contact is an instantaneous event, without a deformation or continuous-force model. Mass blocks and rolling wheels are decorative; rotational energy and rail friction are omitted. The observation ends at a maximum 7 m separation, up to two seconds after contact, or after ten simulated seconds. Playback adapts to a nominal six real seconds; the SI rate is explicit. Cart labels and the moving ruler retain laboratory coordinates.",
+    "Both cart length (0.8 m, including bumpers) and separation use one fixed metre scale. Contact is an instantaneous event, without a deformation or continuous-force model. Mass blocks and rolling wheels are decorative; rotational energy and rail friction are omitted. The observation ends at a maximum 7 m separation, up to two seconds after contact, or after ten simulated seconds. Playback adapts to a nominal six real seconds; the SI rate is explicit. The ruler is fitted to the whole observation before release. Its zero and scale stay fixed until the setup changes.",
   ],
   waves: [
     "Blue is the incident wave, gold is the counter-propagating wave, and cyan is their sum. The probe and pale beads move vertically while keeping the same horizontal position.",

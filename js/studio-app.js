@@ -564,19 +564,22 @@ function arrangeOrbitWorkbench() {
   display.className = "orbit-display-bar";
   const toggles = document.createElement("div");
   toggles.className = "orbit-display-toggles";
-  $("#vectors").closest("label").lastChild.textContent = "Vectors";
-  $("#trail").closest("label").lastChild.textContent = "Trail";
+  $("#vectors").closest("label").lastChild.textContent = "Velocity & acceleration";
+  $("#trail").closest("label").lastChild.textContent = "Trail & predicted path";
   toggles.append($("#vectors").closest("label"), $("#trail").closest("label"));
+  toggles.setAttribute("role", "group");
+  toggles.setAttribute("aria-label", "Orbit overlays");
+  $(".preset-block").after(toggles);
   // The meaning of r is explained with the view scale notes instead of a fourth
   // competing legend item. Each vector keeps its own colour and label.
   $(".orbit-legend span:last-child").remove();
-  display.append($(".orbit-legend"), toggles);
+  display.append($(".orbit-legend"));
   $("#stage").after(display);
   display.after($("#metrics"));
   const notes = document.createElement("details");
   notes.className = "view-notes";
   notes.innerHTML =
-    "<summary>View scale & model notes</summary><p>The camera fits the visible orbit and planet together; their distances and the planet radius use the same scale. Spacecraft size, surface texture, clouds and brighter studio lighting are illustrative; no day/night cycle or atmospheric drag is simulated. The orbit stays in one plane as you rotate the camera. r is the centre-to-centre separation, not the altitude above the surface.</p>";
+    "<summary>View scale & model notes</summary><p>Faint rings mark the launch separation and, when in view, twice that distance. Planet radius and distances use the same scale. The spacecraft is enlarged. Surface texture, clouds and lighting are illustrative; no day/night cycle or atmospheric drag is simulated. The orbit stays in one plane as you rotate the camera. r is measured from centre to centre.</p>";
   notes.append($("#stage-caption"));
   workspace.append(notes);
   const analysis = document.createElement("section");

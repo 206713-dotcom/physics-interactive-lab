@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from '../vendor/three.module.min.js';
 import { frameApparatus,apparatusBounds,orbitBounds,frameOrbit,diagramLabelVisible } from '../js/scene-framing.js';
-import { orbitalReference } from '../js/orbital-reference.js';
+import { orbitalReference, orbitalDisplayReference, orbitalDisplayExtent } from '../js/orbital-reference.js';
 import { G,centralRadius } from '../js/physics.js';
 import { createSceneKit } from '../js/scene-kit.js';
 import { createCurriculumScene,CURRICULUM_BUILDERS } from '../js/scene-curriculum.js';
@@ -56,6 +56,19 @@ test('orbital composition fits circular, elliptical and escape paths without alt
 test('orbital camera bounds reject non-finite positions and invalid display scales',()=>{
   for(const scale of [0,-1,Infinity,NaN]) assert.throws(()=>orbitBounds([],[],{x:1,y:0},scale,1),RangeError);
   assert.throws(()=>orbitBounds([],[],{x:NaN,y:0},1,1),RangeError);
+});
+
+test('the orbital view pre-fits a closed ellipse, and grows for an escaping satellite',()=>{
+  const base={centralMass:5.9722e24,bodyMass:1000,distance:15e6},
+    vc=Math.sqrt(G*(base.centralMass+base.bodyMass)/base.distance),
+    elliptical={...base,velocity:1.2*vc}, escaping={...base,velocity:1.6*vc},
+    launch={x:base.distance,y:0}, guide=orbitalDisplayReference(elliptical);
+  assert.ok(guide.closed);
+  assert.equal(orbitalDisplayExtent(elliptical,launch),1.06*guide.radius);
+  for(const [x,y] of guide.points) assert.equal(orbitalDisplayExtent(elliptical,{x,y}),1.06*guide.radius);
+  assert.equal(orbitalDisplayReference(escaping).closed,false);
+  assert.equal(orbitalDisplayExtent(escaping,launch),1.06*base.distance);
+  assert.equal(orbitalDisplayExtent(escaping,{x:0,y:3*base.distance}),3.18*base.distance);
 });
 
 test('sampled orbit framing stays inside the viewport and removes empty corner padding', () => {

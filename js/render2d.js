@@ -8,7 +8,7 @@ import { ADVANCED_IDS } from "./physics-advanced.js";
 import { drawAdvanced } from "./render-advanced.js";
 import { CURRICULUM_IDS } from "./curriculum-physics.js";
 import { drawCurriculum } from "./render-curriculum.js";
-import { projectileLayout, projectilePreview } from "./kinematics-display.js";
+import { projectileLayout, projectilePreview, collisionLayout, collisionSpeedScale, CART_LENGTH } from "./kinematics-display.js";
 import { drawOscillation } from './render-oscillations.js';
 export function draw2D(canvas, lab) {
   const context = canvas.getContext('2d'), original = context.fillText,
@@ -170,8 +170,9 @@ function drawDiagram(canvas, lab) {
     }
     text(lab.projectileFrame==='vacuum'?'Full vacuum comparison · dashed = vacuum':'Actual-flight frame · off-window vacuum reference clipped',24,40,'#abc5d5',13);
   } else if (lab.type === "collisions") {
-    const center=(s.x1+s.x2)/2,
-      sc = (w - 90) / 9,
+    const layout=collisionLayout(p),
+      pixels=Math.max(1,w-66)/9.4,
+      speedScale=collisionSpeedScale(p)*pixels,
       y = h * 0.57,
       cx = w / 2;
     line(
@@ -186,15 +187,25 @@ function drawDiagram(canvas, lab) {
       [s.x1, s.v1, p.m1, C, "A"],
       [s.x2, s.v2, p.m2, G, "B"],
     ]) {
-      const px = cx + (x-center) * sc,
-        ww = 0.8 * sc;
-      c.fillStyle = col;
+      const px = cx + layout.point(x)*pixels,
+        ww = CART_LENGTH*layout.scale*pixels, hh=Math.max(12,Math.min(44,ww*.57)),
+        wheel=Math.min(7,ww*.18), top=y+29-2*wheel-hh;
+      const paint=c.createLinearGradient(px,top,px,top+hh);
+      paint.addColorStop(0,name==='A'?'#89ddd2':'#ffce7a');
+      paint.addColorStop(1,col);
+      c.fillStyle = paint;
       c.beginPath();
-      c.roundRect(px - ww / 2, y - 20, ww, 40, 6);
+      c.roundRect(px - ww / 2, top, ww, hh, Math.min(6,ww/3));
       c.fill();
-      text(name, px, y + 5, "#102b3e", 14, "center");
-      text(`${m.toFixed(1)} kg`, px, y + 58, "#bfd3df", 14, "center");
-      if (lab.vectors) arrow(px, y - (name==='A'?42:72), v * 12, 0, col);
+      for (const direction of [-1,1]) {
+        c.beginPath();
+        c.arc(px+direction*ww*.27,y+29-wheel,wheel,0,Math.PI*2);
+        c.fillStyle='#24475f';
+        c.fill();
+      }
+      const yy=y-(name==='A'?48:80), tagX=Math.max(53,Math.min(w-53,px));
+      text(`${name} · ${m.toFixed(2)} kg`,tagX,yy-12,col,14,'center');
+      if (lab.vectors) arrow(px,yy,v*speedScale,0,col);
     }
     text(
       s.hit ? "AFTER CONTACT" : p.u1<=p.u2 ? "NO APPROACH · NO COLLISION" : "BEFORE CONTACT",
@@ -204,11 +215,18 @@ function drawDiagram(canvas, lab) {
       14,
       "center",
     );
-    for(let value=Math.floor(center)-5;value<=Math.floor(center)+5;value++) {
-      const px=cx+(value-center)*sc;if(px<30||px>w-30)continue;
-      line([[px,y+34],[px,y+44]],'#63879c',1);text(`${value} m`,px,y+84,'#94b7cb',14,'center');
+    const minor=layout.step/5;
+    for (let n=Math.ceil((layout.center-4.4/layout.scale)/minor);n*minor<=layout.center+4.4/layout.scale;n++) {
+      if(n%5===0) continue;
+      const px=cx+layout.point(n*minor)*pixels;
+      line([[px,y+32],[px,y+38]],'#9db2c1',1);
     }
-    text("Camera follows pair · ruler and velocities use the lab frame",24,h-25,'#abc5d5',13);
+    for (const value of layout.ticks) {
+      const px=cx+layout.point(value)*pixels;
+      line([[px,y+32],[px,y+(value===0?52:45)]],value===0?'#93601b':'#63879c',value===0?2:1);
+      text(`${value} m`,px,y+68,'#517487',w<500?11:14,'center');
+    }
+    text("Fixed lab ruler · positive x to the right",24,h-25,'#58778e',13);
   } else if (lab.type === "waves") {
     const intro=lab.studyMode==='igcse',left=55,width=w-110,mid=h*.5,
       scale=Math.min((h-170)/(intro?1.2:2.4),180),

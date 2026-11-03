@@ -26,7 +26,23 @@ export function collisionObservation(p) {
       :closing<0?Math.min(10,3/(-closing)):10;
   return {duration,contact,rate:duration/6,step:duration/2400,sampleEvery:duration/400};
 }
-export function collisionFrame(s) {return {center:(s.x1+s.x2)/2,scale:COLLISION_SCALE};}
+/** Piecewise linear trajectories reach their extrema at release, impact or
+ * the end. Fit these once so the ruler stays fixed in the lab frame. */
+const collisionLayouts = new WeakMap();
+export function collisionLayout(p) {
+  if (collisionLayouts.has(p)) return collisionLayouts.get(p);
+  const {duration,contact}=collisionObservation(p), start=createExtra("collisions",p).state;
+  const samples=[start,stepExtra("collisions",start,p,duration)];
+  if(contact<duration) samples.push(stepExtra("collisions",start,p,contact));
+  const xs=samples.flatMap(({x1,x2})=>[x1,x2]),
+    low=Math.min(...xs)-CART_LENGTH/2, high=Math.max(...xs)+CART_LENGTH/2,
+    center=(low+high)/2, scale=Math.min(COLLISION_SCALE,8.15/(high-low)),
+    step=tickStep(8.8/scale,8), ticks=[];
+  for(let n=Math.ceil((center-4.4/scale)/step);n*step<=center+4.4/scale;n++) ticks.push(n*step);
+  const layout={low,high,center,scale,step,ticks,point:x=>(x-center)*scale};
+  collisionLayouts.set(p,layout);
+  return layout;
+}
 export function collisionSpeedScale(p) {
   const after=collisionVelocities(p.m1,p.m2,p.u1,p.u2,p.restitution);
   return 1.35/Math.max(1,Math.abs(p.u1),Math.abs(p.u2),Math.abs(after.v1),Math.abs(after.v2));

@@ -639,3 +639,15 @@ body:has(.model-screen[open]) { overflow: hidden; }
 @container (min-width: 581px) and (max-width: 740px) {
   .scene-container:has(.model-variables.is-open) > .scene-equation { max-width: 44%; }
 }
+
+.model-variables .orbit-display-toggles {
+  display: grid;
+  justify-content: start;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid #b5ccd8;
+  border-radius: 9px;
+  background: #eaf3f8;
+}
+.model-variables .orbit-display-toggles label { color: #24495f; }

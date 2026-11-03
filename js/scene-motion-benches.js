@@ -74,16 +74,15 @@ export function createCollisionBench(p,root,options={}) {
     layout=collisionLayout(p),{scale}=layout;
   role(A.group,'collision-a');role(B.group,'collision-b');A.group.scale.setScalar(scale);B.group.scale.setScalar(scale);
   const va=k.arrow([0,1.2,0],[1,0,0],C.cyan),vb=k.arrow([0,1.9,0],[1,0,0],C.gold),
-    speedScale=collisionSpeedScale(p),phase=k.label('',[0,3.2,0],'#d4e7ee',1.75),
+    speedScale=collisionSpeedScale(p),phase=k.label('',[0,3,0],'#d4e7ee',1.42),
     momentum=k.label('',[0,4.15,0],'#c3a6ff',5.1),
-    labelA=k.label('',[0,1.75,0.72],'#64e8d1',1.65),labelB=k.label('',[0,2.35,0.72],'#ffc584',1.65);
+    labelA=k.label('',[0,1.65,0.72],'#64e8d1',1.38),labelB=k.label('',[0,2.23,0.72],'#ffc584',1.38);
   for (const value of layout.ticks) {
     const x=layout.point(value), zero=value===0;
     const mark=role(k.line([[x,.22,.56],[x,.22,.84]],zero?C.gold:C.muted,zero?1:.8),'collision-ruler-tick');
     mark.userData.metres=value;
-    k.label(`${value} m`,[x,.24,1],zero?'#ffd28f':'#c0d9e3',.58);
+    k.label(`${value} m`,[x,.24,1],zero?'#ffd28f':'#c0d9e3',.48);
   }
-  k.label('Fixed lab ruler',[0,.12,2.0],'#a5c4d3',1.4);
   const initial=.5*p.m1*p.u1**2+.5*p.m2*p.u2**2,
     kept=role(k.box(4.6,.14,.22,C.cyan,[0,.15,1.65]),'collision-energy-kept'),
     lost=role(k.box(4.6,.14,.22,C.purple,[0,.15,1.65]),'collision-energy-lost'),
@@ -99,10 +98,10 @@ export function createCollisionBench(p,root,options={}) {
     kept.scale.x=f;kept.position.x=-2.3+2.3*f;lost.scale.x=1-f;lost.position.x=-2.3+4.6*f+2.3*(1-f);lost.visible=loss>1e-10;
     kept.visible=K>1e-10;
     const phaseText=s.hit?'After contact':p.u1<=p.u2?'No collision':'Approaching';
-    k.setLabel(phase,phaseText,'#d4e7ee',1.75);
+    k.setLabel(phase,phaseText,'#d4e7ee',1.42);
     k.setLabel(momentum,`Σp = ${(p.m1*s.v1+p.m2*s.v2).toFixed(3)} kg m/s`,'#c3a6ff',5.1);
-    k.setLabel(labelA,`A · ${s.v1.toFixed(2)} m/s`,'#64e8d1',1.65);
-    k.setLabel(labelB,`B · ${s.v2.toFixed(2)} m/s`,'#ffc584',1.65);
+    k.setLabel(labelA,`A · ${s.v1.toFixed(2)} m/s`,'#64e8d1',1.38);
+    k.setLabel(labelB,`B · ${s.v2.toFixed(2)} m/s`,'#ffc584',1.38);
     k.setLabel(energy,`K = ${K.toFixed(2)} J · transferred internally: ${loss.toFixed(2)} J`,'#b5d0dc',6.1);
     k.visibility(lab.showLabels!==false,lab.vectors!==false);
   }};

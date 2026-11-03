@@ -442,24 +442,32 @@ button,a,input,select,summary { -webkit-tap-highlight-color:transparent; }
 .model-variables {
   position: absolute;
   z-index: 4;
-  inset: 12px auto auto 12px;
+  inset: 14px auto auto 14px;
   max-width: calc(100% - 64px);
 }
 .model-variables.is-open {
-  bottom: 12px;
-  width: min(300px, 100% - 64px);
+  bottom: 14px;
+  width: min(var(--control-dock-width, 310px), 100% - 42px);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #49697b;
+  border-radius: 15px;
+  background: #f7fbfd;
+  box-shadow: 0 14px 34px #020f1b55;
   pointer-events: none;
 }
 .model-variables > button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   align-self: start;
   width: max-content;
   max-width: 100%;
   padding: 10px 13px;
   color: #ddfcf8;
-  background: #123348;
-  border: 1px solid #568491;
+  background: #153b4e;
+  border: 1px solid #578392;
   border-radius: 9px;
   font-family: inherit;
   font-size: 13px;
@@ -467,35 +475,78 @@ button,a,input,select,summary { -webkit-tap-highlight-color:transparent; }
   cursor: pointer;
   pointer-events: auto;
 }
-.model-variables.is-open > button { background: #205166; }
+.model-variables > button::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+}
+.model-variables.is-open > button {
+  width: 100%;
+  justify-content: space-between;
+  border: 0;
+  border-radius: 0;
+  padding: 11px 15px;
+  background: #173b4e;
+}
+.model-variables.is-open > button::after { transform: translateY(2px) rotate(225deg); }
+.model-variables > button:hover { background: #235568; }
+.model-variables > button:focus-visible { outline: 2px solid #9aeee1; outline-offset: -4px; }
 .model-variables > .controls {
   position: relative;
   inset: auto;
   width: 100%;
   max-height: none;
   min-height: 0;
-  padding: 16px;
-  margin-top: 6px;
+  padding: 14px;
+  margin: 0;
   overflow: auto;
   overscroll-behavior: contain;
   pointer-events: auto;
-  background: #f5faff;
-  border: 1px solid #a4bac8;
-  border-radius: 12px;
-  box-shadow: 0 10px 28px #06162460;
+  scrollbar-width: thin;
+  scrollbar-color: #92aebb #f7fbfd;
+  background: #f7fbfd;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 .model-variables > .controls[hidden] { display: none; }
 .model-variables > .controls { flex: 1 1 0; color: #17354b; }
-.model-variables .control-label { color: #17354b; }
-.model-variables .controls-heading h2 { font-size: 18px; }
-.presentation-stage .scene-container { container-type: inline-size; overflow: clip; }
-@container (min-width: 740px) {
+.model-variables .controls-heading { margin: 0 0 10px; padding: 0; border: 0; }
+.model-variables .controls-heading h2 { margin: 0; font-size: 18px; }
+.model-variables .learning-mode-controls { margin-block: 0 12px; padding-block: 0 10px; }
+.model-variables .learning-mode-options { gap: 5px; }
+.model-variables .learning-mode-options button { min-height: 35px; padding: 6px 9px; }
+.model-variables .control { margin: 0 0 8px; padding: 10px; border: 1px solid #d7e4ec; border-radius: 11px; background: #fff; }
+.model-variables .control-label { color: #17354b; gap: 6px; font-size: 13px; }
+.model-variables .control-label > label { flex: 1 1 105px; }
+.model-variables .controls .control-label .value-input {
+  flex: 0 1 auto;
+  width: auto;
+  max-width: 100%;
+  min-height: 32px;
+  padding: 4px 7px;
+  gap: 4px;
+}
+.model-variables .value-input input { width: 56px; font-size: 14px; }
+.model-variables .value-input span { max-width: none; font-size: 10px; }
+.model-variables .controls input[type=range] { margin: 5px 0 0; }
+.model-variables .control-hint { margin-top: 3px; font-size: 11px; line-height: 1.45; }
+.presentation-stage .scene-container {
+  --control-dock-width: clamp(280px, 24cqw, 326px);
+  container-type: inline-size;
+  overflow: clip;
+}
+@container (min-width: 800px) {
   .scene-container:has(.model-variables.is-open) canvas {
-    left: 324px;
-    width: calc(100% - 324px);
+    left: calc(var(--control-dock-width) + 28px);
+    width: calc(100% - var(--control-dock-width) - 28px);
+    border-radius: 12px 0 0 12px;
   }
   .scene-container:has(.model-variables.is-open) .scene-camera-hint {
-    left: 342px;
+    left: calc(var(--control-dock-width) + 44px);
   }
 }
 
@@ -555,8 +606,33 @@ body:has(.model-screen[open]) { overflow: hidden; }
 .consolidated-lab .lab-title-row { margin-bottom: 14px; gap: 10px 16px; }
 .consolidated-lab .lab-title-row .eyebrow { margin: 0 0 4px; }
 .consolidated-lab .lab-title-row p { margin: 3px 0 0; font-size: 14px; }
-.consolidated-lab .stage-top { min-height: 50px; padding-block: 6px; }
-.consolidated-lab .camera-toolbar { min-height: 39px; padding-block: 4px; }
+.consolidated-lab .stage-top,
+.model-screen .stage-top {
+  min-height: 54px;
+  padding-block: 7px;
+  background: linear-gradient(110deg, #142e41, #0d2234);
+}
+.presentation-stage .stage-views button {
+  font-family: inherit;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+.presentation-stage .camera-toolbar {
+  min-height: 40px;
+  padding-block: 4px;
+  background: #11283a;
+}
+.presentation-stage .running-status {
+  font-size: 11px;
+  line-height: 1.35;
+  letter-spacing: .055em;
+}
+.presentation-stage .transport {
+  background: #102638;
+  border-top: 1px solid #355064;
+}
+.presentation-stage .transport .reset-button { border-radius: 8px; }
+.presentation-stage .transport .reset-button:hover { background: #1e3c50; }
 .consolidated-lab .lab-title-row h1 { font-size: clamp(29px, 3.1vw, 44px); margin: 2px 0 0; }
 .consolidated-lab .presentation-stage {
   box-shadow: 0 22px 50px -26px #102c54a8;
@@ -635,8 +711,14 @@ body:has(.model-screen[open]) { overflow: hidden; }
 }
 @container (max-width: 580px) {
   .presentation-stage .scene-container > .scene-equation { max-width: 68%; inset: 61px 10px auto auto; }
+  .model-variables.is-open {
+    inset: auto 10px 10px;
+    width: auto;
+    max-width: none;
+    max-height: 58%;
+  }
 }
-@container (min-width: 581px) and (max-width: 740px) {
+@container (min-width: 581px) and (max-width: 799px) {
   .scene-container:has(.model-variables.is-open) > .scene-equation { max-width: 44%; }
 }
 

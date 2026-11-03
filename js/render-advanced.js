@@ -190,66 +190,49 @@ export function drawAdvanced(canvas, lab) {
     );
     return;
   }
-  const p = lab.params,
-    s = lab.state,
-    radius = Math.min(w * 0.4, h * 0.39),
-    scale = radius / (p.l1 + p.l2),
-    cx = w / 2,
-    cy = h * 0.48;
-  const pt = (x, y) => [cx + x * scale, cy - y * scale],
-    q = doublePosition(s, p),
-    twin = doublePosition(s.twin, p),
-    origin = [cx, cy],
-    a = pt(q.x1, q.y1),
-    b = pt(q.x, q.y),
-    ga = pt(twin.x1, twin.y1),
-    gb = pt(twin.x, twin.y);
-  text("COUPLED NONLINEAR MOTION", 22, 27, "#8faec4", 11);
-  text(`Twin starts ${p.delta}° away`, 22, 48, "#c6acff", 13);
-  line(
-    [
-      [cx, cy - radius],
-      [cx, cy + radius],
-    ],
-    "#6b899d",
-    1,
-    0.2,
-  );
-  if (lab.showTrail) {
-    line([...lab.trail.map((q) => pt(q.x, q.y)), b], "#72e2ce", 1.7, 0.65);
-    if (lab.vectors)
-      line([...lab.trail.map((q) => pt(q.tx, q.ty)), gb], "#c49aff", 1.3, 0.45);
+  const { params: p, state: s } = lab;
+  const twinVisible = lab.vectors;
+  const columns = twinVisible ? 2 : 1;
+  const width = (w - 28 - (columns - 1) * 12) / columns;
+  const cy = h * 0.51;
+  const radius = Math.min(width * 0.40, h * 0.33);
+  const scale = radius / (p.l1 + p.l2);
+
+  function drawStand(index, state, title, upper, lower, twin = false) {
+    const left = 14 + index * (width + 12);
+    const cx = left + width / 2;
+    const pt = (x, y) => [cx + x * scale, cy - y * scale];
+    const position = doublePosition(state, p);
+    const joint = pt(position.x1, position.y1), tip = pt(position.x, position.y);
+    c.beginPath();
+    c.roundRect(left, 12, width, h - 53, 12);
+    c.fillStyle = "#0d2336";
+    c.fill();
+    c.strokeStyle = "#2b4b63";
+    c.stroke();
+    text(title, cx, 36, lower, 12, "center");
+    c.beginPath();
+    c.arc(cx, cy, radius, 0, 2 * Math.PI);
+    c.strokeStyle = "#2d4c63";
+    c.lineWidth = 1;
+    c.stroke();
+    line([[cx, cy - radius], [cx, cy + radius]], "#5e819c", 1, 0.55);
+    if (lab.showTrail) {
+      const path = (lab.trail || []).map((q) => twin ? pt(q.tx, q.ty) : pt(q.x, q.y));
+      line([...path, tip], lower, 1.65, 0.72);
+    }
+    line([[cx, cy], joint], "#d5e3ee", 2.5);
+    line([joint, tip], lower, 2.5);
+    disc(...joint, 7, upper);
+    disc(...tip, 8, lower);
+    disc(cx, cy, 4, "#e6eff6");
   }
-  if (lab.vectors) {
-    line([origin, ga, gb], "#c49aff", 2, 0.4);
-    disc(...ga, 9, "#c49aff", true);
-    disc(...gb, 10, "#c49aff", true);
-  }
-  line([origin, a, b], "#d0e5ec", 3);
-  line(
-    [
-      [cx - 22, cy - 3],
-      [cx + 22, cy - 3],
-    ],
-    "#8da9bd",
-    5,
-  );
-  disc(...a, 11, "#ffcc84");
-  disc(...b, 12, "#72e2ce");
-  disc(cx, cy, 4, "#e6eff6");
-  text(
-    `L₁ = ${p.l1.toFixed(2)} m`,
-    (cx + a[0]) / 2 + 12,
-    (cy + a[1]) / 2,
-    "#d4dbdf",
-    12,
-  );
-  text(
-    `L₂ = ${p.l2.toFixed(2)} m`,
-    (a[0] + b[0]) / 2 + 12,
-    (a[1] + b[1]) / 2,
-    "#b4e2d7",
-    12,
-  );
-  text("Gold / cyan: main · Violet: perturbed twin", 22, h - 22, "#9eb8ca", 12);
+
+  drawStand(0, s, "MAIN RUN", "#ffcc84", "#72e2ce");
+  if (twinVisible) drawStand(1, s.twin, "COMPARISON TWIN", "#ddb9ff", "#b790ff", true);
+  const rulerStart = 16;
+  line([[rulerStart, h - 26], [rulerStart + scale, h - 26]], "#bed5e5", 2);
+  for (const x of [rulerStart, rulerStart + scale]) line([[x, h - 30], [x, h - 22]], "#bed5e5", 1);
+  text("1 m", rulerStart, h - 9, "#9eb8ca", 11);
+  if (twinVisible) text(`Twin release offset: ${p.delta}°`, w - 16, h - 15, "#d4baff", 11, "right");
 }

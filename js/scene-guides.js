@@ -338,9 +338,9 @@ export const SCENE_GUIDES = {
     "Stellar sizes are illustrative. Check energy error and the documented close-approach treatment when interpreting chaotic motion.",
   ],
   doublependulum: [
-    "Gold and cyan are the two bobs; purple is a nearby comparison trajectory.",
+    "The gold and cyan bobs are the main run. The violet stand shows the nearby comparison run at the same instant and scale.",
     "The coupled nonlinear equations transfer energy between the two links.",
     "Increase initial energy and compare the separation of the nearby trajectories.",
-    "Both systems are planar. The comparison is a separately integrated nearby initial state, not random visual noise.",
+    "Both systems are planar and integrated separately. The displayed tip separation compares positions relative to each pivot. The gap between stands is for viewing.",
   ],
 };

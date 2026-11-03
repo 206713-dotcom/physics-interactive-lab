@@ -427,7 +427,7 @@ export const ADVANCED_SIMULATIONS = {
       return { x: q.x, y: q.y, tx: t.x, ty: t.y };
     },
     caption:
-      "Two point masses on massless rigid rods · frictionless fixed pivot · planar motion shown in 3D · RK4, at most 1/480 s with smaller steps for faster settings · violet twin differs only in lower release angle; visual depth offset is illustrative",
+      "Two point masses on massless rigid rods · frictionless fixed pivot · RK4, at most 1/480 s · both stands use the same scale · measured tip separation compares positions relative to their own pivots",
     equation:
       "(m₁ + m₂)L₁α₁ + m₂L₂ cos Δ α₂ = −(m₁ + m₂)g sin θ₁ − m₂L₂ω₂² sin Δ",
     insight:

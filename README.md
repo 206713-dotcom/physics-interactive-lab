@@ -10,6 +10,10 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 ## What is in the laboratory?
 
+### Version 19.8: double pendulum
+
+The main and comparison runs now sit side by side in both views. They share the same position scale and time. The lower-bob trails follow the two integrated states, and tip separation compares coordinates relative to each run’s pivot.
+
 ### Version 19.7: space simulations
 
 Earth–Moon now shows a textured Earth and Moon with a separate Earth-facing phase disc. The Solar System comparison uses Atlas planet materials, a ringed Saturn and the same logarithmic display scale in both views. Stellar evolution, binary stars and three-body stars use Atlas stellar surfaces and clearer labels. The cloud and ejecta layers illustrate selected stages without changing the model clocks or readings.

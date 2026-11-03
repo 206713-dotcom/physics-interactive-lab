@@ -2,6 +2,7 @@
 import * as T from "../vendor/three.module.min.js";
 import { SOLAR_MASS, stellarTime, doublePosition } from "./physics-advanced.js";
 import { atmosphereMaterial, stellarMaterial } from "../atlas/visual-detail.js";
+import { roundedBox } from "./scene-finish.js";
 const PALETTE = [0xffc37d, 0x85d6ff, 0xc39aff];
 function textSprite(text, color = "#b7cedf") {
   const canvas = document.createElement("canvas");
@@ -127,16 +128,13 @@ function line(points, color, opacity = 0.3) {
     }),
   );
 }
-function rod(color, radius = 0.035, transparent = false) {
+function rod(color, radius = 0.035) {
   return new T.Mesh(
     new T.CylinderGeometry(radius, radius, 1, 16),
     new T.MeshStandardMaterial({
       color,
       metalness: 0.72,
       roughness: 0.26,
-      transparent,
-      depthWrite: !transparent,
-      opacity: transparent ? 0.25 : 1,
     }),
   );
 }
@@ -148,7 +146,7 @@ function connect(mesh, a, b) {
   mesh.scale.set(1, delta.length(), 1);
   mesh.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), delta.normalize());
 }
-function bob(color, radius, ghost = false) {
+function bob(color, radius) {
   return new T.Mesh(
     new T.SphereGeometry(radius, 40, 28),
     new T.MeshStandardMaterial({
@@ -156,10 +154,7 @@ function bob(color, radius, ghost = false) {
       metalness: 0.3,
       roughness: 0.17,
       emissive: color,
-      emissiveIntensity: ghost ? 0.1 : 0.16,
-      transparent: ghost,
-      depthWrite: !ghost,
-      opacity: ghost ? 0.35 : 1,
+      emissiveIntensity: 0.16,
     }),
   );
 }
@@ -308,99 +303,85 @@ export function createAdvancedScene(type, p, view) {
     };
   }
   view.floor.visible = true;
-  view.floor.position.y = -1.3;
+  view.floor.position.y = -0.75;
   view.grid.visible = true;
-  view.grid.position.y = -1.28;
-  view.grid.material.opacity = 0.16;
-  view.target.set(0, 2.3, 0);
-  view.homeRadius = 10.5;
-  view.homePolar = 1.23;
-  view.homeAzimuth = -0.1;
+  view.grid.position.y = -0.73;
+  view.grid.material.opacity = 0.18;
+  view.target.set(0, 2, 0);
+  view.homeRadius = 11.8;
+  view.homePolar = 1.36;
+  view.homeAzimuth = -0.07;
   view.home();
-  const pivot = [0, 2.3, 0],
-    sc = 3.5 / (p.l1 + p.l2);
-  const top = add(rod(0x708594, 0.075));
-  connect(top, [-2.7, 2.7, -0.7], [2.7, 2.7, -0.7]);
-  for (const x of [-2.7, 2.7]) {
-    const post = add(rod(0x344d63, 0.075));
-    connect(post, [x, -1.3, -0.7], [x, 2.7, -0.7]);
-    const foot = add(
-      new T.Mesh(
-        new T.BoxGeometry(0.75, 0.1, 1.2),
-        new T.MeshStandardMaterial({
-          color: 0x213b50,
-          metalness: 0.6,
-          roughness: 0.35,
-        }),
-      ),
-    );
-    foot.position.set(x, -1.25, -0.65);
+
+  const reach = 2.22, pivotY = 1.98;
+  const scale = reach / (p.l1 + p.l2);
+  const point = (x, y) => [x * scale, pivotY + y * scale, 0];
+  function makeStand(title, colors) {
+    const stand = add(new T.Group());
+    function component(mesh, position) {
+      stand.add(mesh);
+      if (position) mesh.position.set(...position);
+      return mesh;
+    }
+    function housing(width, height, depth, color, position) {
+      return component(new T.Mesh(roundedBox(width, height, depth),
+        new T.MeshStandardMaterial({ color, roughness: 0.52, metalness: 0.26 })), position);
+    }
+    housing(4.84, 5.08, 0.15, 0x294962, [0, pivotY, -0.59]);
+    housing(4.66, 4.9, 0.035, 0x152e46, [0, pivotY, -0.492]);
+    housing(4.98, 0.15, 1.12, 0x314e64, [0, -0.61, -0.28]);
+    housing(4.56, 0.035, 0.04, colors[1], [0, 4.35, -0.45]);
+    const origin = [0, pivotY, 0];
+    const mount = component(rod(0xa8bdcb, 0.14));
+    connect(mount, [0, pivotY, -0.47], [0, pivotY, 0.08]);
+    component(bob(0xd7e3ee, 0.105), origin);
+    component(line([[0, pivotY - reach, -0.46], [0, pivotY + reach, -0.46]], 0x91b4cd, 0.32));
+    component(line(Array.from({ length: 121 }, (_, i) => {
+      const angle = i * 2 * Math.PI / 120;
+      return [reach * Math.cos(angle), pivotY + reach * Math.sin(angle), -0.46];
+    }), 0x7199b9, 0.23));
+    const label = component(textSprite(title, colors[2]), [0, 4.81, -0.2]);
+    label.scale.multiplyScalar(1.04);
+    const upper = component(rod(0xc2d7e6, 0.033));
+    const lower = component(rod(colors[1], 0.032));
+    const first = component(bob(colors[0], 0.127 + 0.023 * Math.sqrt(p.m1)));
+    const second = component(bob(colors[1], 0.14 + 0.024 * Math.sqrt(p.m2)));
+    const trail = bufferedTrail(colors[1]);
+    component(trail.line);
+    return {
+      stand, trail,
+      update(positions) {
+        const joint = point(positions.x1, positions.y1);
+        const tip = point(positions.x, positions.y);
+        connect(upper, origin, joint);
+        connect(lower, joint, tip);
+        first.position.set(...joint);
+        second.position.set(...tip);
+      },
+    };
   }
-  const mount = add(rod(0xd1ad70, 0.14));
-  connect(mount, [0, 2.3, -0.7], [0, 2.3, 0.12]);
-  const arm1 = add(rod(0xc7dae6, 0.038)),
-    arm2 = add(rod(0x91c8c6, 0.035));
-  const first = add(bob(0xffc77e, 0.15 + 0.025 * Math.sqrt(p.m1))),
-    second = add(bob(0x63efda, 0.16 + 0.025 * Math.sqrt(p.m2)));
-  const ghost1 = add(rod(0xbb98ff, 0.025, true)),
-    ghost2 = add(rod(0xbb98ff, 0.025, true));
-  const ghostBob1 = add(bob(0xbb98ff, 0.17, true)),
-    ghostBob2 = add(bob(0xbb98ff, 0.18, true));
-  const mainTrail = bufferedTrail(0x67ead4),
-    ghostTrail = bufferedTrail(0xc49aff);
-  add(mainTrail.line);
-  add(ghostTrail.line);
-  const lowerLabel = add(textSprite("MAIN RUN", "#91e8d8"));
-  lowerLabel.scale.set(1.4, 0.265, 1);
-  const reference = add(
-    line(
-      [
-        [0, 2.3, 0],
-        [0, 2.3 - 3.5, 0],
-      ],
-      0x58778d,
-      0.2,
-    ),
-  );
+  const main = makeStand("MAIN RUN", [0xffc77e, 0x63efda, "#b1fff0"]);
+  const twin = makeStand("COMPARISON TWIN", [0xddb9ff, 0xb790ff, "#e6d3ff"]);
+  twin.stand.position.x = 2.53;
+
   return {
     update(lab) {
-      const { state: s } = lab,
-        main = doublePosition(s, p),
-        ghost = doublePosition(s.twin, p);
-      const pt = (x, y, z = 0) => [x * sc, 2.3 + y * sc, z],
-        a = pt(main.x1, main.y1),
-        b = pt(main.x, main.y),
-        ga = pt(ghost.x1, ghost.y1, 0.045),
-        gb = pt(ghost.x, ghost.y, 0.045);
-      connect(arm1, pivot, a);
-      connect(arm2, a, b);
-      first.position.set(...a);
-      second.position.set(...b);
-      connect(ghost1, [0, 2.3, 0.045], ga);
-      connect(ghost2, ga, gb);
-      ghostBob1.position.set(...ga);
-      ghostBob2.position.set(...gb);
-      [ghost1, ghost2, ghostBob1, ghostBob2].forEach(
-        (mesh) => (mesh.visible = lab.vectors),
-      );
-      lowerLabel.position.set(b[0], b[1] - 0.35, b[2]);
-      reference.visible = lab.vectors;
-      const points = [
-        ...(lab.trail || []),
-        { x: main.x, y: main.y, tx: ghost.x, ty: ghost.y },
-      ];
-      if (mainTrail.lastTime !== s.t)
-        setTrail(mainTrail, points, (q) => pt(q.x, q.y), s.t, lab.showTrail);
-      if (ghostTrail.lastTime !== s.t)
-        setTrail(
-          ghostTrail,
-          points,
-          (q) => pt(q.tx, q.ty, 0.045),
-          s.t,
-          lab.showTrail && lab.vectors,
-        );
-      mainTrail.line.visible = lab.showTrail;
-      ghostTrail.line.visible = lab.showTrail && lab.vectors;
+      const { state: s } = lab;
+      const mainPosition = doublePosition(s, p);
+      const twinPosition = doublePosition(s.twin, p);
+      main.stand.position.x = lab.vectors ? -2.53 : 0;
+      twin.stand.visible = lab.vectors;
+      main.update(mainPosition);
+      twin.update(twinPosition);
+      if (main.trail.lastTime !== s.t || (lab.vectors && twin.trail.lastTime !== s.t)) {
+        const points = [...(lab.trail || []), {
+          x: mainPosition.x, y: mainPosition.y, tx: twinPosition.x, ty: twinPosition.y,
+        }];
+        setTrail(main.trail, points, (q) => point(q.x, q.y), s.t, lab.showTrail);
+        setTrail(twin.trail, points, (q) => point(q.tx, q.ty), s.t, lab.showTrail && lab.vectors);
+      }
+      main.trail.line.visible = lab.showTrail;
+      twin.trail.line.visible = lab.showTrail && lab.vectors;
     },
   };
 }

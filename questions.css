@@ -859,6 +859,45 @@
 .teacher-tools {
   margin-block: 1.5rem 2rem;
 }
+.book-local {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 0.75rem;
+  background: #edf7f8;
+}
+.book-local input {
+  max-width: 100%;
+}
+.book-reader {
+  width: min(70rem, 96vw);
+  max-height: 96dvh;
+  padding: 1rem;
+  color: #10283e;
+  border: 1px solid #b7cedb;
+  border-radius: 1rem;
+}
+.book-reader::backdrop {
+  background: #10283ecc;
+}
+.book-reader header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.book-reader h2 {
+  font-size: clamp(1rem, 3vw, 1.4rem);
+}
+#book-reader-page {
+  max-height: 72dvh;
+  overflow: auto;
+}
+#book-reader-page canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #b7cedb;
+}
 .teacher-tools .question-filters {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }

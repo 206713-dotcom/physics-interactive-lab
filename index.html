@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#10283e" />
     <meta
       name="description"
-      content="57 interactive physics laboratories and 312 original A Level practice questions with worked solutions, live calculations, graphs and a FocusPhysics IGCSE course map."
+      content="57 interactive physics laboratories with live calculations, a FocusPhysics IGCSE course map and a Cambridge 9702 textbook exercise index."
     />
     <title>Physics Interactive Lab · Make physics move</title>
     <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
@@ -16,110 +16,106 @@
     <link rel="stylesheet" href="./frontiers.css" />
     <link rel="stylesheet" href="./expanded.css" />
     <link rel="stylesheet" href="./curriculum.css" />
-    <link rel="stylesheet" href="./questions.css?v=19.2.0" />
+    <link rel="stylesheet" href="./questions.css?v=19.2.1" />
     <link rel="stylesheet" href="./vectors.css" />
     <link rel="stylesheet" href="./apparatus.css" />
     <link rel="stylesheet" href="./learning.css" />
-    <link rel="stylesheet" href="./cinematic.css?v=19.2.0" />
-    <link rel="stylesheet" href="./design.css?v=19.2.0" />
-    <link rel="stylesheet" href="./consolidated.css?v=19.2.0" />
+    <link rel="stylesheet" href="./cinematic.css?v=19.2.1" />
+    <link rel="stylesheet" href="./design.css?v=19.2.1" />
+    <link rel="stylesheet" href="./consolidated.css?v=19.2.1" />
     <script defer src="./vendor/chart.umd.js"></script>
     <!-- Versioned local module graph: npm run refresh-assets -->
     <script type="importmap" id="lab-module-map">
       {
         "imports": {
-          "./js/advanced-simulations.js": "./js/advanced-simulations.js?v=19.2.0",
-          "./js/app.js": "./js/app.js?v=19.2.0",
-          "./js/buoyancy-physics.js": "./js/buoyancy-physics.js?v=19.2.0",
-          "./js/buoyancy-studio.js": "./js/buoyancy-studio.js?v=19.2.0",
-          "./js/calculations-advanced.js": "./js/calculations-advanced.js?v=19.2.0",
-          "./js/calculations.js": "./js/calculations.js?v=19.2.0",
-          "./js/canvas.js": "./js/canvas.js?v=19.2.0",
-          "./js/catalogue-art.js": "./js/catalogue-art.js?v=19.2.0",
-          "./js/content-advanced.js": "./js/content-advanced.js?v=19.2.0",
-          "./js/content-curriculum.js": "./js/content-curriculum.js?v=19.2.0",
-          "./js/content-extra.js": "./js/content-extra.js?v=19.2.0",
-          "./js/content.js": "./js/content.js?v=19.2.0",
-          "./js/course-map.js": "./js/course-map.js?v=19.2.0",
-          "./js/course.js": "./js/course.js?v=19.2.0",
-          "./js/curriculum-physics.js": "./js/curriculum-physics.js?v=19.2.0",
-          "./js/curriculum-simulations.js": "./js/curriculum-simulations.js?v=19.2.0",
-          "./js/diagram-theme.js": "./js/diagram-theme.js?v=19.2.0",
-          "./js/embed-builder.js": "./js/embed-builder.js?v=19.2.0",
-          "./js/expanded-view.js": "./js/expanded-view.js?v=19.2.0",
-          "./js/field-geometry.js": "./js/field-geometry.js?v=19.2.0",
-          "./js/integration.js": "./js/integration.js?v=19.2.0",
-          "./js/kinematics-display.js": "./js/kinematics-display.js?v=19.2.0",
-          "./js/learning-paths.js": "./js/learning-paths.js?v=19.2.0",
-          "./js/learning-studio.js": "./js/learning-studio.js?v=19.2.0",
-          "./js/linear-motion.js": "./js/linear-motion.js?v=19.2.0",
-          "./js/math-display.js": "./js/math-display.js?v=19.2.0",
-          "./js/moments-physics.js": "./js/moments-physics.js?v=19.2.0",
-          "./js/optical-construction.js": "./js/optical-construction.js?v=19.2.0",
-          "./js/orbital-reference.js": "./js/orbital-reference.js?v=19.2.0",
-          "./js/oscillation-physics.js": "./js/oscillation-physics.js?v=19.2.0",
-          "./js/physics-advanced.js": "./js/physics-advanced.js?v=19.2.0",
-          "./js/physics-extra.js": "./js/physics-extra.js?v=19.2.0",
-          "./js/physics.js": "./js/physics.js?v=19.2.0",
-          "./js/practical-labs.js": "./js/practical-labs.js?v=19.2.0",
-          "./js/practical-physics.js": "./js/practical-physics.js?v=19.2.0",
-          "./js/presentation-studio.js": "./js/presentation-studio.js?v=19.2.0",
-          "./js/question-bank.js": "./js/question-bank.js?v=19.2.0",
-          "./js/question-data.js": "./js/question-data.js?v=19.2.0",
-          "./js/render-advanced.js": "./js/render-advanced.js?v=19.2.0",
-          "./js/render-curriculum.js": "./js/render-curriculum.js?v=19.2.0",
-          "./js/render-motion.js": "./js/render-motion.js?v=19.2.0",
-          "./js/render-oscillations.js": "./js/render-oscillations.js?v=19.2.0",
-          "./js/render-practical.js": "./js/render-practical.js?v=19.2.0",
-          "./js/render-vectors.js": "./js/render-vectors.js?v=19.2.0",
-          "./js/render2d.js": "./js/render2d.js?v=19.2.0",
-          "./js/scene-advanced.js": "./js/scene-advanced.js?v=19.2.0",
-          "./js/scene-buoyancy.js": "./js/scene-buoyancy.js?v=19.2.0",
-          "./js/scene-curriculum.js": "./js/scene-curriculum.js?v=19.2.0",
-          "./js/scene-dc-bench.js": "./js/scene-dc-bench.js?v=19.2.0",
-          "./js/scene-electric.js": "./js/scene-electric.js?v=19.2.0",
-          "./js/scene-finish.js": "./js/scene-finish.js?v=19.2.0",
-          "./js/scene-framing.js": "./js/scene-framing.js?v=19.2.0",
-          "./js/scene-guides.js": "./js/scene-guides.js?v=19.2.0",
-          "./js/scene-instruments.js": "./js/scene-instruments.js?v=19.2.0",
-          "./js/scene-kit.js": "./js/scene-kit.js?v=19.2.0",
-          "./js/scene-magnetism.js": "./js/scene-magnetism.js?v=19.2.0",
-          "./js/scene-mechanics.js": "./js/scene-mechanics.js?v=19.2.0",
-          "./js/scene-moments.js": "./js/scene-moments.js?v=19.2.0",
-          "./js/scene-motion-benches.js": "./js/scene-motion-benches.js?v=19.2.0",
-          "./js/scene-optical-bench.js": "./js/scene-optical-bench.js?v=19.2.0",
-          "./js/scene-oscillation-benches.js": "./js/scene-oscillation-benches.js?v=19.2.0",
-          "./js/scene-particle-chamber.js": "./js/scene-particle-chamber.js?v=19.2.0",
-          "./js/scene-precision.js": "./js/scene-precision.js?v=19.2.0",
-          "./js/scene-projectile-bench.js": "./js/scene-projectile-bench.js?v=19.2.0",
-          "./js/scene-rc-bench.js": "./js/scene-rc-bench.js?v=19.2.0",
-          "./js/scene-sound.js": "./js/scene-sound.js?v=19.2.0",
-          "./js/scene-space.js": "./js/scene-space.js?v=19.2.0",
-          "./js/scene-thermal-benches.js": "./js/scene-thermal-benches.js?v=19.2.0",
-          "./js/scene-thermal.js": "./js/scene-thermal.js?v=19.2.0",
-          "./js/scene-vectors.js": "./js/scene-vectors.js?v=19.2.0",
-          "./js/scene-wave-bench.js": "./js/scene-wave-bench.js?v=19.2.0",
-          "./js/scene-waves.js": "./js/scene-waves.js?v=19.2.0",
-          "./js/scene3d.js": "./js/scene3d.js?v=19.2.0",
-          "./js/simulations.js": "./js/simulations.js?v=19.2.0",
-          "./js/spring-helix.js": "./js/spring-helix.js?v=19.2.0",
-          "./js/studio-app.js": "./js/studio-app.js?v=19.2.0",
-          "./js/study-policy.js": "./js/study-policy.js?v=19.2.0",
-          "./js/syllabus-sections.js": "./js/syllabus-sections.js?v=19.2.0",
-          "./js/syllabus.js": "./js/syllabus.js?v=19.2.0",
-          "./js/teacher-packs.js": "./js/teacher-packs.js?v=19.2.0",
-          "./js/teacher-questions.js": "./js/teacher-questions.js?v=19.2.0",
-          "./js/textbook-index.js": "./js/textbook-index.js?v=19.2.0",
-          "./js/textbook-library.js": "./js/textbook-library.js?v=19.2.0",
-          "./js/thermal-geometry.js": "./js/thermal-geometry.js?v=19.2.0",
-          "./js/vector-geometry.js": "./js/vector-geometry.js?v=19.2.0",
-          "./js/vector-studio.js": "./js/vector-studio.js?v=19.2.0",
-          "./js/visual-state.js": "./js/visual-state.js?v=19.2.0",
-          "./js/wave-geometry.js": "./js/wave-geometry.js?v=19.2.0"
+          "./js/advanced-simulations.js": "./js/advanced-simulations.js?v=19.2.1",
+          "./js/app.js": "./js/app.js?v=19.2.1",
+          "./js/buoyancy-physics.js": "./js/buoyancy-physics.js?v=19.2.1",
+          "./js/buoyancy-studio.js": "./js/buoyancy-studio.js?v=19.2.1",
+          "./js/calculations-advanced.js": "./js/calculations-advanced.js?v=19.2.1",
+          "./js/calculations.js": "./js/calculations.js?v=19.2.1",
+          "./js/canvas.js": "./js/canvas.js?v=19.2.1",
+          "./js/catalogue-art.js": "./js/catalogue-art.js?v=19.2.1",
+          "./js/content-advanced.js": "./js/content-advanced.js?v=19.2.1",
+          "./js/content-curriculum.js": "./js/content-curriculum.js?v=19.2.1",
+          "./js/content-extra.js": "./js/content-extra.js?v=19.2.1",
+          "./js/content.js": "./js/content.js?v=19.2.1",
+          "./js/course-map.js": "./js/course-map.js?v=19.2.1",
+          "./js/course.js": "./js/course.js?v=19.2.1",
+          "./js/curriculum-physics.js": "./js/curriculum-physics.js?v=19.2.1",
+          "./js/curriculum-simulations.js": "./js/curriculum-simulations.js?v=19.2.1",
+          "./js/diagram-theme.js": "./js/diagram-theme.js?v=19.2.1",
+          "./js/embed-builder.js": "./js/embed-builder.js?v=19.2.1",
+          "./js/expanded-view.js": "./js/expanded-view.js?v=19.2.1",
+          "./js/field-geometry.js": "./js/field-geometry.js?v=19.2.1",
+          "./js/integration.js": "./js/integration.js?v=19.2.1",
+          "./js/kinematics-display.js": "./js/kinematics-display.js?v=19.2.1",
+          "./js/learning-paths.js": "./js/learning-paths.js?v=19.2.1",
+          "./js/learning-studio.js": "./js/learning-studio.js?v=19.2.1",
+          "./js/linear-motion.js": "./js/linear-motion.js?v=19.2.1",
+          "./js/math-display.js": "./js/math-display.js?v=19.2.1",
+          "./js/moments-physics.js": "./js/moments-physics.js?v=19.2.1",
+          "./js/optical-construction.js": "./js/optical-construction.js?v=19.2.1",
+          "./js/orbital-reference.js": "./js/orbital-reference.js?v=19.2.1",
+          "./js/oscillation-physics.js": "./js/oscillation-physics.js?v=19.2.1",
+          "./js/physics-advanced.js": "./js/physics-advanced.js?v=19.2.1",
+          "./js/physics-extra.js": "./js/physics-extra.js?v=19.2.1",
+          "./js/physics.js": "./js/physics.js?v=19.2.1",
+          "./js/practical-labs.js": "./js/practical-labs.js?v=19.2.1",
+          "./js/practical-physics.js": "./js/practical-physics.js?v=19.2.1",
+          "./js/presentation-studio.js": "./js/presentation-studio.js?v=19.2.1",
+          "./js/render-advanced.js": "./js/render-advanced.js?v=19.2.1",
+          "./js/render-curriculum.js": "./js/render-curriculum.js?v=19.2.1",
+          "./js/render-motion.js": "./js/render-motion.js?v=19.2.1",
+          "./js/render-oscillations.js": "./js/render-oscillations.js?v=19.2.1",
+          "./js/render-practical.js": "./js/render-practical.js?v=19.2.1",
+          "./js/render-vectors.js": "./js/render-vectors.js?v=19.2.1",
+          "./js/render2d.js": "./js/render2d.js?v=19.2.1",
+          "./js/scene-advanced.js": "./js/scene-advanced.js?v=19.2.1",
+          "./js/scene-buoyancy.js": "./js/scene-buoyancy.js?v=19.2.1",
+          "./js/scene-curriculum.js": "./js/scene-curriculum.js?v=19.2.1",
+          "./js/scene-dc-bench.js": "./js/scene-dc-bench.js?v=19.2.1",
+          "./js/scene-electric.js": "./js/scene-electric.js?v=19.2.1",
+          "./js/scene-finish.js": "./js/scene-finish.js?v=19.2.1",
+          "./js/scene-framing.js": "./js/scene-framing.js?v=19.2.1",
+          "./js/scene-guides.js": "./js/scene-guides.js?v=19.2.1",
+          "./js/scene-instruments.js": "./js/scene-instruments.js?v=19.2.1",
+          "./js/scene-kit.js": "./js/scene-kit.js?v=19.2.1",
+          "./js/scene-magnetism.js": "./js/scene-magnetism.js?v=19.2.1",
+          "./js/scene-mechanics.js": "./js/scene-mechanics.js?v=19.2.1",
+          "./js/scene-moments.js": "./js/scene-moments.js?v=19.2.1",
+          "./js/scene-motion-benches.js": "./js/scene-motion-benches.js?v=19.2.1",
+          "./js/scene-optical-bench.js": "./js/scene-optical-bench.js?v=19.2.1",
+          "./js/scene-oscillation-benches.js": "./js/scene-oscillation-benches.js?v=19.2.1",
+          "./js/scene-particle-chamber.js": "./js/scene-particle-chamber.js?v=19.2.1",
+          "./js/scene-precision.js": "./js/scene-precision.js?v=19.2.1",
+          "./js/scene-projectile-bench.js": "./js/scene-projectile-bench.js?v=19.2.1",
+          "./js/scene-rc-bench.js": "./js/scene-rc-bench.js?v=19.2.1",
+          "./js/scene-sound.js": "./js/scene-sound.js?v=19.2.1",
+          "./js/scene-space.js": "./js/scene-space.js?v=19.2.1",
+          "./js/scene-thermal-benches.js": "./js/scene-thermal-benches.js?v=19.2.1",
+          "./js/scene-thermal.js": "./js/scene-thermal.js?v=19.2.1",
+          "./js/scene-vectors.js": "./js/scene-vectors.js?v=19.2.1",
+          "./js/scene-wave-bench.js": "./js/scene-wave-bench.js?v=19.2.1",
+          "./js/scene-waves.js": "./js/scene-waves.js?v=19.2.1",
+          "./js/scene3d.js": "./js/scene3d.js?v=19.2.1",
+          "./js/simulations.js": "./js/simulations.js?v=19.2.1",
+          "./js/spring-helix.js": "./js/spring-helix.js?v=19.2.1",
+          "./js/studio-app.js": "./js/studio-app.js?v=19.2.1",
+          "./js/study-policy.js": "./js/study-policy.js?v=19.2.1",
+          "./js/syllabus-sections.js": "./js/syllabus-sections.js?v=19.2.1",
+          "./js/syllabus.js": "./js/syllabus.js?v=19.2.1",
+          "./js/textbook-index.js": "./js/textbook-index.js?v=19.2.1",
+          "./js/textbook-library.js": "./js/textbook-library.js?v=19.2.1",
+          "./js/thermal-geometry.js": "./js/thermal-geometry.js?v=19.2.1",
+          "./js/vector-geometry.js": "./js/vector-geometry.js?v=19.2.1",
+          "./js/vector-studio.js": "./js/vector-studio.js?v=19.2.1",
+          "./js/visual-state.js": "./js/visual-state.js?v=19.2.1",
+          "./js/wave-geometry.js": "./js/wave-geometry.js?v=19.2.1"
         }
       }
     </script>
-    <script type="module" src="./js/app.js?v=19.2.0"></script>
+    <script type="module" src="./js/app.js?v=19.2.1"></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -132,7 +128,7 @@
       <nav aria-label="Main navigation">
         <a href="#/" data-nav="home">Experiments</a>
         <a href="#/syllabus" data-nav="course">Learning paths</a>
-        <a href="#/questions" data-nav="questions">A Level practice</a>
+        <a href="#/textbook" data-nav="questions">A Level practice</a>
         <label class="sr-only" for="lab-select">Jump to an experiment</label>
         <select id="lab-select" aria-label="Jump to an experiment"></select>
       </nav>

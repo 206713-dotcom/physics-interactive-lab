@@ -1,10 +1,10 @@
 # Physics Interactive Lab — IGCSE course & 3D studios
 
-**57 working laboratories. 312 original A Level practice questions. Live calculations you can follow.**
+**57 working laboratories. 76 indexed A Level textbook exercises. Live calculations you can follow.**
 
 [Open the live laboratory](https://206713-dotcom.github.io/physics-interactive-lab/) · [Browse the source](https://github.com/206713-dotcom/physics-interactive-lab) · [Automated checks](https://github.com/206713-dotcom/physics-interactive-lab/actions)
 
-A browser-only laboratory for IGCSE, A Level and extension exploration. The [IGCSE course navigator](https://206713-dotcom.github.io/physics-interactive-lab/#/course) maps 78 FocusPhysics lesson pages to interactive experiments. All **57 laboratories have WebGL 3D apparatus and a 2D diagram**. The full-model resources include **three guided investigations, five worked questions, learning objectives, equations, assumptions and applications** per experiment (IGCSE mode shows a smaller selected activity): 171 investigations and 285 questions. The separate [A Level practice room](https://206713-dotcom.github.io/physics-interactive-lab/#/questions) adds 312 original questions in 26 groups, for **597 questions across the project**.
+A browser-only laboratory for IGCSE, A Level and extension exploration. The [IGCSE course navigator](https://206713-dotcom.github.io/physics-interactive-lab/#/course) maps 78 FocusPhysics lesson pages to interactive experiments. All **57 laboratories have WebGL 3D apparatus and a 2D diagram**. Each lab includes guided investigations, learning objectives, equations, assumptions and applications. The [A Level practice section](https://206713-dotcom.github.io/physics-interactive-lab/#/textbook) lists 76 exercises from the Extended tenth edition of Fundamentals of Physics.
 
 This is an independent student prototype and a proposed contribution to [FocusPhysics](https://focusphysics.com), not an official or endorsed FocusPhysics integration.
 
@@ -36,7 +36,7 @@ These are display changes. No governing equation, integrator, reservoir height, 
 
 ### Version 17: a shared visual design for the whole laboratory
 
-The homepage, experiment library, course map, learning paths and practice room now share a navy, white and teal design with larger type, clearer cards and original SVG illustrations. Twelve experiment covers have detailed apparatus artwork; the other covers retain their subject diagrams. All 57 existing laboratories, the 40 scoped IGCSE activities, 78 school lesson links and 312 practice questions are retained. No simulations or question sets were added.
+The homepage, experiment library, course map, learning paths and practice room now share a navy, white and teal design with larger type, clearer cards and original SVG illustrations. Twelve experiment covers have detailed apparatus artwork; the other covers retain their subject diagrams. All 57 existing laboratories, the 40 scoped IGCSE activities and 78 school lesson links were retained in that release. No simulations or question sets were added.
 
 Expanded workspaces now have a deliberate maximum width, roomier parameter and calculation panels, full-width numerical inputs and stronger equation/result hierarchy. Wide desktops show parameters, model and working together; smaller screens use accessible inspector tabs. Instrument readings, meaningful parameter hints, units and playback controls remain visible in the same shared layout. Repeated generic hints have been removed from the visual flow. Beam-angle readings round numerical residue below 10⁻⁸ degrees to zero without changing the underlying state.
 
@@ -204,13 +204,11 @@ The 44 curriculum apparatus builders are separated into `scene-mechanics.js`, `s
 | Blackbody spectra      | Wien peak, Planck shape, area and emissivity                             | Planck spectrum and Stefan–Boltzmann law                  |
 | Young modulus          | Stress, strain, geometry, wire stiffness and energy                      | Quasistatic uniaxial linear elasticity                    |
 
-All sixteen use the existing sliders, graphs, expanded model/variable/working workspace, notebook, share and embed tools. New IGCSE instruments appear in the course navigator. Extension models are labelled A Level and linked to relevant practice groups. Both views identify enlarged, normalised or independently scaled quantities. Readouts provide the physical measurements calculated by the model.
+All sixteen use the existing sliders, graphs, expanded model/variable/working workspace, notebook, share and embed tools. New IGCSE instruments appear in the course navigator. Extension models are labelled A Level. Both views identify enlarged, normalised or independently scaled quantities. Readouts provide the physical measurements calculated by the model.
 
-### A Level practice room
+### A Level textbook practice
 
-The [practice room](https://206713-dotcom.github.io/physics-interactive-lab/#/questions) has **208 calculations and 104 explanations**, grouped into 26 twelve-question topics. Search, stage/difficulty/type filters, hints, worked solutions, safe numerical checking, bookmarks, self-rated confidence, local progress, JSON progress export/import and printable sets are included. The numerical checker uses ±2% in the requested unit and checks the final number rather than awarding method marks.
-
-The reading shelf references OpenStax **University Physics, Volumes 1–3**. Question wording, numerical scenarios and solutions are original; textbook exercises and exam papers have not been copied. AS/A2/extension labels and suggested marks are study guidance, not an official exam-board specification. See [QUESTION-BANK.md](QUESTION-BANK.md) for all groups, conventions, sources and maintenance details.
+Open [A Level practice](https://206713-dotcom.github.io/physics-interactive-lab/#/textbook) to filter and copy chapter, problem, page and figure references. Select your own 1,450-page Extended tenth edition PDF to view the corresponding original question page. The reader uses [PDF.js](https://mozilla.github.io/pdf.js/) and keeps the selected file in the browser.
 
 ### IGCSE course expansion
 
@@ -511,7 +509,7 @@ npm test
 npm run check
 ```
 
-There are **162 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
+There are **268 tests** using Node's built-in runner. They exercise the same functions used by the website, including:
 
 - Default spring position against the analytic solution over 30 s, with maximum error below 10⁻⁶ m; default undamped energy drift below 10⁻⁷ over 120 s.
 - Worst supported spring frequency with energy drift below 0.04% over 120 s; damping and critical/overdamped behaviour.
@@ -534,11 +532,10 @@ There are **162 tests** using Node's built-in runner. They exercise the same fun
 - 37 IGCSE checks: every course mapping and model reachability; all slider endpoints and modes over bounded observations; suvat and terminal fall; vector cancellation; moments/stability; Archimedes and hydrostatic scaling; lift energy accounting; Boyle/temperature scaling; all water heating transitions; conduction and fourth-power radiation; mirrors, real/virtual/focal-plane lens cases; dispersion and EM speed; sound echo path; Kirchhoff and wire-resistance relations; diode/relay/cut-out states; solenoid scaling; constant-energy charged-particle motion; Faraday flux derivative; transformer power; nuclear accounting and Rutherford angles; seeded-decay reproducibility and ensemble expectation; daylight/Moon phases; planetary Kepler relations; stellar scaling; Hubble units and low-redshift bounds.
 - Nineteen practical/A Level checks: hydraulic work/volume; spring force and energy; sensor reference/threshold/swap behaviour; relativistic beam speed, rigidity, reversal and weak-field limits; rectifier integrated mean/RMS; lamp RK4 convergence, energy budget and parameter corners; exact cooling; pipe boundary conditions; photoelectric thresholds; Bragg order limits; Malus projections; crossed-field differential equations and work; driven-oscillator equation/power; first-law gas invariants; Planck integral and Wien peak; modulus geometry; all sixteen models' presets and actual steps.
 - Ten 3D/display checks: finite geometry and transforms across every instrument’s presets and parameter endpoints; complete guides and 3D coverage; no physical-state mutations or frame-by-frame geometry growth; head-to-tail vectors; magnetic-force tangency; seeded decay colours; reusable path buffers; coil/flux orientation; standing-wave phase; bounded immutable interpolation and discrete collision handling.
-- Five practice-room checks covering all 312 records and worked-result round trips, independent fixtures for every topic, notation and invalid-input handling, combined filters and defensive progress import.
 
 These are bounded regression checks for the stated scenarios, not claims of exact or indefinite numerical conservation. `npm run check` verifies assets, every relative JavaScript module import, vendored libraries and GitHub Pages subdirectory compatibility. GitHub Actions runs both commands on pushes and pull requests.
 
-Browser verification covers the original studios, the original 28 course instruments and all sixteen practical/A Level additions, their presets, expanded calculations and lesson navigation, plus representative graph, editable-input, export and responsive checks. The practice room is checked for answer feedback, persistence, filters, pagination, solutions and responsive layout. The 78 course links are recorded from inspected public pages. Repeated 2D/3D switching creates a fresh canvas after releasing the previous WebGL context. WebGL failure has an explicit diagram fallback rather than an empty experiment.
+Browser verification covers the original studios, the original 28 course instruments and all sixteen practical/A Level additions, their presets, expanded calculations and lesson navigation, plus representative graph, editable-input, export and responsive checks. The 78 course links are recorded from inspected public pages. Repeated 2D/3D switching creates a fresh canvas after releasing the previous WebGL context. WebGL failure has an explicit diagram fallback rather than an empty experiment.
 
 ## GitHub Pages deployment
 
@@ -572,9 +569,8 @@ js/render-practical.js      State-only scientific instrument drawings and thumbn
 js/curriculum-simulations.js Controls, readouts, calculations, graphs and units
 js/render-curriculum.js      Original Canvas instruments and catalogue thumbnails
 js/content-curriculum.js     132 investigations, 220 worked/conceptual questions
-js/question-data.js          312 original questions, constants, worked values and safe checker
-js/question-bank.js          Practice UI, filtering, progress storage/import/export and print
-QUESTION-BANK.md             Topic inventory, textbook references and answer conventions
+js/textbook-index.js          Cambridge 9702 textbook exercise references
+js/textbook-library.js        Textbook filters, assignment copying and local PDF reader
 IGCSE-COVERAGE.md            Lesson-by-lesson mappings and scope limitations
 js/app.js                    Small application bootstrap
 js/studio-app.js             Routes, playback, controls, Chart.js, notebook, export
@@ -606,7 +602,6 @@ tests/orbit-refinement.test.mjs Five focused orbital elements/scenario regressio
 tests/calculations.test.mjs   Twelve calculation and edge-case regression tests
 tests/integration.test.mjs    Six URL, embed and maths-formatting regression tests
 tests/practical.test.mjs      Nineteen new instrument and conservation checks
-tests/questions.test.mjs      Five question-bank, answer, filter and persistence checks
 tests/advanced.test.mjs       Seventeen stellar and nonlinear regression tests
 tests/curriculum.test.mjs     37 course, IGCSE physics and bounded-range checks
 scripts/serve.mjs            Dependency-free local static server
@@ -622,8 +617,3 @@ To add an experiment, implement a pure model, register its parameters, presets, 
 Each lesson links to a supporting reference or original derivation. Standard topics use [OpenStax University Physics](https://openstax.org/subjects/science); the advanced references are linked above. Further references: [NIST gravitational constant](https://physics.nist.gov/cgi-bin/cuu/Value?bg), [Chart.js](https://www.chartjs.org/docs/latest/), [Three.js](https://threejs.org/docs/).
 
 Original source is MIT licensed; see [LICENSE](LICENSE). Chart.js and Three.js retain their separate MIT licences in `vendor/Chart.LICENSE.md` and `vendor/Three.LICENSE.txt`.
-## Teacher worksheets
-
-The [textbook exercise index](https://206713-dotcom.github.io/physics-interactive-lab/#/textbook) lists 76 verified references from Halliday, Resnick & Walker's *Fundamentals of Physics, Extended*, tenth edition. Filter by Cambridge stage, topic, difficulty or figure availability and copy the resulting assignment. Printed page numbers refer to the book and PDF page numbers to the 1,450-page copy used for the review.
-
-Open [Teacher worksheets](https://206713-dotcom.github.io/physics-interactive-lab/#/teacher) from A Level practice. The section has 24 original questions across eight topics, with AS and A2 placement checked against the [2025–2027 Cambridge 9702 syllabus](https://www.cambridgeinternational.org/Images/664565-2025-2027-syllabus.pdf). Each topic has Foundation, Standard and Challenge questions and worked answers. Use the filters to build a set and copy the worksheet and answer key separately. The [Wiley chapter guide](https://bcs.wiley.com/he-bcs/Books?action=contents&bcsId=8262&itemId=1118230728) provides reading references for the tenth extended edition of *Fundamentals of Physics*.

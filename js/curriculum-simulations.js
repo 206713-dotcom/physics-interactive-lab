@@ -242,15 +242,17 @@ export const PARAMETERS = {
     number("mass", "Particle mass", "10⁻³¹ kg", 1e-31),
   ],
   induction: [
-    choice("mode", "Machine", [
-      [0, "AC generator (imposed rotation)"],
-      [1, "DC motor (imposed rotation)"],
-    ]),
     number("field", "Uniform magnetic field", "T"),
     number("area", "Coil area", "m²"),
     number("turns", "Coil turns"),
     number("frequency", "Rotation frequency", "Hz"),
-    number("current", "Motor coil current", "A"),
+  ],
+  motor: [
+    number("field", "Uniform magnetic field", "T"),
+    number("area", "Coil area", "m²"),
+    number("turns", "Coil turns"),
+    number("current", "Coil current", "A"),
+    number("frequency", "Demonstration rotation", "Hz"),
   ],
   transformer: [
     number("vp", "Primary RMS voltage", "V"),
@@ -1040,6 +1042,10 @@ export const WORK = {
       (p, q, n) =>
         `${p.turns} × ${n(p.field)} × ${n(p.area)} × 2π × ${n(p.frequency)}`,
     ),
+    W("linkage", "Flux linkage", "Wb turns", "NΦ = NBA cos θ",
+      (p, q, n) => `${p.turns} × ${n(q.flux)}`),
+  ],
+  motor: [
     W(
       "torque",
       "Ideal commutated motor torque",
@@ -1048,6 +1054,12 @@ export const WORK = {
       (p, q, n) =>
         `${p.turns} × ${n(p.field)} × ${n(p.current)} × ${n(p.area)} × |sin(${n(q.phase)})|`,
     ),
+    W("sideForce", "Force per powered side", "N", "F = NBI√A (square coil)",
+      (p, q, n) => `${p.turns} × ${n(p.field)} × ${n(p.current)} × √${n(p.area)}`),
+    W("peakTorque", "Peak torque", "N m", "τₘₐₓ = NBIA",
+      (p, q, n) => `${p.turns} × ${n(p.field)} × ${n(p.current)} × ${n(p.area)}`),
+    W("period", "Demonstration period", "s", "T = 1/f",
+      (p, q, n) => `1 / ${n(p.frequency)}`),
   ],
   transformer: [
     W(
@@ -1407,10 +1419,17 @@ const INFO = {
     null,
   ],
   induction: [
-    "Generators & motors",
+    "AC generator",
     "Magnetism",
-    "Rotate a coil and relate flux, induced emf and motor torque.",
+    "Turn a coil to generate alternating voltage and trace the induced current.",
     "ε = −N dΦ/dt",
+    null,
+  ],
+  motor: [
+    "DC motor",
+    "Magnetism",
+    "Follow the forces on a current-carrying coil and see the split ring reverse the current.",
+    "F = BIL (at 90°)",
     null,
   ],
   transformer: [
@@ -1514,7 +1533,8 @@ export const CURRICULUM_SIMULATIONS = Object.fromEntries(
         dc: [{ mode: 1 }, { mode: 2 }],
         devices: [{ voltage: -6 }, { mode: 2, voltage: 12, rating: 0.05 }],
         magnetism: [{ current: -2 }, { mode: 1 }],
-        induction: [{ frequency: 2 }, { mode: 1 }],
+        induction: [{ frequency: 2 }, { field: 0.5 }],
+        motor: [{ current: 4 }, { field: 0.5 }],
         transformer: [{ ns: 1000 }, { ns: 50 }],
         atom: [
           { decay: 1, protons: 92, neutrons: 146 },
@@ -1540,7 +1560,8 @@ export const CURRICULUM_SIMULATIONS = Object.fromEntries(
       heat: ["Convection", "Radiation"],
       dc: ["Parallel", "Divider"],
       devices: ["Reverse diode", "Overcurrent"],
-      induction: ["Faster generator", "Motor"],
+      induction: ["Faster rotation", "Stronger field"],
+      motor: ["More current", "Stronger field"],
       atom: ["Alpha decay", "Beta-minus decay"],
       earthmoon: ["June solstice", "December solstice"],
       solarsystem: ["Mercury", "Neptune"],
@@ -1775,6 +1796,10 @@ Object.assign(CURRICULUM_SIMULATIONS.induction, {
   graphs: [
     dynamicGraph("emf", "Generated emf", ["emf"], "V"),
     dynamicGraph("flux", "Flux per turn", ["flux"], "Wb"),
+  ],
+});
+Object.assign(CURRICULUM_SIMULATIONS.motor, {
+  graphs: [
     dynamicGraph("torque", "Motor torque", ["torque"], "N m"),
   ],
 });
@@ -1957,9 +1982,10 @@ const SAMPLE_UNITS = {
     flux: "Wb",
     emf: "V",
     peak: "V",
-    torque: "N_m",
+    linkage: "Wb",
     frequency: "Hz",
   },
+  motor: { phase: "rad", torque: "N_m", peakTorque: "N_m", sideForce: "N", period: "s", frequency: "Hz" },
   transformer: {
     vs: "V",
     is: "A",

@@ -187,11 +187,20 @@ const NOTES = {
   induction: [
     "Changing flux links mechanical and electrical transfers.",
     "Rotating a coil changes its flux linkage and generates an emf. Increasing turns, field, area or rotation rate increases the peak emf. Lenz’s law gives a direction opposing the change that causes induction.",
-    "A current-carrying coil in a magnetic field experiences a turning effect. A DC motor’s split-ring commutator reverses coil current each half-turn to keep the torque in one rotational direction.",
-    "Uniform field and imposed angular speed; no rotor acceleration, friction, back-emf load circuit or self-start dynamics are solved. Generator and motor calculations are comparison views, not simultaneous claims about one loaded machine. The motor assumes ideal commutation at zero torque.",
-    "Generators, electric motors, microphones and induction sensing.",
+    "Fleming’s right-hand rule gives the induced conventional current direction if a circuit is closed. Slip rings keep each end of the rotating coil connected to the same output brush.",
+    "The coil is driven at a constant speed in a uniform field. Current arrows show the direction for a closed resistive load; the model calculates emf without solving a load circuit.",
+    "Alternators in power stations, bicycle dynamos and wind turbines.",
     "At maximum flux, is the generated emf maximum?",
     "No. At maximum flux its time derivative is zero. The generated emf is largest as the flux passes through zero.",
+  ],
+  motor: [
+    "A magnetic force couple turns the coil.",
+    "A DC supply sends conventional current through opposite sides of the coil. The uniform field makes the forces point in opposite directions.",
+    "Use Fleming’s left-hand rule to find each force. A split-ring commutator reverses the coil current every half-turn, so the torque keeps the same sense.",
+    "The speed is imposed for the demonstration. The model assumes ideal instantaneous commutation and omits friction, back emf and starting dynamics.",
+    "Electric fans, pumps and power tools.",
+    "What does the split-ring commutator do?",
+    "It swaps which brush is connected to each end of the coil every half-turn.",
   ],
   transformer: [
     "Turns trade voltage for current.",

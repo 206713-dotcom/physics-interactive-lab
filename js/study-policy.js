@@ -39,7 +39,7 @@ const GRAPHS = {
 const CONTROLS = {
   measurement: ['count','period'], motion: ['mode','mass','force','drag'],
   expansion: ['temperature','alpha'], cooling: ['initial','ambient','conductance'],
-  calorimetry: ['mass','power','initial'], induction: ['mode','frequency','field'],
+  calorimetry: ['mass','power','initial'], induction: ['frequency','field'], motor: ['field','current'],
   universe: ['distance'], atom: ['protons','neutrons','decay'],
   collisions: ['m1','m2','u1','restitution'],
 };
@@ -51,7 +51,7 @@ const SETUP = {
 const SUPPLEMENT = new Set([
   'motion','vectors','buoyancy','energy','hooke','hydraulics','calorimetry',
   'cooling','dispersion','refraction','dc','sensors','transformer','universe','collisions',
-  'gases','lenses','stars','solarsystem','charged','radiation','induction',
+  'gases','lenses','stars','solarsystem','charged','radiation','induction','motor',
 ]);
 export const IGCSE_AREAS = [
   'Motion, forces and energy','Thermal physics','Waves',

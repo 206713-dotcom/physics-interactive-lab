@@ -212,10 +212,16 @@ export const SCENE_GUIDES = {
     "All trajectory coordinates use one length scale. Particle size and force-arrow lengths are enlarged; the exact trajectory is calculated in microscopic simulation time.",
   ],
   induction: [
-    "Cyan arrows show B. The purple arrow is perpendicular to the rotating gold coil.",
-    "Flux is BA cos θ. Emf depends on the rate of change of flux, so it peaks when flux crosses zero.",
-    "Pause at maximum flux, then step towards a quarter-turn and compare emf.",
-    "Coil turns and dimensions are schematic. Orientation uses the same phase as the calculated flux and emf. Rotation is imposed, not torque-integrated.",
+    "Gold arrows show the driven motion. Purple shows the direction of induced current if a resistive circuit is closed.",
+    "Fleming’s right-hand rule links conductor motion, field and induced current. Slip rings deliver an alternating output.",
+    "Compare the generated voltage at two rotation speeds with the same magnetic field.",
+    "Coil and ring sizes are schematic. The speed is imposed and the model does not calculate a load current.",
+  ],
+  motor: [
+    "Purple shows conventional current. Gold shows the force on each side of the coil.",
+    "The opposite forces form a couple. The split ring reverses current every half-turn so torque keeps its direction.",
+    "Track one coil side before and after it passes the zero-torque position.",
+    "Coil and commutator are schematic. The rotation speed is imposed and the arrows show direction.",
   ],
   transformer: [
     "Gold is the primary coil; cyan is the secondary; both share the core.",

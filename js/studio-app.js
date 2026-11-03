@@ -176,7 +176,7 @@ function card(id, preferredMode) {
 }
 function home() {
   $("#main").innerHTML =
-    `<section class="library-intro page-width"><div class="library-intro-copy"><span class="eyebrow"><span class="status-dot"></span> YOUR INTERACTIVE PHYSICS LAB</span><h1>Physics,<br><em>made visible.</em></h1><p>Explore the ideas behind the equations. Change a variable, follow the motion and see the physics for yourself.</p><div class="library-intro-actions"><a class="button" href="#simulations">Explore the experiments ${icon('arrow')}</a><a class="intro-course-link" href="#/course">Find your IGCSE lesson ↗</a></div><div class="library-intro-facts"><span><strong>57</strong> working models</span><span><strong>2D + 3D</strong> two ways to see it</span><span><strong>CAIE</strong> focused learning levels</span></div></div><div class="library-illustration"><span class="illustration-kicker">A DIFFERENT WAY TO UNDERSTAND</span>${libraryHeroArt()}<span class="illustration-caption">Explore the model. Discover the connection.</span></div></section><div class="page-width"><section id="simulations" class="catalogue"><div class="section-heading"><div><div class="eyebrow">THE EXPERIMENT COLLECTION</div><h2>What will you discover?</h2><p>Choose your course and a topic to get started.</p></div><label class="library-search"><span aria-hidden="true">⌕</span><input type="search" id="search" aria-label="Search simulations" placeholder="Find an experiment…"></label></div><div class="catalogue-tools"><div class="category-filters" aria-label="Filter simulations">${CATEGORIES.map((c, i) => `<button class="${i === 0 ? "active" : ""}" data-category="${c}" aria-pressed="${i === 0}">${c}</button>`).join("")}</div><span id="result-count">${LAB_COUNT} experiments</span></div><div class="simulation-grid" id="cards">${Object.keys(SIMULATIONS).map(card).join("")}</div><p id="empty-results" hidden>No experiments match that search. Try a topic such as waves, light or motion.</p></section><section class="method-band"><div><div class="eyebrow">MORE THAN AN ANIMATION</div><h3>A little curiosity.<br>A deeper understanding.</h3></div>${[
+    `<section class="library-intro page-width"><div class="library-intro-copy"><span class="eyebrow"><span class="status-dot"></span> YOUR INTERACTIVE PHYSICS LAB</span><h1>Physics,<br><em>made visible.</em></h1><p>Explore the ideas behind the equations. Change a variable, follow the motion and see the physics for yourself.</p><div class="library-intro-actions"><a class="button" href="#simulations">Explore the experiments ${icon('arrow')}</a><a class="intro-course-link" href="#/course">Find your IGCSE lesson ↗</a></div><div class="library-intro-facts"><span><strong>${LAB_COUNT}</strong> working models</span><span><strong>2D + 3D</strong> two ways to see it</span><span><strong>CAIE</strong> focused learning levels</span></div></div><div class="library-illustration"><span class="illustration-kicker">A DIFFERENT WAY TO UNDERSTAND</span>${libraryHeroArt()}<span class="illustration-caption">Explore the model. Discover the connection.</span></div></section><div class="page-width"><section id="simulations" class="catalogue"><div class="section-heading"><div><div class="eyebrow">THE EXPERIMENT COLLECTION</div><h2>What will you discover?</h2><p>Choose your course and a topic to get started.</p></div><label class="library-search"><span aria-hidden="true">⌕</span><input type="search" id="search" aria-label="Search simulations" placeholder="Find an experiment…"></label></div><div class="catalogue-tools"><div class="category-filters" aria-label="Filter simulations">${CATEGORIES.map((c, i) => `<button class="${i === 0 ? "active" : ""}" data-category="${c}" aria-pressed="${i === 0}">${c}</button>`).join("")}</div><span id="result-count">${LAB_COUNT} experiments</span></div><div class="simulation-grid" id="cards">${Object.keys(SIMULATIONS).map(card).join("")}</div><p id="empty-results" hidden>No experiments match that search. Try a topic such as waves, light or motion.</p></section><section class="method-band"><div><div class="eyebrow">MORE THAN AN ANIMATION</div><h3>A little curiosity.<br>A deeper understanding.</h3></div>${[
       [
         "01",
         "Predict it.",
@@ -1537,7 +1537,11 @@ function route() {
   charts = [];
   lab = null;
   const [path, query = ""] = location.hash.slice(1).split("?"),
-    id = path?.replace(/^\//, ""),
+    params = new URLSearchParams(query),
+    requestedId = path?.replace(/^\//, ""),
+    id = requestedId === "generator" ? "induction"
+      : requestedId === "induction" && params.get("mode") === "1" ? "motor"
+      : requestedId,
     type = Object.hasOwn(SIMULATIONS, id) ? id : embedded ? "gravity" : null;
   document.title = type
     ? `${SIMULATIONS[type].title} · Physics Interactive Lab`
@@ -1559,7 +1563,7 @@ function route() {
     if (active) a.setAttribute("aria-current", "page");
     else a.removeAttribute("aria-current");
   });
-  if (type) labPage(type, new URLSearchParams(query));
+  if (type) labPage(type, params);
   else if (id === "syllabus") {
     document.title = "Cambridge learning paths · Physics Interactive Lab";
     renderSyllabus($("#main"), new URLSearchParams(query));

@@ -7,8 +7,8 @@ import { studyParams, studyControl, studySheet, studyReadings, studyGraphs,
   visibleControlKeys, sceneLabelAllowed, igcseArea, IGCSE_AREAS } from '../js/study-policy.js';
 
 const beginner = Object.entries(SIMULATIONS).filter(([id])=>availableModes(id).includes('igcse'));
-test('all 40 IGCSE activities start in valid, reproducible course-scoped states',()=>{
-  assert.equal(beginner.length,40);
+test('all 41 IGCSE activities start in valid, reproducible course-scoped states',()=>{
+  assert.equal(beginner.length,41);
   for (const [id,d] of beginner) {
     const p = studyParams(id,'igcse',d), before = structuredClone(p);
     const {state} = d.create(p);

@@ -43,8 +43,24 @@ test("course scan accounts for every public IGCSE lesson, ten hubs and six areas
       `${id} is not reachable from course`,
     );
 });
-test("all 44 scientific instruments expose real calculations, lessons, valid presets and diagram embeds", () => {
-  assert.equal(P.CURRICULUM_IDS.length, 44);
+test("motor commutation preserves torque direction while generator current follows motion cross field", () => {
+  for (const phase of [Math.PI/4, Math.PI/2, 5*Math.PI/4, 3*Math.PI/2]) {
+    for (const side of [-1,1]) {
+      const motor = P.machineSide(phase,side,true);
+      const generator = P.machineSide(phase,side,false);
+      assert.equal(motor.force, -motor.current);
+      assert.ok(-motor.x*motor.force > 0);
+      assert.equal(generator.current, Math.sign(generator.motion[2]));
+    }
+  }
+  assert.equal(P.machineSide(Math.PI,1,true).current, 0);
+  assert.equal(P.machineSide(Math.PI,1,false).current, 0);
+  const {frequency} = P.DEFAULTS.motor;
+  close(sample("motor",{},1/(4*frequency)).torque, sample("motor",{},3/(4*frequency)).torque);
+});
+
+test("all 45 scientific instruments expose real calculations, lessons, valid presets and diagram embeds", () => {
+  assert.equal(P.CURRICULUM_IDS.length, 45);
   for (const [id, d] of Object.entries(LABS)) {
     assert.equal(d.presets.length, 3);
     assert.equal(CURRICULUM_LESSONS[id].questions.length, 5);

@@ -733,3 +733,29 @@ body:has(.model-screen[open]) { overflow: hidden; }
   background: #eaf3f8;
 }
 .model-variables .orbit-display-toggles label { color: #24495f; }
+
+.machine-rule {
+  display: grid;
+  grid-template-columns: minmax(140px, 235px) minmax(0, 1fr);
+  gap: clamp(12px, 3vw, 34px);
+  align-items: center;
+  padding: clamp(17px, 3vw, 32px);
+  color: #16354b;
+  background: #f8fbfd;
+  border-top: 1px solid #d6e5ee;
+}
+.machine-rule svg { width: 100%; max-width: 235px; }
+.machine-rule h2 { margin: 4px 0 10px; font-size: clamp(20px, 3vw, 29px); }
+.machine-rule dl { display: flex; flex-wrap: wrap; gap: 7px 18px; margin: 0; }
+.machine-rule dt { font-size: 13px; font-weight: 800; }
+.machine-rule dd { margin: 0; font-size: 13px; }
+.machine-rule p { margin: 12px 0 6px; font-size: 14px; }
+.machine-rule a { color: #0a6871; font-weight: 750; }
+.rule-thumb { color: #945511; }
+.rule-field { color: #08736d; }
+.rule-current { color: #714e98; }
+.model-screen .machine-rule { display: none; }
+@media (max-width: 550px) {
+  .machine-rule { grid-template-columns: 1fr; }
+  .machine-rule svg { max-width: 165px; }
+}

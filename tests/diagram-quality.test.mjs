@@ -100,7 +100,7 @@ test('sampled orbit framing stays inside the viewport and removes empty corner p
     }
   }
 });
-test('all 44 curriculum apparatus bounds produce finite camera compositions without changing physics',()=>{
+test('all 45 curriculum apparatus bounds produce finite camera compositions without changing physics',()=>{
   for(const id of Object.keys(CURRICULUM_BUILDERS)) {
     const d=SIMULATIONS[id],run=d.create(d.defaults),saved=structuredClone(run),root=new T.Group(),scene=createCurriculumScene(id,run.params,root,{labels:false});
     scene.update(run);const bounds=apparatusBounds(root);

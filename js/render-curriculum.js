@@ -1232,41 +1232,42 @@ export function drawCurriculum(canvas, lab) {
       foot(`K = ${fmt(q.kinetic)} J (constant)`, q.radius === null ? "F = 0 N · no circular radius" : `r = ${fmt(q.radius)} m · |F| = ${fmt(q.force)} N`);
       break;
     }
+    case "motor":
     case "induction": {
-      title(
-        p.mode ? "Ideal commutated DC motor" : "Alternating-current generator",
-        "Rotation rate imposed · mechanical response not solved",
-      );
-      rect(90, 120, 150, 240, "#ffc58033", GOLD);
-      rect(600, 120, 150, 240, "#91baff33", BLUE);
-      text("N", 165, 255, GOLD, 45, "center");
-      text("S", 675, 255, BLUE, 45, "center");
-      for (let i = 0; i < 5; i++)
-        arrow(255, 150 + i * 43, 330, 0, "#8faec255", 1);
-      c.save();
-      c.translate(420, 240);
-      c.rotate(q.phase);
-      rect(-70, -70, 140, 140, "#6be5d411", CYAN, 2);
-      line(
-        [
-          [-70, -70],
-          [-70, 70],
-          [70, 70],
-          [70, -70],
-          [-70, -70],
-        ],
-        CYAN,
-        4,
-      );
-      arrow(0, 0, 75, 0, GOLD, 2);
-      c.restore();
-      text("Coil normal", 420, 385, GOLD, 17, "center");
-      foot(
-        p.mode ? `τ = ${fmt(q.torque)} N m` : `ε = ${fmt(q.emf)} V`,
-        p.mode
-          ? "Split-ring reverses coil current each half-turn"
-          : `εpeak = ${fmt(q.peak)} V`,
-      );
+      const motor = lab.type === "motor";
+      title(motor ? "DC motor" : "AC generator", "");
+      rect(85, 150, 115, 200, "#fff1de", GOLD, 8);
+      rect(640, 150, 115, 200, "#e5f0fd", BLUE, 8);
+      text("N", 142, 262, GOLD, 44, "center");
+      text("S", 698, 262, BLUE, 44, "center");
+      for (const y of [170, 210, 250, 290, 330])
+        arrow(215,y,408,0,"#73a9aa67",1.3);
+      const cx=420, cy=250, radius=100;
+      c.save(); c.setLineDash([5,7]);
+      c.beginPath(); c.arc(cx,cy,radius,0,TAU);
+      c.strokeStyle="#7998ae"; c.lineWidth=1; c.stroke(); c.restore();
+      const sides=[-1,1].map(side => P.machineSide(q.phase,side,motor));
+      const position = side => [cx+radius*side.x,cy+radius*side.z];
+      line(sides.map(position),"#bf7839",8);
+      circle(cx,cy,7,MUTED);
+      for (const side of sides) {
+        const [x,y]=position(side);
+        c.beginPath(); c.arc(x,y,16,0,TAU);
+        c.fillStyle="#f8f4fc"; c.fill();
+        c.strokeStyle=PURPLE; c.lineWidth=2; c.stroke();
+        if (side.current>0) circle(x,y,4,PURPLE);
+        if (side.current<0) {
+          line([[x-5,y-5],[x+5,y+5]],PURPLE,2);
+          line([[x+5,y-5],[x-5,y+5]],PURPLE,2);
+        }
+        if (lab.vectors!==false) {
+          if (motor && side.force) arrow(x,y,0,50*side.force,GOLD,3);
+          if (!motor) arrow(x,y,56*side.motion[0],56*side.motion[2],GOLD,3);
+        }
+      }
+      text("⊙ current towards you    ⊗ current away from you",420,398,PURPLE,19,"center");
+      foot(motor ? "Split ring · DC input" : "Slip rings · AC output",
+        motor ? "Gold: force" : "Gold: conductor motion");
       break;
     }
     case "transformer": {
@@ -1661,6 +1662,7 @@ export function curriculumThumbnail(id) {
     magnetism:
       "M80 90q115-110 230 0M80 90q115 110 230 0M120 65h150v50H120zm20-10v70m25-70v70m25-70v70m25-70v70",
     induction: "M65 40h65v100H65zm195 0h65v100h-65zM165 50l70 20-10 65-70-20z",
+    motor: "M65 40h65v100H65zm195 0h65v100h-65zM167 57l63 13-11 52-63-13zM190 24v116m-15 8h30m-26 9h22",
     transformer:
       "M110 35h170v110H110zm40 30h90v55h-90zM90 55h40m-40 20h40m-40 20h40m130-40h40m-40 20h40m-40 20h40",
     atom: "M75 85h90m-90-30h80l125-30M75 115h80l125 30",

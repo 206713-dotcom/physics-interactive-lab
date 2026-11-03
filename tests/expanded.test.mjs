@@ -15,8 +15,8 @@ function run(type, p, duration, h = 1 / 240) {
   return s;
 }
 
-test("all 57 laboratories have valid defaults, three presets and complete lesson resources", () => {
-  assert.equal(Object.keys(SIMULATIONS).length, 57);
+test("all 58 laboratories have valid defaults, three presets and complete lesson resources", () => {
+  assert.equal(Object.keys(SIMULATIONS).length, 58);
   for (const [id, d] of Object.entries(SIMULATIONS)) {
     const model = d.create(d.defaults),
       l = {

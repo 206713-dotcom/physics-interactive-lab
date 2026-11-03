@@ -42,8 +42,8 @@ function finite(root, id) {
   });
   assert.ok(meshes >= 1, id + " must have volumetric apparatus");
 }
-test("all 57 models support 3D and have a complete model-specific visual explanation", () => {
-  assert.equal(Object.keys(SIMULATIONS).length, 57);
+test("all 58 models support 3D and have a complete model-specific visual explanation", () => {
+  assert.equal(Object.keys(SIMULATIONS).length, 58);
   assert.deepEqual(
     Object.keys(CURRICULUM_BUILDERS).sort(),
     Object.keys(LABS).sort(),

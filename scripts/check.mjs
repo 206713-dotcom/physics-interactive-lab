@@ -167,5 +167,5 @@ async function verifyDirectory(directory) {
 for (const directory of ["js", "vendor", "atlas"])
   await verifyDirectory(directory);
 console.log(
-  "Static assets, local imports and fonts, 57-lab sources, Solar Atlas, textbook index, course map, Chart.js and Three.js verified.",
+  "Static assets, local imports and fonts, lab sources, Solar Atlas, textbook index, course map, Chart.js and Three.js verified.",
 );

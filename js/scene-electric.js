@@ -5,6 +5,7 @@ import { PALETTE as C, clamp, setPath } from "./scene-kit.js";
 import { createParticleChamber } from "./scene-particle-chamber.js";
 import { createMagnetismApparatus } from "./scene-magnetism.js";
 import { createDCBench } from './scene-dc-bench.js';
+import { machineSide } from "./curriculum-physics.js";
 import {
   radiationReferences,
   particlePosition,
@@ -208,7 +209,10 @@ export const ELECTRIC_SCENES = {
       }
     };
   },
-  induction(p, k) {
+  motor(p, k) {
+    return ELECTRIC_SCENES.induction(p, k, true);
+  },
+  induction(p, k, motor = false) {
     board(k);
     const metal = { metalness: 0.75, roughness: 0.3 };
     // Laminated rear yoke and machined pole shoes make the air gap explicit.
@@ -246,18 +250,38 @@ export const ELECTRIC_SCENES = {
       const bearing = k.cylinder(0.18, 0.3, 0x9bb0ba, [0, y, 0], metal);
       k.ring(0.2, C.white, [0, y + 0.16, 0]);
     }
-    for (const y of [3.05, 3.22]) k.ring(0.1, 0xdca46d, [0, y, 0], "y", 1);
-    // Brushes and leads are illustrative connections, not an added circuit.
-    for (const z of [-0.12, 0.12]) {
-      k.box(0.19, 0.13, 0.13, 0x52606a, [0.2, 3.13 + z * 0.7, z], metal);
-      k.rod([0.28, 3.13 + z * 0.7, z], [1.1, 3.13 + z * 0.7, z], z < 0 ? C.gold : C.blue, 0.022);
+    const contacts = new T.Group();
+    k.add(contacts, [0, 3.14, 0]);
+    for (const side of [-1, 1]) {
+      const ring = k.mesh(new T.TorusGeometry(.19,.036,10,44,motor ? Math.PI-.23 : TAU),
+        0xda9c64, [0,motor ? 0 : side*.105,0],metal);
+      ring.rotation.x = -Math.PI/2;
+      ring.rotation.z = motor ? (side<0 ? Math.PI : 0)+.115 : 0;
+      contacts.add(ring);
+      const x = motor ? side*.30 : .30, y = 3.14 + (motor ? 0 : side*.105);
+      k.box(.18,.105,.14,0x546474,[x,y,0],metal);
+      k.rod([x,y,0],[x,y,.73],side<0 ? C.gold : C.blue,.022);
+      k.rod([x,y,.73],[motor ? side*.8 : .8,y,.73],side<0 ? C.gold : C.blue,.022);
     }
+    k.label(motor ? "Split ring · DC supply" : "Slip rings · AC output",
+      [0,3.85,.85],"#dbedf5",2.3);
     rotor.userData.role = "rotor";
-    const normal = k.arrow([0, 1.8, 0], [1.5, 0, 0], C.purple);
-    k.label("B → cyan · coil normal → purple", [0, 4.5, 0], "#cfe6ef", 4.8);
+    const sides = [-1,1].map(side => ({
+      side, current: k.arrow([0,0,0],[0,0,0],C.purple),
+      action: k.arrow([0,0,0],[0,0,0],C.gold),
+    }));
+    const normal = !motor && k.arrow([0, 1.8, 0], [1.5, 0, 0], C.blue);
     return (s, q) => {
       rotor.rotation.y = q.phase;
-      k.setArrow(
+      contacts.rotation.y = q.phase;
+      for (const {side,current,action} of sides) {
+        const direction = machineSide(q.phase, side, motor);
+        const x = .8*direction.x, z = .8*direction.z;
+        k.setArrow(current,[x,1.8-direction.current*.52,z],[0,direction.current*1.04,0]);
+        k.setArrow(action,[x,2.27,z],motor ? [0,0,1.1*direction.force]
+          : direction.motion.map(component => component*1.05));
+      }
+      if (normal) k.setArrow(
         normal,
         [0, 1.8, 0],
         [1.4 * Math.cos(q.phase), 0, -1.4 * Math.sin(q.phase)],

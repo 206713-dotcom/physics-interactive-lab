@@ -161,8 +161,13 @@ export const RANGES = {
     area: [0.02, 0.005, 0.1],
     turns: [100, 10, 300],
     frequency: [1, 0.2, 5],
+  },
+  motor: {
+    field: [0.2, 0.02, 1],
+    area: [0.02, 0.005, 0.1],
+    turns: [100, 10, 300],
+    frequency: [0.5, 0.2, 5],
     current: [2, 0.2, 5],
-    mode: [0, 0, 1],
   },
   transformer: {
     vp: [230, 10, 250],
@@ -207,6 +212,18 @@ export const RANGES = {
   },
 };
 export const CURRICULUM_IDS = Object.keys(RANGES);
+/** End-on view: the magnetic field is +x and the shaft is +y.
+ * Each long side lies at ±(sin θ, 0, cos θ) around the shaft. */
+export function machineSide(phase, side, motor) {
+  const x = side * Math.sin(phase), z = side * Math.cos(phase);
+  const current = Math.abs(x) < 1e-10 ? 0 : Math.sign(motor ? x : -x);
+  return {
+    x, z,
+    motion: [z, 0, -x],
+    current,
+    force: motor && current ? -current : 0,
+  };
+}
 export const DEFAULTS = Object.fromEntries(
   CURRICULUM_IDS.map((id) => [
     id,
@@ -579,15 +596,26 @@ export function sampleCurriculum(id, s, p) {
       const omega = 2 * Math.PI * p.frequency,
         phase = omega * t,
         flux = p.field * p.area * Math.cos(phase),
-        emf = p.turns * p.field * p.area * omega * Math.sin(phase),
-        torque =
-          p.turns * p.field * p.area * p.current * Math.abs(Math.sin(phase));
+        emf = p.turns * p.field * p.area * omega * Math.sin(phase);
       Object.assign(q, {
         phase,
         flux,
         emf,
         peak: p.turns * p.field * p.area * omega,
-        torque,
+        linkage: p.turns * flux,
+        frequency: p.frequency,
+      });
+      break;
+    }
+    case "motor": {
+      const phase = 2 * Math.PI * p.frequency * t;
+      const peakTorque = p.turns * p.field * p.area * p.current;
+      Object.assign(q, {
+        phase,
+        torque: peakTorque * Math.abs(Math.sin(phase)),
+        peakTorque,
+        sideForce: p.turns * p.field * p.current * Math.sqrt(p.area),
+        period: 1 / p.frequency,
         frequency: p.frequency,
       });
       break;

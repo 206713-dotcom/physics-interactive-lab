@@ -208,7 +208,7 @@ All sixteen use the existing sliders, graphs, expanded model/variable/working wo
 
 ### A Level textbook practice
 
-Open [A Level practice](https://206713-dotcom.github.io/physics-interactive-lab/#/textbook) to read and copy 1,000 textbook-inspired questions directly. Filter by Cambridge stage, topic or difficulty. The bank includes 45 original prompts and 955 numerical variants. Each card identifies a related Halliday problem. The separate [Olympiad section](https://206713-dotcom.github.io/physics-interactive-lab/#/olympiad) contains 18 original problems across six topics, grouped into Entry, Advanced and Stretch.
+Open [A Level practice](https://206713-dotcom.github.io/physics-interactive-lab/#/textbook) to read and copy 1,000 textbook-inspired questions directly. Choose an AS or A2 topic, then filter by difficulty. Each topic has a shareable link. The bank includes 45 original prompts and 955 numerical variants. Each card identifies a related Halliday problem. The separate [Olympiad section](https://206713-dotcom.github.io/physics-interactive-lab/#/olympiad) contains 18 original problems across six topics, grouped into Entry, Advanced and Stretch.
 
 ### IGCSE course expansion
 

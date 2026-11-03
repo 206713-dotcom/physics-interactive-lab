@@ -13,16 +13,33 @@ export const aLevelQuestions = textbookGroups.flatMap(([topic, stage, syllabus, 
   }),
 ).sort((a, b) => a.level - b.level || a.variant - b.variant);
 
-export function renderTextbookLibrary(container, olympiad = false) {
+export function renderTextbookLibrary(container, olympiad = false, query = new URLSearchParams()) {
   const levels = olympiad ? ["Entry", "Advanced", "Stretch"] : ["Foundation", "Standard", "Challenge"];
   const entries = olympiad
     ? olympiadPractice.map(([topic, level, chapter, question]) => ({ topic, level, chapter, question })).sort((a, b) => a.level - b.level)
     : aLevelQuestions;
-  const topics = [...new Set(entries.map((entry) => entry.topic))];
+  const topics = [...new Set(entries.map((entry) => entry.topic))].map((name) => {
+    const questions = entries.filter((entry) => entry.topic === name);
+    return {
+      name,
+      slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+      stage: questions[0].stage,
+      questions,
+    };
+  });
+  const selected = topics.find(({ slug }) => slug === query.get("topic"));
+  const route = olympiad ? "#/olympiad" : "#/textbook";
   const title = olympiad ? "Physics Olympiad practice" : "A Level practice";
   container.innerHTML = `
     <div class="page-width question-page teacher-page">
-      <div class="breadcrumb"><a href="#/">Experiments</a><span>/</span><span>${title}</span></div>
+      <div class="breadcrumb"><a href="#/">Experiments</a><span>/</span>${selected ? `<a href="${route}">${title}</a><span>/</span><span>${selected.name}</span>` : `<span>${title}</span>`}</div>
+      ${selected ? `
+      <section class="practice-topic-heading">
+        <a href="${route}">← All topics</a>
+        <div class="eyebrow">${olympiad ? "PHYSICS OLYMPIAD" : `${selected.stage} · CAMBRIDGE 9702`}</div>
+        <h1>${selected.name}</h1>
+        <p>${selected.questions.length} questions across three difficulty levels.</p>
+      </section>` : `
       <section class="question-hero teacher-hero">
         <div>
           <div class="eyebrow">${olympiad ? "PHYSICS OLYMPIAD · EXTENSION" : "CAMBRIDGE 9702 · AS AND A LEVEL"}</div>
@@ -35,10 +52,22 @@ export function renderTextbookLibrary(container, olympiad = false) {
         </div>
         <div class="teacher-hero-count"><strong>${entries.length.toLocaleString("en-US")}</strong>questions<span>${topics.length} topics · ${olympiad ? "extension" : "AS and A2"}</span></div>
       </section>
+      <div class="practice-topic-catalogue">
+        ${(olympiad ? [undefined] : ["AS", "A2"]).map((stage) => `
+          <section aria-label="${stage || "Olympiad"} topics">
+            <h2>${stage ? `${stage} topics` : "Choose a topic"}</h2>
+            <div class="teacher-card-grid">
+              ${topics.filter((topic) => topic.stage === stage).map((topic) => `
+                <a class="practice-topic-card" href="${route}?topic=${topic.slug}">
+                  <span><strong>${topic.name}</strong><small>${topic.questions.length} questions</small></span>
+                  <span aria-hidden="true">→</span>
+                </a>`).join("")}
+            </div>
+          </section>`).join("")}
+      </div>`}
+      ${selected ? `
       <section class="question-filter-panel teacher-tools" aria-label="Filter practice questions">
         <div class="question-filters">
-          ${olympiad ? "" : '<label>Course stage<select id="book-stage"><option value="">AS and A2</option><option>AS</option><option>A2</option></select></label>'}
-          <label>Topic<select id="book-topic"><option value="">All topics</option>${topics.map((topic) => `<option>${topic}</option>`).join("")}</select></label>
           <label>Difficulty<select id="book-level"><option value="">All three levels</option>${levels.map((level, i) => `<option value="${i + 1}">${level}</option>`).join("")}</select></label>
         </div>
         <div class="question-tools"><button class="button" id="book-copy">Copy filtered questions</button></div>
@@ -47,16 +76,15 @@ export function renderTextbookLibrary(container, olympiad = false) {
         <label id="book-manual" hidden>Question text<textarea readonly rows="6"></textarea></label>
       </section>
       <div id="book-results" tabindex="-1"></div>
-      <nav class="question-pagination" aria-label="Practice pages">
+      <nav class="question-pagination" id="book-pagination" aria-label="Practice pages">
         <button class="button subtle" id="book-prev">← Previous page</button>
         <span id="book-page" aria-live="polite"></span>
         <button class="button subtle" id="book-next">Next page →</button>
-      </nav>
+      </nav>` : ""}
     </div>`;
 
+  if (!selected) return;
   const find = (id) => container.querySelector(`#${id}`);
-  const stage = find("book-stage");
-  const topic = find("book-topic");
   const level = find("book-level");
   const manual = find("book-manual");
   const status = find("book-status");
@@ -73,6 +101,7 @@ export function renderTextbookLibrary(container, olympiad = false) {
     const pages = Math.max(1, Math.ceil(selection.length / PAGE_SIZE));
     find("book-count").textContent = `${selection.length.toLocaleString("en-US")} matching ${selection.length === 1 ? "question" : "questions"}${visible.length ? ` · Showing ${start + 1}–${start + visible.length}` : ""}`;
     find("book-page").textContent = `Page ${page + 1} of ${pages}`;
+    find("book-pagination").hidden = pages === 1;
     prev.disabled = page === 0;
     next.disabled = page + 1 >= pages;
     button.disabled = !selection.length;
@@ -87,14 +116,14 @@ export function renderTextbookLibrary(container, olympiad = false) {
             <div class="teacher-card-grid">${group.map((entry) => `
               <article class="question-card teacher-card">
                 <div class="question-topic-label">${olympiad ? `OLYMPIAD · HALLIDAY CH. ${entry.chapter}` : `${entry.stage} · CAMBRIDGE §${entry.syllabus}`}</div>
-                <h3>${entry.topic}</h3>
+                <h3>Question ${selected.questions.indexOf(entry) + 1}</h3>
                 <p class="teacher-prompt">${entry.question}</p>
                 ${olympiad ? "" : `<p class="teacher-chapter">Related reading · Halliday ch. ${entry.chapter}, problem ${entry.problem}</p>`}
                 <button class="button subtle" data-copy-row="${selection.indexOf(entry)}">Copy question</button>
               </article>`).join("")}</div>
           </section>`;
         }).join("")
-      : '<div class="question-empty"><h3>No questions match these filters.</h3><p>Try another topic or course stage.</p></div>';
+      : '<div class="question-empty"><h3>No questions at this difficulty.</h3><p>Try another difficulty.</p></div>';
   }
 
   async function copy(text, rows, feedback, trigger) {
@@ -116,9 +145,7 @@ export function renderTextbookLibrary(container, olympiad = false) {
   }
 
   function filter() {
-    selection = entries.filter((entry) =>
-      (!stage?.value || entry.stage === stage.value) &&
-      (!topic.value || entry.topic === topic.value) &&
+    selection = selected.questions.filter((entry) =>
       (!level.value || entry.level === Number(level.value)),
     );
     page = 0;
@@ -129,7 +156,7 @@ export function renderTextbookLibrary(container, olympiad = false) {
     draw();
     results.focus();
   }
-  for (const control of [stage, topic, level].filter(Boolean)) control.onchange = filter;
+  level.onchange = filter;
   prev.onclick = () => turnPage(-1);
   next.onclick = () => turnPage(1);
   button.onclick = () => {

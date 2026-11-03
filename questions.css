@@ -1,6 +1,48 @@
 .question-page {
   padding-bottom: 85px;
 }
+.practice-topic-catalogue > section {
+  margin-top: 2.5rem;
+}
+.practice-topic-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.15rem 1.25rem;
+  color: #173a50;
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid #d2e0eb;
+  border-radius: 0.9rem;
+}
+.practice-topic-card:hover,
+.practice-topic-card:focus-visible {
+  border-color: #087b80;
+  background: #effafa;
+}
+.practice-topic-card small {
+  display: block;
+  margin-top: 0.3rem;
+  color: #476277;
+}
+.practice-topic-card > span:last-child,
+.practice-topic-heading > a {
+  color: #08696e;
+}
+.practice-topic-heading {
+  padding: 1.5rem 0 0.5rem;
+}
+.practice-topic-heading .eyebrow {
+  margin-top: 1.5rem;
+}
+.practice-topic-heading h1 {
+  margin: 0.5rem 0;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+}
+#book-pagination[hidden] {
+  display: none;
+}
 .question-hero {
   background:
     radial-gradient(ellipse at 90% 30%, #194b66, transparent 65%), #0b253b;

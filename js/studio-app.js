@@ -1611,7 +1611,7 @@ function route() {
   } else if (["textbook", "questions", "teacher", "olympiad"].includes(id)) {
     const olympiad = id === "olympiad";
     document.title = `${olympiad ? "Physics Olympiad" : "A Level"} practice · Physics Interactive Lab`;
-    renderTextbookLibrary($("#main"), olympiad);
+    renderTextbookLibrary($("#main"), olympiad, new URLSearchParams(query));
   } else home();
   window.scrollTo(0, 0);
   lastFrame = 0;

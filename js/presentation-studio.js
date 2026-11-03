@@ -5,7 +5,7 @@ import { buoyancySample } from './buoyancy-physics.js';
 import { studyReadings } from './study-policy.js';
 import { calculationNumber } from './calculations.js';
 import { getProfile } from './learning-paths.js';
-export function installPresentationStudio(stage, id) {
+export function installPresentationStudio(stage, controls, id, title, show3D) {
   stage.classList.add('presentation-stage');
   const panel = document.createElement('section');
   panel.className = 'instrument-hud';
@@ -14,8 +14,67 @@ export function installPresentationStudio(stage, id) {
   panel.innerHTML = '<div class="instrument-values"></div><span class="instrument-context"></span>';
   stage.querySelector('.transport').before(panel);
   const values = panel.querySelector('.instrument-values'), context = panel.querySelector('.instrument-context');
+  const toolbar = stage.querySelector('.stage-views');
+  const scene = stage.querySelector('.scene-container');
+  const drawer = document.createElement('div');
+  drawer.className = 'model-variables';
+  const drawerToggle = document.createElement('button');
+  drawerToggle.type = 'button';
+  drawerToggle.textContent = 'Change variables';
+  controls.id = 'model-variable-panel';
+  controls.hidden = true;
+  drawerToggle.setAttribute('aria-expanded', 'false');
+  drawerToggle.setAttribute('aria-controls', controls.id);
+  drawerToggle.onclick = () => {
+    const open = controls.hidden;
+    controls.hidden = !open;
+    drawer.classList.toggle('is-open', open);
+    drawerToggle.setAttribute('aria-expanded', String(open));
+    drawerToggle.textContent = open ? 'Hide variables' : 'Change variables';
+  };
+  drawer.append(drawerToggle, controls);
+  scene.append(drawer);
+  const dialog = document.createElement('dialog');
+  dialog.className = 'model-screen';
+  dialog.setAttribute('aria-label', title + ' full screen');
+  const titleLabel = document.createElement('strong');
+  titleLabel.className = 'model-screen-title';
+  titleLabel.textContent = title;
+  stage.querySelector('.stage-top').prepend(titleLabel);
+  const launch = document.createElement('button');
+  launch.type = 'button';
+  launch.className = 'model-screen-launch';
+  launch.setAttribute('aria-haspopup', 'dialog');
+  launch.textContent = 'Full screen';
+  toolbar.prepend(launch);
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'model-screen-close';
+  close.textContent = 'Exit full screen';
+  toolbar.append(close);
+  const returnPoint = document.createComment('Full screen model return position');
+  function restore(focus = true) {
+    if (stage.parentNode !== dialog) return;
+    returnPoint.replaceWith(stage);
+    dialog.remove();
+    if (focus && launch.isConnected) launch.focus({ preventScroll: true });
+  }
+  launch.onclick = () => {
+    stage.before(returnPoint);
+    document.body.append(dialog);
+    dialog.append(stage);
+    dialog.showModal();
+    close.focus();
+    show3D();
+  };
+  close.onclick = () => { dialog.close(); restore(); };
+  dialog.onclose = () => { if (!dialog.open) restore(); };
   let signature = '', nodes = [];
   return {
+    dispose() {
+      if (dialog.open) dialog.close();
+      restore(false);
+    },
     update(lab) {
       const readings = studyReadings(id,lab.state,lab.params,lab.studyMode,lab.definition),
         next = readings.map(x => x.title + x.unit).join('|');

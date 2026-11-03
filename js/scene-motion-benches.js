@@ -70,7 +70,7 @@ export function createCollisionBench(p,root,options={}) {
   const va=k.arrow([0,1.2,0],[1,0,0],C.cyan),vb=k.arrow([0,1.9,0],[1,0,0],C.gold),
     speedScale=collisionSpeedScale(p),phase=k.label('',[0,5.05,0],'#d4e7ee',5.4),
     momentum=k.label('',[0,4.15,0],'#c3a6ff',5.1),
-    labelA=k.label('',[-2.25,3.25,0],'#64e8d1',3.8),labelB=k.label('',[2.25,3.25,0],'#ffc584',3.8),
+    labelA=k.label('',[0,2.36,0.72],'#64e8d1',2.4),labelB=k.label('',[0,2.98,0.72],'#ffc584',2.4),
     origin=k.label('',[0,2.6,-.6],'#a5c4d3',6);
   const ticks=Array.from({length:11},()=>({line:k.line([[0,.22,.55],[0,.22,.83]],C.muted,.7),label:k.label('',[0,.24,1.0],'#abc9d8',.85)}));
   const initial=.5*p.m1*p.u1**2+.5*p.m2*p.u2**2,
@@ -81,6 +81,8 @@ export function createCollisionBench(p,root,options={}) {
     const s=lab.state,frame=collisionFrame(s),a=(s.x1-frame.center)*scale,b=(s.x2-frame.center)*scale;
     const railHeight=.215-.045*scale;
     A.group.position.set(a,railHeight,0);B.group.position.set(b,railHeight,0);A.roll(s.x1);B.roll(s.x2);
+    labelA.position.x = a;
+    labelB.position.x = b;
     k.setArrow(va,[a,1.25,0],[s.v1*speedScale,0,0]);k.setArrow(vb,[b,1.9,0],[s.v2*speedScale,0,0]);
     const K=.5*p.m1*s.v1**2+.5*p.m2*s.v2**2,loss=Math.max(0,initial-K),f=initial>0?Math.max(0,Math.min(1,K/initial)):0;
     kept.scale.x=f;kept.position.x=-2.3+2.3*f;lost.scale.x=1-f;lost.position.x=-2.3+4.6*f+2.3*(1-f);lost.visible=loss>1e-10;
@@ -88,8 +90,8 @@ export function createCollisionBench(p,root,options={}) {
     const phaseText=s.hit?'After contact · no external impulse':p.u1<=p.u2?'No approach · no collision':'Before contact · carts approaching';
     k.setLabel(phase,phaseText,'#d4e7ee',5.4);
     k.setLabel(momentum,`Σp = ${(p.m1*s.v1+p.m2*s.v2).toFixed(3)} kg m/s`,'#c3a6ff',5.1);
-    k.setLabel(labelA,`A: ${p.m1} kg · v = ${s.v1.toFixed(2)} m/s`,'#64e8d1',3.8);
-    k.setLabel(labelB,`B: ${p.m2} kg · v = ${s.v2.toFixed(2)} m/s`,'#ffc584',3.8);
+    k.setLabel(labelA,`A · ${s.v1.toFixed(2)} m/s`,'#64e8d1',2.4);
+    k.setLabel(labelB,`B · ${s.v2.toFixed(2)} m/s`,'#ffc584',2.4);
     k.setLabel(energy,`K = ${K.toFixed(2)} J · transferred internally: ${loss.toFixed(2)} J`,'#b5d0dc',6.1);
     k.setLabel(origin,'Camera follows pair · ruler & velocities in lab frame','#a5c4d3',6);
     const first=Math.floor(frame.center)-5;

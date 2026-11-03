@@ -430,7 +430,7 @@ function labPage(type, query) {
   }
   // The course focus replaces the duplicated three-step walkthrough.
 
-  presentationStudio=installPresentationStudio($("#stage"),type);
+  presentationStudio=installPresentationStudio($("#stage"),$(".controls"),type,d.short,() => setView("3d"));
   if(["spring","pendulum"].includes(type) && studyMode !== "igcse") {
     const tools=document.createElement("div");
     tools.className="oscillation-tools";tools.setAttribute("aria-label","Oscillation indicators");
@@ -798,7 +798,6 @@ function bindControls() {
     expandButton.setAttribute("aria-label", "Close expanded view");
     expandedView = new ExpandedView({
       title: studyTitle(lab.type,lab.studyMode,lab.definition.short),
-      controls: $(".controls"),
       workspace: $(".workspace"),
       extraGraph: lab.type === "gravity" ? $(".graph-panel") : null,
       getSnapshot: () => ({
@@ -1562,6 +1561,7 @@ function advance(count) {
 function route() {
   $("#main").onclick = null;
   $("#main").oninput = null;
+  presentationStudio?.dispose();
   expandedView?.close();
   vectorStudio?.dispose();
   vectorStudio = null;

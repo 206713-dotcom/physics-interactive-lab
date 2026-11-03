@@ -16,7 +16,6 @@ const setText = (node, text) => {
 export class ExpandedView {
   constructor({
     title,
-    controls,
     workspace,
     extraGraph,
     getSnapshot,
@@ -46,11 +45,9 @@ export class ExpandedView {
     root.innerHTML = `
       <header class="expanded-header">
         <div class="expanded-heading"><a class="workspace-back" href="#/" aria-label="Return to the experiment library">← Laboratory</a><span class="expanded-eyebrow">${embedded ? "INTERACTIVE PHYSICS LAB" : "INTERACTIVE LABORATORY"}</span><h2 id="expanded-title">${mathHTML(title)}</h2></div>
-        <nav class="expanded-panel-tabs" aria-label="Expanded inspector"><button type="button" data-inspector="calculations" aria-pressed="true">Calculations</button><button type="button" data-inspector="variables" aria-pressed="false">Parameters</button></nav>
         <div class="expanded-actions"><button type="button" class="expanded-play"></button>${embedded ? '<a class="expanded-full-link" target="_blank" rel="noopener">Open full lab ↗</a>' : ""}<button type="button" class="expanded-close" aria-label="${embedded ? "Show lessons and notes" : "Close expanded view"}"><span aria-hidden="true">↙</span> ${embedded ? "Lessons & notes" : "Lessons & notes"} ${embedded ? "" : "<kbd>Esc</kbd>"}</button></div>
       </header>
       <div class="expanded-layout">
-        <aside class="expanded-variables" aria-label="Adjust model variables"></aside>
         <div class="expanded-model"></div>
         <aside class="expanded-calculations" aria-label="Live calculations">
           <div class="calculation-heading"><span class="expanded-eyebrow">LIVE CALCULATIONS</span><h2>Follow the physics.</h2><p>Every value, connected to the model.</p><div class="calculation-time"></div></div>
@@ -69,7 +66,6 @@ export class ExpandedView {
         </aside>
       </div>`;
     if (embedded) root.querySelector(".expanded-full-link").href = fullURL();
-    this.move(controls, root.querySelector(".expanded-variables"));
     this.move(workspace, root.querySelector(".expanded-model"));
     if (extraGraph) this.move(extraGraph, workspace);
     document.body.append(root);
@@ -104,19 +100,6 @@ export class ExpandedView {
     this.overview = [...root.querySelectorAll("[data-calculation]")];
     this.play = root.querySelector(".expanded-play");
     this.play.onclick = onPlayback;
-    const focus = document.createElement("button");
-    focus.type = "button";
-    focus.className = "scene-focus-toggle";
-    focus.textContent = "Scene focus";
-    focus.setAttribute("aria-pressed", "false");
-    root.querySelector(".stage-views").prepend(focus);
-    focus.onclick = () => {
-      const active = root.classList.toggle("scene-focused");
-      focus.setAttribute("aria-pressed", String(active));
-      focus.textContent = active ? "Show inspector" : "Scene focus";
-      this.onLayout?.();
-    };
-    this.focusToggle = focus;
     root.querySelector(".expanded-close").onclick = () => this.close();
     this.choice.onchange = () => this.choose(this.choice.value);
     this.overview.forEach(
@@ -132,29 +115,8 @@ export class ExpandedView {
         }),
     );
     root.querySelector(".copy-working").onclick = () => this.copy();
-    root.querySelectorAll("[data-inspector]").forEach(
-      (button) =>
-        (button.onclick = () => {
-          root.classList.remove("scene-focused");
-          focus.setAttribute("aria-pressed", "false");
-          focus.textContent = "Scene focus";
-          const variables = button.dataset.inspector === "variables";
-          root.classList.toggle("inspect-variables", variables);
-          root
-            .querySelectorAll("[data-inspector]")
-            .forEach((tab) =>
-              tab.setAttribute("aria-pressed", String(tab === button)),
-            );
-          if (matchMedia("(max-width: 900px)").matches)
-            root
-              .querySelector(
-                variables ? ".expanded-variables" : ".expanded-calculations",
-              )
-              .scrollIntoView({ block: "start" });
-          this.onLayout?.();
-        }),
-    );
     this.keydown = (event) => {
+      if (document.querySelector('dialog.model-screen[open]')) return;
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
@@ -216,7 +178,6 @@ export class ExpandedView {
       this.root.querySelector('.calculation-overview h3').textContent = igcse ? 'Related results' : 'Other calculations';
       this.root.querySelector('.calculation-heading h2').textContent = igcse ? 'Understand the idea.' : 'Follow the physics.';
       this.root.querySelector('.calculation-heading p').textContent = igcse ? 'One model. A focused IGCSE explanation.' : 'Every value, connected to the model.';
-      this.root.querySelector('[data-inspector="calculations"]').textContent = igcse ? 'Explanation' : 'Calculations';
       this.modeNote.textContent = igcse ? 'Core and Supplement outcomes are identified in the lesson. Advanced derivations are hidden in this mode.' : `${MODE_NAMES[studyMode]} · full model calculations`;
       for (const option of this.choice.options) {
         option.hidden = !sheet.calculations.some(c=>c.id===option.value);
@@ -312,7 +273,6 @@ export class ExpandedView {
   close() {
     if (this.closed) return;
     this.closed = true;
-    this.focusToggle.remove();
     document.removeEventListener("keydown", this.keydown, true);
     [...this.moves]
       .reverse()

@@ -54,6 +54,8 @@ for (const file of [
   "js/render-practical.js",
   "js/textbook-index.js",
   "js/textbook-practice.js",
+  "js/textbook-variants.js",
+  "js/olympiad-practice.js",
   "js/textbook-library.js",
   "questions.css",
   "curriculum.css",

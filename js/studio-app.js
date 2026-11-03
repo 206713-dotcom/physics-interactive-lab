@@ -1590,7 +1590,9 @@ function route() {
       a.dataset.nav ===
       (id === "course" || id === "syllabus"
         ? "course"
-        : id === "questions" || id === "teacher" || id === "textbook"
+        : id === "olympiad"
+          ? "olympiad"
+          : id === "questions" || id === "teacher" || id === "textbook"
           ? "questions"
           : !type
             ? "home"
@@ -1606,9 +1608,10 @@ function route() {
   } else if (id === "course") {
     document.title = "IGCSE course map · Physics Interactive Lab";
     renderCourse($("#main"));
-  } else if (["textbook", "questions", "teacher"].includes(id)) {
-    document.title = "A Level practice · Physics Interactive Lab";
-    renderTextbookLibrary($("#main"));
+  } else if (["textbook", "questions", "teacher", "olympiad"].includes(id)) {
+    const olympiad = id === "olympiad";
+    document.title = `${olympiad ? "Physics Olympiad" : "A Level"} practice · Physics Interactive Lab`;
+    renderTextbookLibrary($("#main"), olympiad);
   } else home();
   window.scrollTo(0, 0);
   lastFrame = 0;

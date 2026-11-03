@@ -159,6 +159,9 @@ export function studySheet(id, state, params, mode) {
   return { ...full, calculations, variables,
     note: 'Calculated model values. Rounded for display. IGCSE equations are limited to the selected 0625 outcomes.' };
 }
+export function heatPowerCalculationId(mode) {
+  return ["conduction-0", "convection-1", "radiation-2"][mode];
+}
 export function studyReadings(id, state, params, mode, definition) {
   const sheet = calculationSheet(id,state,params);
   if (id === 'moments') {
@@ -178,7 +181,9 @@ export function studyReadings(id, state, params, mode, definition) {
     { title:'Angle from vertical', value:state.theta * 180 / Math.PI, unit:'°' },
     { title:'Elapsed time', value:state.t, unit:'s' },
   ];
-  const keys = getProfile(id,mode).calculations;
+  const keys = id === 'heat' && mode !== 'igcse'
+    ? [heatPowerCalculationId(params.mode), 'energy-3']
+    : getProfile(id,mode).calculations;
   const readings = keys.map(k => sheet.calculations.find(c => c.id === k)).filter(Boolean).slice(0,3);
   if(id==='waves' && mode==='igcse')return readings.map(r=>r.id==='resultant'?{...r,title:'Wave displacement'}:r);
   if (mode === 'igcse' && id === 'gases' && params.state !== 2) return [

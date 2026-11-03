@@ -1,6 +1,6 @@
 import { calculationSheet, calculationNumber, calculationOutcome } from "./calculations.js";
 import { mathHTML, setMath } from "./math-display.js";
-import { studySheet, syllabusDepth } from "./study-policy.js";
+import { heatPowerCalculationId, studySheet, syllabusDepth } from "./study-policy.js";
 import { getProfile, MODE_NAMES } from "./learning-paths.js";
 
 const sheetTimeUnit = (sheet) =>
@@ -225,6 +225,14 @@ export class ExpandedView {
       this.root.dataset.studyMode = studyMode || "";
       this.lastStudyMode = studyMode;
     }
+    if (type === "heat" && this.lastHeatMode !== params.mode) {
+      const active = heatPowerCalculationId(params.mode);
+      if (sheet.calculations.some(({ id }) => id === active)) {
+        this.selectedId = active;
+        this.choice.value = active;
+      }
+    }
+    this.lastHeatMode = type === "heat" && studyMode !== "igcse" ? params.mode : undefined;
     // Text-only updates preserve selection and focus; no integration runs here.
     full.variables.forEach((original,i) => {
       const value = sheet.variables.find(v=>v.symbol===original.symbol), node = this.variableNodes[i];

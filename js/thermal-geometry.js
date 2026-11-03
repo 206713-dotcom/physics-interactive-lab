@@ -2,6 +2,38 @@
  * Normalised particles are illustrations; they do not supply p, T or energy. */
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 export const THERMAL_CAMERA = { target: [0, 2.75, 0], radius: 13.4, polar: 1.33, azimuth: -0.17, fitAspect: 1.65 };
+export const EXPANSION_MAGNIFICATION = 40;
+
+export function convectionPosition(phase) {
+  const angle = phase * 2 * Math.PI;
+  return [-Math.cos(angle), Math.sin(angle)];
+}
+
+export function particleChamberWidth(volume) {
+  // The illustrative chamber has fixed cross-section, so width is linear in volume.
+  return 5.4 * volume / 0.05;
+}
+
+function reflectedCoordinate(value) {
+  const cycle = ((value % 2) + 2) % 2;
+  return 1 - Math.abs(cycle - 1);
+}
+
+export function chamberParticle(index, time, temperature, state) {
+  const speed = Math.sqrt(temperature / 300);
+  if (state === 0) return [
+    0.14 + (index % 6) * 0.14 + 0.018 * Math.sin(time * 7 * speed + index),
+    0.15 + Math.floor(index / 18) * 0.12 + 0.015 * Math.cos(time * 8 * speed + index),
+    0.19 + (Math.floor(index / 6) % 3) * 0.31,
+  ];
+  const height = state === 1 ? 0.45 : 1;
+  const pace = state === 1 ? speed * 0.18 : speed * 0.65;
+  return [
+    reflectedCoordinate(index * 0.681 + time * pace * Math.cos(index * 2.4)),
+    height * reflectedCoordinate(index * 0.413 + time * pace * Math.sin(index * 1.7)),
+    reflectedCoordinate(index * 0.789 + time * pace * Math.cos(index * 0.9)),
+  ];
+}
 
 export function phaseInventory(p, q) {
   if (p.mode) return { solid: 1, liquid: 0, vapour: 0, name: "Single-phase sample" };

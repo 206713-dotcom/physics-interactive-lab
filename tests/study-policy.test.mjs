@@ -100,3 +100,12 @@ test('all AS, A Level and enrichment modes retain their complete parameter, grap
     assert.equal(visibleControlKeys(id,mode),null,id);
   }
 });
+test('heat transfer readout follows the selected mechanism and its model power', () => {
+  const d = SIMULATIONS.heat;
+  for (const [mode, id] of ['conduction-0', 'convection-1', 'radiation-2'].entries()) {
+    const { state, params } = d.create({ ...d.defaults, mode });
+    const [power] = studyReadings('heat', state, params, 'alevel', d);
+    assert.equal(power.id, id);
+    assert.equal(power.value, d.sample(state, params).power);
+  }
+});

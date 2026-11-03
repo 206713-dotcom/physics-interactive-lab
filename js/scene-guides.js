@@ -62,10 +62,10 @@ export const SCENE_GUIDES = {
     "Displacement is enlarged using a fixed scale for each setup. The model shows steady state after transients have died away.",
   ],
   gases: [
-    "Compare particle ordering in solid, liquid and gas views.",
+    "Compare the solid lattice, the liquid layer and the gas filling the chamber. Change volume to move the gold end wall.",
     "Gas pressure follows pV = nRT. Higher temperature also increases the calculated rms molecular speed.",
     "Double gas temperature at fixed volume and compare pressure.",
-    "Dots and their paths illustrate particle arrangements; they are not molecular dynamics. Dot count is not the amount of gas.",
+    "The chamber has a fixed cross-section, so its width follows the selected volume. Particle paths and dot count are illustrative. Gas pressure is calculated from pV = nRT.",
   ],
   expansion: [
     "Compare the blue original bar with the gold heated bar.",
@@ -83,7 +83,7 @@ export const SCENE_GUIDES = {
     "Gold is the hot side; blue is the cooler side.",
     "Thermal energy flows down a temperature gradient. Conduction, convection and radiation use different ideal rate laws.",
     "Change thickness in conduction mode, then compare the radiation mode.",
-    "Moving dots indicate energy transfer or circulation direction, not microscopic trajectories or measured flow speed.",
+    "Dots trace the illustrative convection loop: warm fluid rises on the hot side and cooler fluid sinks on the cool side. The wattage comes from the selected heat-transfer equation.",
   ],
   cooling: [
     "The object temperature falls towards the cyan ambient marker. The shrinking gold arrows show less heat-loss power, while the stacked bar transfers initial excess energy from remaining to released.",

@@ -5,7 +5,7 @@ import { drawPractical, practicalThumbnail } from "./render-practical.js";
 import { drawVectorDiagram } from "./render-vectors.js";
 import { BUOYANCY_STATUS } from "./buoyancy-physics.js";
 import { chargedLayout, soundLayout } from "./field-geometry.js";
-import { phaseInventory } from "./thermal-geometry.js";
+import { chamberParticle, convectionPosition, EXPANSION_MAGNIFICATION, particleChamberWidth, phaseInventory } from "./thermal-geometry.js";
 import { drawMotionDiagram } from "./render-motion.js";
 import { lunarLitInterval, solarDisplayRadius } from "./space-display.js";
 const chargedViews = new WeakMap();
@@ -481,7 +481,7 @@ export function drawCurriculum(canvas, lab) {
           ? "Ideal gas · illustrative particle speeds"
           : "Conceptual arrangement · no gas-law pressure",
       );
-      const boxw = 270 + (p.volume / 0.05) * 260,
+      const boxw = particleChamberWidth(p.volume) * 84,
         x = 120,
         y = 90,
         h = 275;
@@ -494,44 +494,9 @@ export function drawCurriculum(canvas, lab) {
         GOLD,
         8,
       );
-      for (let i = 0; i < 70; i++) {
-        let xx, yy;
-        if (p.state === 0) {
-          xx = x + 35 + ((i % 10) * (boxw - 70)) / 9 + 2 * Math.sin(t * 8 + i);
-          yy = y + 50 + Math.floor(i / 10) * 28 + 2 * Math.cos(t * 9 + i);
-        } else if (p.state === 1) {
-          xx =
-            x +
-            20 +
-            ((((i * 67 + t * 20 * Math.sin(i)) % (boxw - 40)) + (boxw - 40)) %
-              (boxw - 40));
-          yy =
-            y +
-            h -
-            120 +
-            ((((i * 31 + t * 12 * Math.cos(i)) % 100) + 100) % 100);
-        } else {
-          const v = Math.sqrt(p.temperature / 300) * 25;
-          xx =
-            x +
-            14 +
-            Math.abs(
-              ((((i * 77 + t * v * Math.cos(i)) % (2 * (boxw - 28))) +
-                2 * (boxw - 28)) %
-                (2 * (boxw - 28))) -
-                (boxw - 28),
-            );
-          yy =
-            y +
-            14 +
-            Math.abs(
-              ((((i * 39 + t * v * Math.sin(i)) % (2 * (h - 28))) +
-                2 * (h - 28)) %
-                (2 * (h - 28))) -
-                (h - 28),
-            );
-        }
-        circle(xx, yy, 4, p.state === 0 ? BLUE : CYAN);
+      for (let i = 0; i < 72; i++) {
+        const [px, py] = chamberParticle(i, t, p.temperature, p.state);
+        circle(x + 8 + px * (boxw - 16), y + h - 10 - py * (h - 20), 3.7, p.state === 0 ? BLUE : CYAN);
       }
       text(`${p.temperature} K`, 700, 150, GOLD, 29, "center");
       text(`${fmt(p.temperature - 273.15)} °C`, 700, 185, MUTED, 18, "center");
@@ -544,11 +509,11 @@ export function drawCurriculum(canvas, lab) {
       break;
     }
     case "expansion": {
-      title("Thermal expansion gauge", "Extension overlay magnified ×3000");
+      title("Thermal expansion gauge", `Extension overlay magnified ×${EXPANSION_MAGNIFICATION}`);
       const baseline = 450,
-        extra = (q.extension / p.length) * baseline * 3000;
+        extra = q.strain * baseline * EXPANSION_MAGNIFICATION;
       rect(110, 235, baseline, 45, "#91baff44", BLUE, 3);
-      rect(110, 155, baseline + Math.min(extra, 180), 45, "#ffc58055", GOLD, 3);
+      rect(110, 155, baseline + extra, 45, "#ffc58055", GOLD, 3);
       text("Original rod", 110, 318, BLUE, 20);
       text(`Heated +${p.temperature} K`, 110, 130, GOLD, 20);
       line(
@@ -560,7 +525,7 @@ export function drawCurriculum(canvas, lab) {
         1,
         [4, 5],
       );
-      arrow(560, 110, Math.min(extra, 180), 0, GOLD);
+      arrow(560, 110, extra, 0, GOLD);
       text(
         `${fmt(q.extension * 1000, 3)} mm actual`,
         530,
@@ -655,10 +620,8 @@ export function drawCurriculum(canvas, lab) {
       if (p.mode === 1) {
         rect(260, 100, 320, 265, "#91baff16", BLUE);
         for (let i = 0; i < 35; i++) {
-          const a = TAU * (i / 35 + t * 0.08),
-            xx = 420 + 115 * Math.cos(a),
-            yy = 232 + 90 * Math.sin(a);
-          circle(xx, yy, 5, Math.sin(a) > 0 ? BLUE : GOLD);
+          const [x, y] = convectionPosition(i / 35 + t * 0.08);
+          circle(420 + 115 * x, 232 - 90 * y, 5, x < 0 ? GOLD : BLUE);
         }
         arrow(300, 285, 0, -100, GOLD);
         arrow(540, 180, 0, 100, BLUE);

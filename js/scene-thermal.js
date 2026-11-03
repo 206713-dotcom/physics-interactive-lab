@@ -1,125 +1,111 @@
 import { PALETTE as C, clamp } from "./scene-kit.js";
 import * as T from "../vendor/three.module.min.js";
 import { createGasProcessBench, createCalorimeterBench, createCoolingBench } from "./scene-thermal-benches.js";
-const warm = new T.Color(C.gold),
-  cold = new T.Color(C.blue);
-function tank(k) {
-  k.stand(7, 4);
-  k.glass(3.6, 3.2, 2.5, [0, 1.6, 0]);
-  k.box(3.8, 0.1, 2.7, C.muted, [0, 0, 0]);
-}
-function particles(k, n = 72) {
-  const dots = k.instances(n, 0.065, C.cyan);
-  return {
-    dots,
-    n,
-    update(t, temp, state = 2) {
-      for (let i = 0; i < n; i++) {
-        const a = i * 2.399963;
-        let x, y, z;
-        if (state === 0) {
-          x = ((i % 6) - 2.5) * 0.42;
-          y = 0.5 + Math.floor(i / 18) * 0.42;
-          z = ((Math.floor(i / 6) % 3) - 1) * 0.47;
-          x += Math.sin(t * 7 + i) * 0.018;
-          y += Math.cos(t * 8 + i) * 0.018;
-        } else {
-          const speed = Math.sqrt(temp / 300) * (state === 1 ? 0.3 : 1),
-            h = state === 1 ? 1.2 : 2.6;
-          x = Math.sin(a + t * speed * 0.8) * 1.4;
-          y = 0.3 + ((Math.sin(i * 1.713 + t * speed) + 1) * h) / 2;
-          z = Math.cos(i * 0.923 + t * speed * 0.7) * 1;
-        }
-        k.instance(dots, i, [x, y, z]);
-      }
-      k.finishInstances(dots);
-    },
-  };
-}
+import { chamberParticle, convectionPosition, EXPANSION_MAGNIFICATION, particleChamberWidth, THERMAL_CAMERA } from "./thermal-geometry.js";
+
+const metal = { metalness: 0.55, roughness: 0.32 };
+const camera = { ...THERMAL_CAMERA, target: [0, 2, 0], radius: 11.9 };
+const gold = "#ffc78f", cyan = "#9dece5", blue = "#a7cafa";
+const modeNames = ["Conduction", "Convection", "Radiation"];
+
 export const THERMAL_SCENES = {
   gases(p, k) {
-    tank(k);
-    const cloud = particles(k, 90);
-    k.label(
-      [
-        "Solid: ordered particles",
-        "Liquid: close, mobile particles",
-        "Gas: random particle illustration",
-      ][p.state],
-      [0, 4.1, 0],
-      "#64e8d1",
-      5,
-    );
-    k.label(
-      "Particle motion schematic · not molecular dynamics",
-      [0, 0.1, 2],
-      "#b7cedc",
-      5.8,
-    );
-    return (s) => cloud.update(s.t, p.temperature, p.state);
+    k.stand(9.2, 4.3);
+    const left = -3.75, width = particleChamberWidth(p.volume), right = left + width;
+    const floor = 0.42, height = 2.85, depth = 1.8;
+    k.box(5.55, 0.24, 2.1, 0x44647b, [-0.98, 0.22, 0], metal);
+    k.glass(width, height, depth, [left + width / 2, floor + height / 2, 0]);
+    for (const x of [left, right]) {
+      k.box(0.12, height + 0.14, depth + 0.12, x === right ? 0xcba268 : 0x7497af,
+        [x, floor + height / 2, 0], { ...metal, transparent: true, opacity: 0.67 });
+    }
+    for (const z of [-depth / 2, depth / 2]) {
+      for (const y of [floor, floor + height]) k.line([[left, y, z], [right, y, z]], 0x81c5e2, 0.76);
+    }
+    k.box(2.04, 3.03, 0.12, 0x142d46, [3.1, 1.87, -0.15]);
+    k.label(["Solid lattice", "Liquid particles", "Gas particles"][p.state], [0, 3.78, 0], cyan, 2.65);
+    k.label(p.state === 2 ? "Gas readings" : "Chamber readings", [3.1, 2.96, 0.03], "#d6e9f4", 1.76);
+    k.label(`${p.temperature} K`, [3.1, 2.2, 0.03], gold, 1.37);
+    k.label(`${(p.volume * 1000).toFixed(1)} L`, [3.1, 1.53, 0.03], cyan, 1.37);
+    const pressure = k.label("", [3.1, 0.88, 0.03], blue, 1.77);
+    const dots = k.instances(72, 0.052, p.state === 0 ? C.blue : C.cyan);
+    return { camera, update(s, q) {
+      for (let i = 0; i < 72; i++) {
+        const [x, y, z] = chamberParticle(i, s.t, p.temperature, p.state);
+        k.instance(dots, i, [left + 0.09 + x * (width - 0.18), floor + 0.09 + y * (height - 0.18), (z - 0.5) * (depth - 0.18)]);
+      }
+      k.finishInstances(dots);
+      k.setLabel(pressure, q.pressure === null ? "No gas pressure" : `${(q.pressure / 1000).toFixed(1)} kPa`, blue, 1.77);
+    }};
   },
   expansion(p, k) {
-    k.stand(9, 3);
-    const reference = k.box(5, 0.2, 0.4, C.blue, [-0.5, 0.4, 0]),
-      bar = k.box(5, 0.3, 0.6, C.gold, [-0.5, 0.9, 0]);
-    k.box(0.15, 1.6, 1, C.muted, [-3, 0.8, 0]);
-    k.label("Original length · blue", [0, 2.5, 0], "#89baff", 3);
-    k.label("Heated length · gold", [0, 3.2, 0], "#ffc584", 3);
-    return (s, q) => {
-      const length = 5 + q.strain * 200;
-      bar.scale.x = length / 5;
-      bar.position.x = -3 + length / 2;
-    };
+    k.stand(9.4, 3.8);
+    const start = -3.38, length = 5.35, end = start + length;
+    k.box(8.5, 2.74, 0.17, 0x19364e, [0, 1.61, -0.56]);
+    k.box(0.24, 2.07, 0.76, 0x788e9c, [start - 0.12, 1.22, 0], metal);
+    k.box(length, 0.24, 0.4, C.blue, [start + length / 2, 0.92, 0], metal);
+    const bar = k.box(length, 0.29, 0.53, C.gold, [start + length / 2, 1.73, 0], metal);
+    k.line([[end, 0.58, 0.33], [end, 2.29, 0.33]], 0x9cd0f1, 0.77);
+    k.label("Original rod", [-1.51, 0.56, 0.3], blue, 1.75);
+    k.label("Heated rod", [-1.51, 2.12, 0.3], gold, 1.75);
+    k.label(`Extension enlarged ×${EXPANSION_MAGNIFICATION}`, [0, 3.21, 0], "#d3e9f5", 4.3);
+    const reading = k.label("", [2.45, 2.52, 0.36], gold, 2.62);
+    const pointer = k.arrow([end, 1.72, 0.45], [0, 0, 0], C.gold);
+    return { camera, update(s, q) {
+      const delta = length * q.strain * EXPANSION_MAGNIFICATION;
+      bar.scale.x = (length + delta) / length;
+      bar.position.x = start + (length + delta) / 2;
+      k.setArrow(pointer, [end, 1.73, 0.47], [delta, 0, 0]);
+      k.setLabel(reading, `ΔL = ${(q.extension * 1000).toFixed(3)} mm`, gold, 2.62);
+    }};
   },
   calorimetry(p, k) {
     return createCalorimeterBench(p, k);
   },
   heat(p, k) {
-    k.stand(9, 4);
-    k.box(1.2, 2.8, 2, C.gold, [-3, 1.5, 0]);
-    k.box(1.2, 2.8, 2, C.blue, [3, 1.5, 0]);
-    k.label("HOT", [-3, 3.5, 0], "#ffc584", 1.3);
-    k.label("COOL", [3, 3.5, 0], "#89baff", 1.3);
-    const dots = k.instances(40, 0.06, C.white);
-    if (p.mode === 0)
-      for (let i = 0; i < 20; i++)
-        k.box(0.24, 0.45, 0.6, cold.clone().lerp(warm, 1 - i / 19), [
-          -2.3 + i * 0.24,
-          1.5,
-          0,
-        ]);
-    else if (p.mode === 1) k.glass(4.6, 3, 2, [0, 1.5, 0]);
-    else
-      for (let j = -1; j <= 1; j++)
-        k.line(
-          Array.from({ length: 90 }, (_, i) => [
-            -2.2 + i * 0.05,
-            1.5 + Math.sin(i * 0.3) * 0.13,
-            j * 0.5,
-          ]),
-          C.purple,
-          0.6,
-        );
-    k.arrow([-1.5, 3.5, 0], [3, 0, 0], C.cyan);
-    return (s) => {
-      for (let i = 0; i < 40; i++) {
-        const u = (i / 40 + s.t * 0.13) % 1;
-        const pos =
-          p.mode === 1
-            ? [
-                2 * Math.cos(u * Math.PI * 2),
-                1.6 + Math.sin(u * Math.PI * 2) * 1.2,
-                Math.sin(i) * 0.5,
-              ]
-            : [
-                -2.3 + u * 4.6,
-                1.5 + Math.sin(i * 3 + s.t * 8) * 0.08,
-                Math.cos(i) * 0.28,
-              ];
-        k.instance(dots, i, pos);
+    k.stand(9.5, 4.3);
+    for (const [x, color, name, value] of [[-3.3, C.gold, "Hot", p.hot], [3.3, C.blue, "Cool", p.cold]]) {
+      k.box(1.37, 2.38, 1.93, color, [x, 1.34, 0], metal);
+      for (let i = 0; i < 7; i++) k.box(1.54, 0.065, 2.1, color, [x, 0.39 + i * 0.29, 0], metal);
+      k.label(`${name} · ${value} °C`, [x, 2.86, 0], x < 0 ? gold : blue, 2.12);
+    }
+    k.label(modeNames[p.mode], [0, 3.66, 0], "#d6ebf5", 2.7);
+    const power = k.label("", [0, 0.5, 1.24], cyan, 3);
+    let dots;
+    if (p.mode === 0) {
+      const hot = new T.Color(C.gold), cold = new T.Color(C.blue);
+      for (let i = 0; i < 24; i++) {
+        k.box(0.22, 0.48, 0.86, hot.clone().lerp(cold, i / 23), [-2.55 + i * 0.22, 1.41, 0]);
+      }
+      k.arrow([-1.72, 2.38, 0], [3.44, 0, 0], C.cyan);
+    } else if (p.mode === 1) {
+      k.glass(5.17, 2.42, 1.76, [0, 1.42, 0]);
+      for (const z of [-0.57, 0.57]) k.line(Array.from({ length: 97 }, (_, i) => {
+        const [x, y] = convectionPosition(i / 96);
+        return [x * 1.92, 1.42 + y * 0.89, z];
+      }), 0x76afc8, 0.42);
+      k.arrow([-1.92, 1.08, 0], [0, 0.72, 0], C.gold);
+      k.arrow([1.92, 1.78, 0], [0, -0.72, 0], C.blue);
+      dots = k.instances(36, 0.056, C.cyan);
+    } else {
+      for (const y of [0.96, 1.44, 1.92]) {
+        k.line(Array.from({ length: 89 }, (_, i) => [-2.54 + i * 0.058, y + Math.sin(i * 0.4) * 0.105, 0]), C.gold, 0.75);
+        k.arrow([2.03, y, 0], [0.49, 0, 0], C.gold);
+      }
+      k.label("Infrared across a gap", [0, 2.52, 0], gold, 3);
+    }
+    const color = new T.Color(), hot = new T.Color(C.gold), cold = new T.Color(C.blue);
+    return { camera, update(s, q) {
+      const watts = q.power.toLocaleString("en", { maximumSignificantDigits: 4 });
+      k.setLabel(power, `${watts} W · net transfer`, cyan, 3);
+      if (!dots) return;
+      for (let i = 0; i < 36; i++) {
+        const [x, y] = convectionPosition((i % 18) / 18 + s.t * 0.13 + (i < 18 ? 0 : 0.025));
+        color.copy(hot).lerp(cold, (x + 1) / 2);
+        k.instance(dots, i, [x * 1.92, 1.42 + y * 0.89, i < 18 ? -0.57 : 0.57], color);
       }
       k.finishInstances(dots);
-    };
+    }};
   },
   cooling(p, k) {
     return createCoolingBench(p, k);

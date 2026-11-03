@@ -175,7 +175,7 @@ button,a,input,select,summary { -webkit-tap-highlight-color:transparent; }
 .expanded-model .solar-atlas-link { padding:13px 16px; margin-bottom:12px; border-radius:10px; }
 .expanded-model .solar-atlas-link strong { font-size:15px; }
 .expanded-model .solar-atlas-link small,.expanded-model .solar-atlas-link span { display:none; }
-.expanded-model .presentation-stage .scene-container { height:clamp(260px,calc(100dvh - 510px),620px); min-height:260px; }
+.expanded-model .presentation-stage .scene-container { height:clamp(310px,calc(100dvh - 420px),660px); min-height:310px; }
 .expanded-panel-tabs { display:none; }
 .expanded-model .stage-top { padding-inline:13px; }
 .expanded-model .stage-views { gap:0; }

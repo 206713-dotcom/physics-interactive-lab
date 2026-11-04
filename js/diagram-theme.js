@@ -13,3 +13,13 @@ export function paperInk(color) {
   while (luminance(values)>.13) values=values.map(v=>Math.floor(v*.91));
   return '#'+values.map(v=>v.toString(16).padStart(2,'0')).join('');
 }
+
+// Approximate visible-spectrum colour for schematic light sources and fringes.
+export function wavelengthRGB(nm) {
+  if (nm < 440) return [Math.min(1, (440 - nm) / 60), 0, 1];
+  if (nm < 490) return [0, (nm - 440) / 50, 1];
+  if (nm < 510) return [0, 1, (510 - nm) / 20];
+  if (nm < 580) return [(nm - 510) / 70, 1, 0];
+  if (nm < 645) return [1, (645 - nm) / 65, 0];
+  return [1, 0, 0];
+}

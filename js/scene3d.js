@@ -1,5 +1,6 @@
 import { apparatusBounds, frameApparatus, frameOrbit, diagramLabelVisible } from './scene-framing.js';
 import { sceneLabelAllowed } from './study-policy.js';
+import { wavelengthRGB } from './diagram-theme.js';
 /** Real WebGL scenes. Geometry follows the same state as graphs and the 2D view.
  * No physics is integrated here. Pointer/keyboard camera controls are visual only. */
 import * as T from "../vendor/three.module.min.js";
@@ -28,34 +29,6 @@ import {
 const CYAN = 0x63efda,
   GOLD = 0xffc778,
   BLUE = 0x7baeff;
-export function wavelengthRGB(nm) {
-  // Approximate visible-spectrum colour; this is not a colourimetry measurement.
-  let r = 0,
-    g = 0,
-    b = 0;
-  if (nm < 440) {
-    r = (440 - nm) / 60;
-    b = 1;
-  } else if (nm < 490) {
-    g = (nm - 440) / 50;
-    b = 1;
-  } else if (nm < 510) {
-    g = 1;
-    b = (510 - nm) / 20;
-  } else if (nm < 580) {
-    r = (nm - 510) / 70;
-    g = 1;
-  } else if (nm < 645) {
-    r = 1;
-    g = (645 - nm) / 65;
-  } else r = 1;
-  return new T.Color().setRGB(
-    Math.max(0, r),
-    Math.max(0, g),
-    Math.max(0, b),
-    T.SRGBColorSpace,
-  );
-}
 function material(color, extra = {}) {
   return new T.MeshStandardMaterial({
     color,
@@ -491,7 +464,7 @@ export class SceneView {
       return;
     }
     if (["spring", "pendulum", "refraction", "waves", "circuits", "projectile", "collisions"].includes(type)) {
-      this.precision = type === "refraction" ? createRefractionApparatus(p, r, wavelengthRGB(p.wavelength * 1e9), { studyMode })
+      this.precision = type === "refraction" ? createRefractionApparatus(p, r, new T.Color().setRGB(...wavelengthRGB(p.wavelength * 1e9), T.SRGBColorSpace), { studyMode })
         : type === "waves" ? createWaveBench(p, r, { studyMode })
         : type === "circuits" ? createRCBench(p, r)
         : type === "projectile" ? createProjectileBench(p, r)
@@ -614,8 +587,7 @@ export class SceneView {
       o.trail.material = new T.LineBasicMaterial({ vertexColors: true });
       o.trail.frustumCulled = false;
     } else if (type === "interference") {
-      const col = wavelengthRGB(p.wavelength * 1e9);
-      o.opticalColor = col;
+      const [red, green, blue] = wavelengthRGB(p.wavelength * 1e9);
       add("screenFrame", box(0.1, 3.1, 4.2, 0x24465a), [3, 1.6, 0]);
       const canvas = document.createElement("canvas");
       canvas.width = 512;
@@ -623,44 +595,35 @@ export class SceneView {
       const ctx = canvas.getContext("2d");
       for (let i = 0; i < 512; i++) {
         const intensity = interferenceAt((i / 511 - 0.5) * 0.04, p).intensity,
-          b = Math.sqrt(intensity);
-        ctx.fillStyle = `rgb(${col.r * 255 * b},${col.g * 255 * b},${col.b * 255 * b})`;
+          light = 255 * Math.sqrt(intensity);
+        ctx.fillStyle = `rgb(${red * light},${green * light},${blue * light})`;
         ctx.fillRect(i, 0, 1, 8);
       }
+      const map = new T.CanvasTexture(canvas);
+      map.colorSpace = T.SRGBColorSpace;
       const screen = add(
         "screen",
         new T.Mesh(
           new T.PlaneGeometry(4, 2.8),
           new T.MeshBasicMaterial({
-            map: new T.CanvasTexture(canvas),
+            map,
             side: T.DoubleSide,
+            toneMapped: false,
           }),
         ),
         [2.93, 1.6, 0],
       );
       screen.rotation.y = -Math.PI / 2;
-      add("slitBoard", box(0.16, 3.1, 3, 0x223c51), [-2.6, 1.6, 0]);
-      for (const z of [-0.45, 0.45]) {
-        add("gap" + z, box(0.2, 2, 0.08, col), [-2.7, 1.6, z]);
-        const source = sphere(0.07, col);
-        source.position.set(-2.45, 1.6, z);
-        r.add(source);
+      add("slitBoard", box(0.17, 3.1, 0.76, 0x355d75), [-2.6, 1.6, 0]);
+      for (const side of [-1, 1]) {
+        add("slitWing" + side, box(0.17, 3.1, 1.15, 0x355d75), [-2.6, 1.6, side * 1.10]);
       }
-      o.rings = [];
-      for (let source = 0; source < 2; source++)
-        for (let i = 0; i < 7; i++) {
-          const ring = new T.Mesh(
-            new T.TorusGeometry(0.35, 0.009, 6, 80),
-            new T.MeshBasicMaterial({
-              color: col,
-              transparent: true,
-              opacity: 0.28,
-            }),
-          );
-          ring.rotation.y = Math.PI / 2;
-          r.add(ring);
-          o.rings.push({ ring, i, z: source ? -0.45 : 0.45 });
-        }
+      const kit = createSceneKit(r);
+      o.interferenceFronts = [];
+      for (const [z, ink] of [[-0.45, CYAN], [0.45, 0xc3a6ff]]) {
+        kit.ball(0.074, ink, [-2.48, 1.6, z], { emissive: ink, emissiveIntensity: 0.32 });
+        for (let i = 0; i < 9; i++) o.interferenceFronts.push({ line: kit.line([], ink, 0.80), i, z });
+      }
     } else if (type === "fields") {
       const lines = fieldLines(p);
       for (const l of lines)
@@ -828,11 +791,14 @@ export class SceneView {
       o.radiusLabel.position.y = 1.16;
       o.radiusLabel.visible = Math.hypot(s.x, s.y) * sc > rad + 0.8;
     } else if (type === "interference") {
-      for (const { ring, i, z } of o.rings) {
-        const f = (s.t * 0.28 + i / 7) % 1;
-        ring.position.set(-2.4 + f * 5.2, 1.6, z);
-        ring.scale.setScalar(0.5 + f * 2.8);
-        ring.material.opacity = (1 - f) * 0.35;
+      for (const { line, i, z } of o.interferenceFronts) {
+        const radius = ((s.t * 0.28 + i / 9) % 1) * 5.4;
+        const first = -Math.asin(Math.min(1, (2.0 + z) / Math.max(1e-6, radius)));
+        const last = Math.asin(Math.min(1, (2.0 - z) / Math.max(1e-6, radius)));
+        setPath(line, Array.from({ length: 29 }, (_, j) => {
+          const angle = first + (last - first) * j / 28;
+          return [-2.48 + radius * Math.cos(angle), 1.6, z + radius * Math.sin(angle)];
+        }));
       }
     } else if (type === "fields") {
       const f = fieldAt(p.probeX, p.probeY, p);
@@ -853,8 +819,8 @@ export class SceneView {
           ],
           waves: [["probe", "Probe", [0, 0.65, 0]]],
           interference: [
-            ["slitBoard", "Coherent sources", [0, 2, 0]],
-            ["screen", "Screen", [0, 2, 0]],
+            ["slitBoard", "Two coherent slits", [0, 2, 0]],
+            ["screen", "Fringe screen", [0, 2, 0]],
           ],
           fields: [["probe", "Field probe", [0, 0.7, 0]]],
         }[type] || [];

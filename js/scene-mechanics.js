@@ -3,7 +3,28 @@ import { PALETTE as C, putRod } from "./scene-kit.js";
 import { createVectorApparatus } from "./scene-vectors.js";
 import { createBuoyancyApparatus } from "./scene-buoyancy.js";
 import { createMotionBench } from "./scene-motion-benches.js";
+import { springTravel, wireTravel } from "./apparatus-scales.js";
 const TAU = Math.PI * 2;
+
+function clampStand(k, x, height, width) {
+  k.box(0.72, 0.17, 1.25, C.dark, [x, 0.12, 0]);
+  k.cylinder(0.09, height, C.muted, [x, height / 2, 0]);
+  k.box(width, 0.16, 0.36, C.muted, [x + width / 2 - 0.12, height, 0]);
+  k.box(0.33, 0.28, 0.46, C.dark, [x, height, 0]);
+  const knob = k.cylinder(0.11, 0.18, C.gold, [x, height, 0.25]);
+  knob.rotation.x = Math.PI / 2;
+}
+
+function extensionPointer(k, zero, x) {
+  k.box(0.18, 2.35, 0.08, C.dark, [x, zero - 0.62, 0.24]);
+  for (let i = -3; i <= 7; i++) {
+    const size = i === 0 ? 0.33 : 0.15;
+    k.box(size, 0.022, 0.018, i === 0 ? C.gold : C.muted, [x - size / 2 + 0.08, zero - i * 0.17, 0.295]);
+  }
+  k.label("Unloaded level", [x + 0.68, zero + 0.3, 0.26], "#ffc584", 1.5);
+  return k.box(0.32, 0.05, 0.06, C.cyan, [x + 0.02, zero, 0.35]);
+}
+
 export const MECHANICAL_SCENES = {
   measurement(p, k) {
     k.stand();
@@ -104,18 +125,15 @@ export const MECHANICAL_SCENES = {
   },
   hooke(p, k) {
     k.stand(7, 3);
-    k.box(4, 0.16, 0.45, C.muted, [0, 4.2, 0]);
-    const final =
-        p.load /
-        (p.mode === 0
-          ? p.k1
-          : p.mode === 1
-            ? 1 / (1 / p.k1 + 1 / p.k2)
-            : p.k1 + p.k2),
-      sc = 1.5 / final;
+    clampStand(k, -2.05, 4.2, 3.45);
     const c1 = k.spring(p.mode === 2 ? -1 : 0, 2.7, 0, 1.5, C.cyan),
       c2 = p.mode ? k.spring(p.mode === 2 ? 1 : 0, 1.2, 0, 1.4, C.gold) : null,
       load = k.box(p.mode === 2 ? 2.6 : 1, 0.35, 0.65, C.blue, [0, 2.5, 0]);
+    const pointer = extensionPointer(k, p.mode === 1 ? 2.08 : 2.7, 1.75);
+    const connector = p.mode === 1 ? k.cylinder(0.055, 0.12, C.white, [0.19, 0, 0]) : null;
+    for (const x of p.mode === 2 ? [-0.81, 1.19] : [0.19]) {
+      k.cylinder(0.055, 0.14, C.white, [x, 4.17, 0]);
+    }
     k.label(
       ["Single spring", "Series: same force", "Parallel: same extension"][
         p.mode
@@ -125,17 +143,20 @@ export const MECHANICAL_SCENES = {
       4.2,
     );
     return (s, q) => {
+      const travel = 1.48 * springTravel(q.extension);
       let bottom;
       if (p.mode === 1) {
-        const l1 = 1 + q.x1 * sc,
-          l2 = 1 + q.x2 * sc;
+        const upperTravel = q.extension > 0 ? travel * q.x1 / q.extension : 0;
+        const l1 = 1 + upperTravel,
+          l2 = 1 + travel - upperTravel;
         c1.position.y = 4.2 - l1;
         c1.scale.y = l1;
+        connector.position.y = c1.position.y - 0.06;
         c2.position.y = 4.2 - l1 - l2 - 0.12;
         c2.scale.y = l2;
         bottom = c2.position.y;
       } else {
-        const length = 1.5 + q.extension * sc;
+        const length = 1.5 + travel;
         c1.position.y = 4.2 - length;
         c1.scale.y = length;
         if (c2) {
@@ -145,11 +166,12 @@ export const MECHANICAL_SCENES = {
         bottom = c1.position.y;
       }
       load.position.y = bottom - 0.18;
+      pointer.position.y = bottom;
     };
   },
   materials(p, k) {
     k.stand(6, 3);
-    k.box(3, 0.18, 0.55, C.muted, [0, 4.3, 0]);
+    clampStand(k, -1.75, 4.3, 2.3);
     const wire = k.cylinder(
         0.035 * Math.sqrt(p.area / 1e-6),
         1,
@@ -157,7 +179,7 @@ export const MECHANICAL_SCENES = {
         [0, 3, 0],
       ),
       load = k.box(0.7, 0.6, 0.7, C.gold, [0, 1, 0]);
-    const sc = 1 / ((p.force * p.length) / (p.area * p.young));
+    const pointer = extensionPointer(k, 2.7, 1.18);
     k.label(
       "Wire cross-section and extension enlarged",
       [0, 5, 0],
@@ -165,15 +187,16 @@ export const MECHANICAL_SCENES = {
       5.5,
     );
     return (s, q) => {
-      const len = 1.6 + q.extension * sc;
+      const len = 1.6 + 1.35 * wireTravel(q.extension);
       wire.scale.y = len;
       wire.position.y = 4.3 - len / 2;
       load.position.y = 4.3 - len - 0.3;
+      pointer.position.y = 4.3 - len;
     };
   },
   driven(p, k) {
     k.stand(6, 3);
-    k.box(3, 0.18, 0.5, C.muted, [0, 4.2, 0]);
+    clampStand(k, -1.95, 4.2, 2.55);
     const coil = k.spring(0, 2.3, 0, 1.9, C.cyan),
       mass = k.box(0.8, 0.7, 0.8, C.gold, [0, 2, 0]),
       force = k.arrow([1.3, 2, 0], [0, 0.7, 0], C.purple);

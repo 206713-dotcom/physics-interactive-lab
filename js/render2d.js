@@ -1,4 +1,4 @@
-import { paperInk } from './diagram-theme.js';
+import { paperInk, wavelengthRGB } from './diagram-theme.js';
 import { waveMeasurement } from './wave-geometry.js';
 import { sceneLabelAllowed } from './study-policy.js';
 /** Orthographic diagram mode and an automatic fallback for browsers without WebGL. */
@@ -259,46 +259,53 @@ function drawDiagram(canvas, lab) {
     else {text('Incident',24,39,B,12);text('Counter-wave',111,39,G,12);text('Resultant',238,39,C,12);}
   } else if (lab.type === "interference") {
     const slitX = w * 0.24,
-      screenX = w * 0.84,
+      screenX = w * 0.82,
       cy = h / 2,
-      gap = 35;
+      gap = Math.min(35, h * 0.10),
+      screenWidth = Math.max(13, Math.min(28, w * 0.04)),
+      waveColors = ["#078581bb", "#6f53b7bb"],
+      [red, green, blue] = wavelengthRGB(p.wavelength * 1e9);
+    c.fillStyle = "#d8e8f355";
+    c.fillRect(slitX, 58, screenX - slitX, h - 116);
     c.fillStyle = "#38586d";
-    c.fillRect(slitX - 3, 65, 6, h - 130);
-    c.clearRect(slitX - 4, cy - gap - 6, 8, 12);
-    c.clearRect(slitX - 4, cy + gap - 6, 8, 12);
+    c.fillRect(slitX - 4, 55, 8, cy - gap - 60);
+    c.fillRect(slitX - 4, cy - gap + 5, 8, 2 * gap - 10);
+    c.fillRect(slitX - 4, cy + gap + 5, 8, h - cy - gap - 60);
     c.save();
     c.beginPath();
     c.rect(slitX + 4, 60, screenX - slitX - 8, h - 120);
     c.clip();
-    for (const yy of [cy - gap, cy + gap])
+    for (const [source, yy] of [cy - gap, cy + gap].entries())
       for (let i = 0; i < 9; i++) {
         const radius = ((s.t * 0.3 + i / 9) % 1) * (screenX - slitX) * 1.5;
         c.beginPath();
         c.arc(slitX, yy, radius, -Math.PI / 2, Math.PI / 2);
-        c.strokeStyle = "#a0a0ff44";
-        c.lineWidth = 1.5;
+        c.strokeStyle = waveColors[source];
+        c.lineWidth = 1.65;
         c.stroke();
       }
     c.restore();
+    c.fillStyle = "#172637";
+    c.fillRect(screenX - 2, 53, screenWidth + 4, h - 106);
     for (let i = 0; i < h - 110; i++) {
       const yy = (i / (h - 110) - 0.5) * 0.04,
-        I = E.interferenceAt(yy, p).intensity;
-      c.fillStyle = `hsla(${p.wavelength < 490 ? 240 : p.wavelength < 580 ? 140 : 10},90%,65%,${Math.sqrt(I)})`;
-      c.fillRect(screenX, 55 + i, 25, 1);
+        light = 255 * Math.sqrt(E.interferenceAt(yy, p).intensity);
+      c.fillStyle = `rgb(${red * light},${green * light},${blue * light})`;
+      c.fillRect(screenX, 55 + i, screenWidth, 1);
     }
     line(
       [
         [slitX, cy],
         [screenX, cy],
       ],
-      "#ffffff22",
+      "#294a6080",
       1,
       [4, 5],
     );
-    text("COHERENT SLITS", slitX, 35, "#95b7c8", 10, "center");
-    text("SCREEN", screenX, 35, "#95b7c8", 10, "center");
-    text("Wavefront spacing enlarged", 24, h - 24);
-    text("±20 mm", screenX, h - 25, "#95b7c8", 10, "center");
+    text("Two coherent slits", slitX, 35, "#214b63", 14, "center");
+    text("Fringes", screenX + screenWidth / 2, 35, "#214b63", 14, "center");
+    text("Schematic wavefronts", 24, h - 24, "#385d73", 13);
+    text("±20 mm", screenX + screenWidth / 2, h - 24, "#385d73", 13, "center");
   } else if (lab.type === "refraction") {
     const x=w/2,y=h*.5,L=Math.min(w*.3,h*.34),q=E.refractionInfo(p),i=p.angle*E.DEG,
       gold='#a77827',teal='#087d79',purple='#7d59a8',radius=L+12;

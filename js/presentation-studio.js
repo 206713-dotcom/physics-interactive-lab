@@ -8,6 +8,7 @@ import { getProfile } from './learning-paths.js';
 import { installMotorCommutator } from './motor-commutator.js';
 import { installGeneratorSlipRings } from './generator-slip-rings.js';
 import { installGalvanometer } from './galvanometer.js';
+import { installReadingComparison } from './reading-comparison.js';
 import { GENERATOR_LOAD_OHMS, MAGNET_STROKE_METRES, magnetLampLevel } from './curriculum-physics.js';
 
 function addHandRule(stage, motor) {
@@ -244,7 +245,7 @@ function addMagnetConsole(stage, {seekInductionPhase, setInductionCircuit, flipM
   };
 }
 
-export function installPresentationStudio(stage, controls, id, title, show3D, machineActions) {
+export function installPresentationStudio(stage, controls, id, title, machineActions) {
   stage.classList.add('presentation-stage');
   const panel = document.createElement('section');
   panel.className = 'instrument-hud';
@@ -252,6 +253,7 @@ export function installPresentationStudio(stage, controls, id, title, show3D, ma
   panel.setAttribute('aria-live','off');
   panel.innerHTML = '<div class="instrument-values"></div><div class="instrument-observe"><strong>What to watch</strong><span class="instrument-context"></span></div>';
   stage.querySelector('.transport').after(panel);
+  const compareReadings = installReadingComparison(panel);
   if (id === 'motor' || id === 'induction') addHandRule(stage, id === 'motor');
   const commutator = id === 'motor' ? installMotorCommutator(stage) : null;
   const slipRings = id === 'induction' ? installGeneratorSlipRings(stage, machineActions) : null;
@@ -264,6 +266,11 @@ export function installPresentationStudio(stage, controls, id, title, show3D, ma
   const renderGalvanometer = id === 'magnet-coil' ? installGalvanometer(scene) : null;
   const drawer = document.createElement('div');
   drawer.className = 'model-variables';
+  const diagramTools = document.createElement('div');
+  diagramTools.className = 'diagram-tools';
+  diagramTools.hidden = true;
+  scene.before(diagramTools);
+  const equation = scene.querySelector('.scene-equation');
   const drawerToggle = document.createElement('button');
   drawerToggle.type = 'button';
   drawerToggle.textContent = 'Change variables';
@@ -311,12 +318,20 @@ export function installPresentationStudio(stage, controls, id, title, show3D, ma
     dialog.append(stage);
     dialog.showModal();
     close.focus();
-    show3D();
   };
   close.onclick = () => { dialog.close(); restore(); };
   dialog.onclose = () => { if (!dialog.open) restore(); };
   let signature = '', nodes = [];
   return {
+    setView(mode) {
+      const diagram = mode === '2d';
+      diagramTools.hidden = !diagram;
+      if (diagram) diagramTools.append(drawerToggle, equation);
+      else {
+        drawer.prepend(drawerToggle);
+        scene.append(equation);
+      }
+    },
     render: commutator ? lab => commutator.render(lab.state.phase) : (slipRings?.render || renderGalvanometer),
     dispose() {
       if (dialog.open) dialog.close();
@@ -327,6 +342,7 @@ export function installPresentationStudio(stage, controls, id, title, show3D, ma
       if (lab.magnetManual) renderGalvanometer?.(lab);
       const readings = studyReadings(id,lab.state,lab.params,lab.studyMode,lab.definition),
         next = readings.map(x => x.title + x.unit).join('|');
+      compareReadings(readings);
       if (signature !== next) {
         values.replaceChildren();
         values.style.setProperty('--reading-count',readings.length);

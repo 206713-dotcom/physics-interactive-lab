@@ -457,7 +457,7 @@ button,a,input,select,summary { -webkit-tap-highlight-color:transparent; }
   box-shadow: 0 14px 34px #020f1b55;
   pointer-events: none;
 }
-.model-variables > button {
+:is(.model-variables, .diagram-tools) > button {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -475,7 +475,7 @@ button,a,input,select,summary { -webkit-tap-highlight-color:transparent; }
   cursor: pointer;
   pointer-events: auto;
 }
-.model-variables > button::after {
+:is(.model-variables, .diagram-tools) > button::after {
   content: "";
   width: 7px;
   height: 7px;
@@ -491,9 +491,9 @@ button,a,input,select,summary { -webkit-tap-highlight-color:transparent; }
   padding: 11px 15px;
   background: #173b4e;
 }
-.model-variables.is-open > button::after { transform: translateY(2px) rotate(225deg); }
-.model-variables > button:hover { background: #235568; }
-.model-variables > button:focus-visible { outline: 2px solid #9aeee1; outline-offset: -4px; }
+:is(.model-variables, .diagram-tools) > button[aria-expanded="true"]::after { transform: translateY(2px) rotate(225deg); }
+:is(.model-variables, .diagram-tools) > button:hover { background: #235568; }
+:is(.model-variables, .diagram-tools) > button:focus-visible { outline: 2px solid #9aeee1; outline-offset: -4px; }
 .model-variables > .controls {
   position: relative;
   inset: auto;
@@ -709,6 +709,98 @@ body:has(.model-screen[open]) { overflow: hidden; }
   text-transform: uppercase;
   letter-spacing: .12em;
 }
+.diagram-tools:not([hidden]) {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 18px;
+  padding: 9px 14px;
+  background: #112b3e;
+  border-bottom: 1px solid #456478;
+}
+.presentation-stage .diagram-tools .scene-equation {
+  position: static;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  max-width: 100%;
+  padding: 0;
+  margin: 0;
+  background: none;
+  box-shadow: none;
+  border: 0;
+  color: #e9f8ff;
+  font: 650 clamp(13px, 1.4vw, 18px)/1.35 var(--font-sans, system-ui, sans-serif);
+  white-space: normal;
+  text-align: start;
+}
+@media (max-width: 520px) {
+  .consolidated-lab .presentation-stage:has(.diagram-tools:not([hidden])) .scene-container {
+    height: clamp(260px, 39dvh, 390px);
+  }
+}
+
+.reading-comparison {
+  margin-top: 12px;
+  border: 1px solid #c4dbe8;
+  border-radius: 12px;
+  background: #f8fcff;
+  color: #15384d;
+}
+.reading-comparison summary {
+  padding: 10px 13px;
+  color: #075e67;
+  font-weight: 750;
+  cursor: pointer;
+}
+.reading-comparison-body { padding: 0 13px 12px; }
+.reading-comparison-body p { margin: 0 0 8px; font-size: .875rem; }
+.reading-comparison-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+}
+.reading-comparison-actions label {
+  display: grid;
+  gap: 3px;
+  flex: 0 1 15rem;
+  min-width: 0;
+  font-size: .75rem;
+  font-weight: 700;
+}
+.reading-comparison-actions :is(select, button) {
+  min-height: 38px;
+  border: 1px solid #b0cbd9;
+  border-radius: 7px;
+  padding: 5px 10px;
+  background: #fff;
+  color: #15384d;
+  font: inherit;
+}
+.reading-comparison-actions button { cursor: pointer; }
+.reading-comparison-actions .reading-pin { background: #08787c; color: #fff; border-color: #08787c; }
+.reading-comparison-actions .reading-pin:disabled { opacity: .55; cursor: default; }
+.reading-comparison-values:not([hidden]) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  margin: 4px 0 0;
+}
+.reading-comparison-values > div { padding: 8px; border-radius: 7px; background: #eaf4f9; }
+.reading-comparison-values dt { font-size: .75rem; }
+.reading-comparison-values dd {
+  margin: 3px 0 0;
+  overflow-wrap: anywhere;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+.reading-comparison-body .reading-comparison-subject { margin: 12px 0 0; font-weight: 750; }
+.reading-comparison-body .reading-comparison-note { margin: 7px 0 0; color: #456274; }
+.reading-comparison-note:empty { display: none; }
 @container (max-width: 580px) {
   .presentation-stage .scene-container > .scene-equation { max-width: 68%; inset: 61px 10px auto auto; }
   .model-variables.is-open {

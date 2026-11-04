@@ -47,13 +47,13 @@ export const SCENE_GUIDES = {
     "Watch the springs extend as the applied load increases.",
     "Series springs carry the same force; parallel springs share one extension and add their stiffnesses.",
     "Compare single, series and parallel arrangements using the same load.",
-    "Extension is enlarged to fit each arrangement. This is a quasistatic loading test, not an oscillation.",
+    "The same compressed visual scale is used across setups. Use the readings for exact extension in metres. The load rises gradually.",
   ],
   materials: [
     "The load stretches the cyan wire below the fixed support.",
     "Young modulus relates stress to strain within the linear elastic model.",
     "Double the cross-sectional area and predict the change in extension.",
-    "Wire thickness and extension are enlarged separately. No yielding or breaking is modelled.",
+    "Wire thickness is enlarged and extension uses a fixed compressed scale. The model stays within linear elasticity.",
   ],
   driven: [
     "Compare the gold mass motion with the purple driving-force arrow.",

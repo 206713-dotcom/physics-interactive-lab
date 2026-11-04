@@ -434,7 +434,7 @@ function labPage(type, query) {
   // The course focus replaces the duplicated three-step walkthrough.
 
   presentationStudio = installPresentationStudio($("#stage"), $(".controls"), type, d.short,
-    () => setView("3d"), { runMotorSetup, seekInductionPhase, setInductionCircuit, flipMagnet,
+    { runMotorSetup, seekInductionPhase, setInductionCircuit, flipMagnet,
       setMagnetManual, beginManualMagnet, moveManualMagnet, stopManualMagnet });
   if (type === "magnet-coil") bindMagnetDiagram($("#simulation"));
   if(["spring","pendulum"].includes(type) && studyMode !== "igcse") {
@@ -1020,6 +1020,7 @@ async function setView(mode) {
   view?.dispose();
   view = null;
   lab.view = mode;
+  presentationStudio?.setView(mode);
   save("physics-view", mode);
   const token = routeToken,
     localToken = ++viewToken;

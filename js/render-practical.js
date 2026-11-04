@@ -5,6 +5,7 @@ import {
   LAMP_AMBIENT,
 } from "./practical-physics.js";
 import { temperatureHeight } from "./thermal-geometry.js";
+import { springTravel, wireTravel } from "./apparatus-scales.js";
 const C = "#168e87",
   G = "#b37c32",
   B = "#4f7cb1",
@@ -131,25 +132,23 @@ export function drawPractical(lab, kit) {
       break;
     }
     case "hooke": {
-      title(
-        "Elasticity bench",
-        "Smooth four-second loading · extension auto-fits",
-      );
-      line(
-        [
-          [235, 80],
-          [605, 80],
-        ],
-        W,
-        6,
-      );
-      const final = p.load / q.stiffness,
-        scale = Math.min(170, 145 / final),
+      title("Elasticity bench", "Extension shown on a compressed scale");
+      rect(276, 388, 290, 14, "#d5e5ed", W, 3);
+      line([[279, 390], [279, 80], [588, 80]], W, 7);
+      circle(279, 80, 7, G);
+      const travel = 128 * springTravel(q.extension),
+        zero = p.mode === 1 ? 210 : 200,
         x = 420;
+      line([[600, 175], [600, 350]], M, 2);
+      for (let y = zero; y <= 345; y += 17)
+        line([[600, y], [610, y]], M, 1);
+      line([[569, zero], [625, zero]], G, 2, [4, 4]);
+      text("Unloaded level", 631, zero + 6, G, 16);
       let end;
       if (p.mode === 1) {
-        const l1 = 60 + q.x1 * scale,
-          l2 = 60 + q.x2 * scale;
+        const upperTravel = q.extension > 0 ? travel * q.x1 / q.extension : 0;
+        const l1 = 60 + upperTravel,
+          l2 = 60 + travel - upperTravel;
         spring(x, 80, l1, C);
         circle(x, 80 + l1, 5, W);
         spring(x, 90 + l1, l2, G);
@@ -157,7 +156,7 @@ export function drawPractical(lab, kit) {
         text(`x₁ ${fmt(q.x1)} m`, 475, 125, C, 18);
         text(`x₂ ${fmt(q.x2)} m`, 475, 205, G, 18);
       } else if (p.mode === 2) {
-        end = 200 + q.extension * scale;
+        end = zero + travel;
         spring(320, 80, end - 80, C);
         spring(520, 80, end - 80, G);
         line(
@@ -171,10 +170,11 @@ export function drawPractical(lab, kit) {
         text(`F₁ ${fmt(q.f1)} N`, 235, 170, C, 17, "right");
         text(`F₂ ${fmt(q.f2)} N`, 600, 170, G, 17);
       } else {
-        end = 200 + q.extension * scale;
+        end = zero + travel;
         spring(x, 80, end - 80, C);
         text(`k₁ ${fmt(p.k1)} N/m`, 490, 155, C, 20);
       }
+      line([[590, end], [610, end]], C, 4);
       rect(x - 50, end, 100, 35, "#254b62", W, 5);
       arrow(x, end + 36, 0, 32, G);
       text(`${fmt(q.force)} N`, x + 65, end + 29, G, 20);
@@ -730,7 +730,9 @@ function drawAdvancedInstrument(lab, kit) {
     title,
     foot,
   } = kit;
-  title(lab.definition.short, "Calculated instrument · see model assumptions");
+  title(lab.definition.short, lab.type === "materials"
+    ? "Extension shown on a compressed scale"
+    : "Calculated instrument · see model assumptions");
   if (lab.type === "photoelectric") {
     rect(90, 95, 670, 265, "#91baff0c", B, 90);
     rect(200, 135, 14, 185, "#637f94", G, 3);
@@ -971,17 +973,14 @@ function drawAdvancedInstrument(lab, kit) {
       `Emissivity ${fmt(p.emissivity)}`,
     );
   } else if (lab.type === "materials") {
-    const extScale =
-        120 / Math.max((p.force * p.length) / (p.area * p.young), 1e-12),
-      end = 180 + q.extension * extScale;
-    line(
-      [
-        [140, 80],
-        [470, 80],
-      ],
-      W,
-      5,
-    );
+    const end = 180 + 120 * wireTravel(q.extension);
+    rect(106, 396, 370, 12, "#d5e5ed", W, 3);
+    line([[140, 396], [140, 80], [470, 80]], W, 7);
+    circle(140, 80, 7, G);
+    line([[201, 158], [201, 314]], M, 2);
+    line([[178, 180], [248, 180]], G, 2, [4, 4]);
+    text("Unloaded", 187, 168, G, 15);
+    line([[195, end], [231, end]], C, 4);
     rect(286, 80, 28, end - 80, "#91baff55", B, 2);
     rect(250, end, 100, 48, "#285069", W, 5);
     arrow(300, end + 52, 0, 42, G);
@@ -993,7 +992,7 @@ function drawAdvancedInstrument(lab, kit) {
     text(`Extension ${fmt(q.extension * 1000)} mm`, 540, 340, G, 22);
     foot(
       `Young modulus ${fmt(p.young / 1e9)} GPa`,
-      "Elastic region only · extension enlarged",
+      "Linear elastic region",
     );
   }
 }

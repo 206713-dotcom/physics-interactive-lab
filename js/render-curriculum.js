@@ -7,6 +7,7 @@ import { BUOYANCY_STATUS } from "./buoyancy-physics.js";
 import { chargedLayout, soundLayout } from "./field-geometry.js";
 import { chamberParticle, convectionPosition, EXPANSION_MAGNIFICATION, particleChamberWidth, phaseInventory } from "./thermal-geometry.js";
 import { drawMotionDiagram } from "./render-motion.js";
+import { rippleFronts, RIPPLE_HALF_LENGTH as tankX, RIPPLE_HALF_WIDTH as tankZ } from "./ripple-geometry.js";
 import { lunarLitInterval, solarDisplayRadius } from "./space-display.js";
 const chargedViews = new WeakMap();
 export const MAGNET_DIAGRAM = {coilX:420, y:235, travel:285};
@@ -58,11 +59,12 @@ export function drawCurriculum(canvas, lab) {
     s = lab.state,
     q = P.sampleCurriculum(lab.type, s, p),
     t = s.t;
-  const text = (str, x, y, color = MUTED, size = 17, align = "left") => {
+  const text = (str, x, y, color = MUTED, size = 17, align = "left", maxWidth) => {
     c.fillStyle = color;
     c.font = `500 ${Math.max(size,12/scale)}px Manrope,Segoe UI,sans-serif`;
     c.textAlign = align;
-    c.fillText(String(str), x, y);
+    if (maxWidth) c.fillText(String(str), x, y, maxWidth);
+    else c.fillText(String(str), x, y);
   };
   const line = (pts, color = CYAN, lw = 2, dash = []) => {
     c.beginPath();
@@ -146,13 +148,20 @@ export function drawCurriculum(canvas, lab) {
         ? n.toExponential(2)
         : Number(n.toFixed(d)).toString();
   const title = (label, note) => {
-    text(label.toUpperCase(), 35, 36, CYAN, 16);
-    if (note) text(note, 805, 36, MUTED, 14, "right");
+    const narrow = scale < 0.65;
+    text(label.toUpperCase(), 35, narrow ? 30 : 36, CYAN, 16, "left", narrow || !note ? 770 : 375);
+    if (note) text(note, narrow ? 35 : 805, narrow ? 58 : 36, MUTED, 14, narrow ? "left" : "right", narrow ? 770 : 380);
   };
   const foot = (a, b = "") => {
-    rect(25, 416, 790, 40, "#dceaf1");
-    text(a, 42, 442, WHITE, 16);
-    if (b) text(b, 795, 442, GOLD, 16, "right");
+    if (scale < 0.65 && b) {
+      rect(25, 410, 790, 56, "#dceaf1");
+      text(a, 42, 433, WHITE, 16, "left", 750);
+      text(b, 42, 459, GOLD, 16, "left", 750);
+    } else {
+      rect(25, 416, 790, 40, "#dceaf1");
+      text(a, 42, 442, WHITE, 16, "left", b ? 370 : 750);
+      if (b) text(b, 795, 442, GOLD, 16, "right", 370);
+    }
   };
   const tickRuler = (x, y, w, max, unit) => {
     line(
@@ -655,85 +664,26 @@ export function drawCurriculum(canvas, lab) {
       break;
     }
     case "wavefronts": {
-      title(
-        p.mode ? "Reflection at a plane wall" : "Diffraction at a single gap",
-        "Wavefront construction · not a full fluid solver",
-      );
-      const spacing = Math.min(100, q.wavelength * 60),
-        gap = p.gap * 45;
-      line(
-        [
-          [355, 70],
-          [355, 235 - gap / 2],
-        ],
-        WHITE,
-        7,
-      );
-      line(
-        [
-          [355, 235 + gap / 2],
-          [355, 390],
-        ],
-        WHITE,
-        7,
-      );
-      for (let i = 0; i < 8; i++) {
-        const xx = 35 + ((i * spacing + t * p.speed * 45) % 315);
-        line(
-          [
-            [xx, 80],
-            [xx, 385],
-          ],
-          CYAN,
-          2,
-        );
-      }
-      if (p.mode === 0) {
-        const spread = Math.asin(Math.min(1, 1 / q.ratio));
-        for (let i = 0; i < 12; i++) {
-          const r = (t * p.speed * 45 + i * spacing) % 470;
-          if (r > 3) {
-            c.save();
-            c.beginPath();
-            c.rect(359, 65, 440, 330);
-            c.clip();
-            arc(355, 235, r, -spread, spread, BLUE, 2);
-            c.restore();
-          }
-        }
-        text(
-          q.ratio < 1.5
-            ? "Gap ≲ λ: strong spreading"
-            : "Gap > λ: weaker angular spreading",
-          420,
-          390,
-          GOLD,
-          19,
-          "center",
-        );
-      } else {
-        line(
-          [
-            [355, 70],
-            [355, 390],
-          ],
-          WHITE,
-          7,
-        );
-        for (let i = 0; i < 8; i++) {
-          const xx = 355 - ((i * spacing + t * p.speed * 45) % 325);
-          line(
-            [
-              [xx, 80],
-              [xx, 385],
-            ],
-            GOLD,
-            2,
-          );
-        }
-        text("Incident + reflected wavefronts", 550, 235, GOLD, 18, "center");
-      }
-      foot(`λ = ${fmt(q.wavelength)} m`, `gap / λ = ${fmt(q.ratio)}`);
+      title(p.mode ? "Reflection at a plane wall" : "Diffraction at a single gap",
+        "Schematic ripple tank");
+      const scale = 44, centerX = 420, centerY = 245,
+        outgoing = p.mode ? "#ffcc84" : "#a7c9ff",
+        incident = "#75f0dc",
+        gap = p.mode ? 0 : p.gap,
+        x = value => centerX + value * scale,
+        y = value => centerY + value * scale;
+      rect(x(-tankX) - 7, y(-tankZ) - 7, 2 * tankX * scale + 14, 2 * tankZ * scale + 14,
+        "#254a60", "#668fa2", 12);
+      rect(x(-tankX), y(-tankZ), 2 * tankX * scale, 2 * tankZ * scale, "#102f44", null, 5);
+      for (let z = -3; z <= 3; z++)
+        line([[x(-tankX), y(z)], [x(tankX), y(z)]], "#8fb8cb19", 1);
+      for (const { kind, points } of rippleFronts(q.wavelength, p.speed * t, p.gap, p.mode))
+        line(points.map(([a, b]) => [x(a), y(b)]), kind ? outgoing : incident, 2, kind && p.mode ? [7, 4] : []);
+      line([[centerX, y(-tankZ)], [centerX, y(-gap / 2)]], "#dae8ed", 6);
+      line([[centerX, y(gap / 2)], [centerX, y(tankZ)]], "#dae8ed", 6);
+      text("Incident →", x(-2.9), 81, CYAN, 18);
+      text(p.mode ? "← Reflected" : "Diffracted →", x(2.9), 81, p.mode ? GOLD : BLUE, 18, "right");
+      foot(`λ = ${fmt(q.wavelength)} m`, p.mode ? "Same wavelength after reflection" : `Gap / λ = ${fmt(q.ratio)}`);
       break;
     }
     case "mirror": {

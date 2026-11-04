@@ -6,6 +6,8 @@ import { studyReadings } from './study-policy.js';
 import { calculationNumber } from './calculations.js';
 import { getProfile } from './learning-paths.js';
 import { installMotorCommutator } from './motor-commutator.js';
+import { installGeneratorSlipRings } from './generator-slip-rings.js';
+import { GENERATOR_LOAD_OHMS } from './curriculum-physics.js';
 
 function addHandRule(stage, motor) {
   const guide = document.createElement('section');
@@ -37,7 +39,7 @@ function addHandRule(stage, motor) {
   stage.append(guide);
 }
 
-function addMachineConsole(stage, motor, {runMotorField, seekGeneratorPhase}, commutator) {
+function addMachineConsole(stage, motor, {runMotorSetup, seekGeneratorPhase, setGeneratorCircuit}, cutaway) {
   const consolePanel = document.createElement('section');
   consolePanel.className = 'machine-console';
   consolePanel.setAttribute('aria-label', motor ? 'Compare motor speeds' : 'Inspect the generator phase');
@@ -49,9 +51,11 @@ function addMachineConsole(stage, motor, {runMotorField, seekGeneratorPhase}, co
       <span class="machine-meter-scale"><span>0</span><span>100+ rpm</span></span>
     </div>
     <div class="machine-actions">
-      <span class="machine-caption">COMPARE FIELD STRENGTH AT THE SAME CURRENT</span>
+      <span class="machine-caption">COMPARE FIELD STRENGTH OR LOAD AT THE SAME CURRENT</span>
       <div><button type="button" data-field=".2">Run at 0.20 T</button>
       <button type="button" data-field=".5">Run at 0.50 T</button>
+      <button type="button" data-load="1">Standard load</button>
+      <button type="button" data-load="4">Heavy load</button>
       <button type="button" class="commutator-jump" aria-controls="motor-commutator">Split-ring close-up ↓</button></div>
       <p class="machine-phase-note"></p>
     </div>` : `
@@ -70,33 +74,43 @@ function addMachineConsole(stage, motor, {runMotorField, seekGeneratorPhase}, co
       <div><button type="button" data-angle="0">0°</button>
       <button type="button" data-angle="90">90°</button>
       <button type="button" data-angle="180">180°</button>
-      <button type="button" data-angle="270">270°</button></div>
+      <button type="button" data-angle="270">270°</button>
+      <button type="button" class="generator-switch" aria-label="Connect the ${GENERATOR_LOAD_OHMS} ohm load" aria-pressed="true">Circuit closed</button>
+      <button type="button" class="commutator-jump" aria-controls="generator-slip-rings">Slip-ring close-up ↓</button></div>
       <p class="machine-phase-note"></p>
     </div>`;
   stage.querySelector('.transport').before(consolePanel);
   const value = consolePanel.querySelector('.machine-value');
   const note = consolePanel.querySelector('.machine-phase-note');
-  const buttons = [...consolePanel.querySelectorAll(motor ? '[data-field]' : '[data-angle]')];
+  consolePanel.querySelector('.commutator-jump').onclick = cutaway.reveal;
+  const buttons = [...consolePanel.querySelectorAll(motor ? '[data-field],[data-load]' : '[data-angle]')];
   if (motor) {
     const meter = consolePanel.querySelector('meter');
-    consolePanel.querySelector('.commutator-jump').onclick = commutator.reveal;
-    buttons.forEach(button => button.onclick = () => runMotorField(Number(button.dataset.field)));
+    for (const button of buttons) {
+      const key = button.hasAttribute('data-field') ? 'field' : 'load';
+      button.onclick = () => runMotorSetup({ [key]: Number(button.dataset[key]) });
+    }
     return lab => {
       const {rpm} = lab.definition.sample(lab.state, lab.params);
       value.textContent = `${rpm.toFixed(1)} rpm`;
       meter.value = rpm;
-      buttons.forEach(button => button.setAttribute('aria-pressed', String(Number(button.dataset.field) === lab.params.field)));
-      note.textContent = `Field ${lab.params.field.toFixed(2)} T · Current ${lab.params.current.toFixed(2)} A · Each run starts from rest.`;
+      for (const button of buttons) {
+        const key = button.hasAttribute('data-field') ? 'field' : 'load';
+        button.setAttribute('aria-pressed', String(Number(button.dataset[key]) === lab.params[key]));
+      }
+      note.textContent = `Field ${lab.params.field.toFixed(2)} T · Current ${lab.params.current.toFixed(2)} A · Load ${lab.params.load}× · Each run starts from rest.`;
     };
   }
   const slider = consolePanel.querySelector('input');
   const curve = consolePanel.querySelector('.wave-curve');
   const marker = consolePanel.querySelector('circle');
+  const circuitSwitch = consolePanel.querySelector('.generator-switch');
+  circuitSwitch.onclick = () => setGeneratorCircuit(Number(circuitSwitch.getAttribute('aria-pressed') !== 'true'));
   let waveDrawn = false;
   buttons.forEach(button => button.onclick = () => seekGeneratorPhase(Number(button.dataset.angle)));
   slider.oninput = () => seekGeneratorPhase(slider.valueAsNumber);
   return lab => {
-    const {emf, peak} = lab.definition.sample(lab.state, lab.params);
+    const {emf, peak, circuit, loadCurrent} = lab.definition.sample(lab.state, lab.params);
     if (!waveDrawn) {
       const points = Array.from({length:65}, (_,i) => {
         const fraction = i / 64;
@@ -113,10 +127,14 @@ function addMachineConsole(stage, motor, {runMotorField, seekGeneratorPhase}, co
     marker.setAttribute('cx',6+208*degrees/360);
     marker.setAttribute('cy',24-18*voltage/peak);
     value.textContent = `${degrees}° · ${calculationNumber(voltage)} V`;
+    circuitSwitch.textContent = circuit ? 'Circuit closed' : 'Circuit open';
+    circuitSwitch.setAttribute('aria-pressed', String(Boolean(circuit)));
     buttons.forEach(button => button.setAttribute('aria-pressed', String(!lab.running && degrees === Number(button.dataset.angle))));
-    note.textContent = voltage === 0
+    note.textContent = !circuit
+      ? 'Open circuit · 0 A. Voltage can still appear across the terminals.'
+      : voltage === 0
       ? 'Zero output. The long coil sides move along the field.'
-      : `${voltage > 0 ? 'Positive' : 'Negative'} output. Compare the purple current arrows with the previous half-turn.`;
+      : `Closed through ${GENERATOR_LOAD_OHMS} Ω · ${calculationNumber(loadCurrent)} A. Compare the purple current arrows across half-turns.`;
   };
 }
 
@@ -130,8 +148,9 @@ export function installPresentationStudio(stage, controls, id, title, show3D, ma
   stage.querySelector('.transport').after(panel);
   if (id === 'motor' || id === 'induction') addHandRule(stage, id === 'motor');
   const commutator = id === 'motor' ? installMotorCommutator(stage) : null;
+  const slipRings = id === 'induction' ? installGeneratorSlipRings(stage, machineActions) : null;
   const updateMachine = id === 'motor' || id === 'induction'
-    ? addMachineConsole(stage, id === 'motor', machineActions, commutator) : null;
+    ? addMachineConsole(stage, id === 'motor', machineActions, commutator || slipRings) : null;
   const values = panel.querySelector('.instrument-values'), context = panel.querySelector('.instrument-context');
   const toolbar = stage.querySelector('.stage-views');
   const scene = stage.querySelector('.scene-container');
@@ -190,7 +209,7 @@ export function installPresentationStudio(stage, controls, id, title, show3D, ma
   dialog.onclose = () => { if (!dialog.open) restore(); };
   let signature = '', nodes = [];
   return {
-    render: commutator ? lab => commutator.render(lab.state.phase) : null,
+    render: commutator ? lab => commutator.render(lab.state.phase) : slipRings?.render,
     dispose() {
       if (dialog.open) dialog.close();
       restore(false);

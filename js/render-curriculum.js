@@ -1247,7 +1247,7 @@ export function drawCurriculum(canvas, lab) {
       c.save(); c.setLineDash([5,7]);
       c.beginPath(); c.arc(cx,cy,radius,0,TAU);
       c.strokeStyle="#7998ae"; c.lineWidth=1; c.stroke(); c.restore();
-      const sides=[-1,1].map(side => P.machineSide(q.phase,side,motor));
+      const sides=[-1,1].map(side => P.machineSide(q.phase,side,motor,motor || Boolean(q.circuit)));
       const position = side => [cx+radius*side.x,cy+radius*side.z];
       line(sides.map(position),"#bf7839",8);
       circle(cx,cy,7,MUTED);
@@ -1268,7 +1268,7 @@ export function drawCurriculum(canvas, lab) {
         if (index===1) text("A",x+24,y+5,WHITE,15);
       }
       text("⊙ current towards you    ⊗ current away from you",420,398,PURPLE,19,"center");
-      foot(motor ? "Split ring · DC input" : "Slip rings · AC output",
+      foot(motor ? "Split ring · DC input" : q.circuit ? "Slip rings · closed circuit" : "Slip rings · open circuit",
         motor ? "Gold: force" : "Gold: conductor motion");
       break;
     }

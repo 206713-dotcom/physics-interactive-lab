@@ -281,7 +281,7 @@ export const ELECTRIC_SCENES = {
       rotor.rotation.y = q.phase;
       contacts.rotation.y = q.phase;
       for (const {side,current,action} of sides) {
-        const direction = machineSide(q.phase, side, motor);
+        const direction = machineSide(q.phase, side, motor, motor || Boolean(q.circuit));
         const x = .8*direction.x, z = .8*direction.z;
         if (side === 1) markedSide?.position.set(x, .62, z);
         k.setArrow(current,[x,1.8-direction.current*.52,z],[0,direction.current*1.04,0]);

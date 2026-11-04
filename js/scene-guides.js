@@ -214,14 +214,14 @@ export const SCENE_GUIDES = {
   induction: [
     "Gold arrows show the driven motion. Purple shows the direction of induced current if a resistive circuit is closed.",
     "Fleming’s right-hand rule links conductor motion, field and induced current. Slip rings deliver an alternating output.",
-    "Compare the generated voltage at two rotation speeds with the same magnetic field.",
-    "Coil and ring sizes are schematic. The speed is imposed and the model does not calculate a load current.",
+    "Pause at 90°. Open the circuit and compare the voltage and current.",
+    "Coil and ring sizes are schematic. The drive maintains the selected speed. The external circuit can be open or closed through a 10 Ω resistor.",
   ],
   motor: [
     "Purple shows conventional current. Gold shows the force on each side of the coil.",
     "The opposite forces form a couple. The split ring reverses current every half-turn so torque keeps its direction.",
     "Track side A through the zero-torque position. Use the two field buttons to compare acceleration at the same current.",
-    "Coil and commutator are schematic. Denser cyan arrows represent a stronger field. Shaft speed comes from the torque, rotor inertia and fixed load model.",
+    "Coil and commutator are schematic. Denser cyan arrows represent a stronger field. Shaft speed comes from the torque, rotor inertia and the chosen load.",
   ],
   transformer: [
     "Gold is the primary coil; cyan is the secondary; both share the core.",

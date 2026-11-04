@@ -432,7 +432,7 @@ function labPage(type, query) {
   // The course focus replaces the duplicated three-step walkthrough.
 
   presentationStudio = installPresentationStudio($("#stage"), $(".controls"), type, d.short,
-    () => setView("3d"), { runMotorField, seekGeneratorPhase });
+    () => setView("3d"), { runMotorSetup, seekGeneratorPhase, setGeneratorCircuit });
   if(["spring","pendulum"].includes(type) && studyMode !== "igcse") {
     const tools=document.createElement("div");
     tools.className="oscillation-tools";tools.setAttribute("aria-label","Oscillation indicators");
@@ -681,9 +681,17 @@ function seekVector(progress) {
   lab.lastUI = -1;
   syncPlay();
 }
-function runMotorField(field) {
+function runMotorSetup(patch) {
   lab.running = true;
-  reset({ ...lab.params, field });
+  reset({ ...lab.params, ...patch });
+  syncInputs();
+}
+function setGeneratorCircuit(circuit) {
+  if (lab.params.circuit === circuit) return;
+  lab.params = studyParams(lab.type, lab.studyMode, lab.definition, { ...lab.params, circuit });
+  sample();
+  updateReadouts();
+  updateCharts();
   syncInputs();
 }
 function seekGeneratorPhase(degrees) {
@@ -722,7 +730,8 @@ function bindControls() {
     const commit = (raw, slider = false) => {
       const value = d.options ? raw : d.log ? (slider ? 10 ** raw : raw) : raw * (d.factor || 1);
       try {
-        reset({ ...lab.params, [d.key]: value });
+        if (lab.type === "induction" && d.key === "circuit") setGeneratorCircuit(value);
+        else reset({ ...lab.params, [d.key]: value });
         $("#control-error").textContent = "";
       } catch (error) {
         $("#control-error").textContent = error.message;

@@ -246,12 +246,14 @@ export const PARAMETERS = {
     number("area", "Coil area", "m²"),
     number("turns", "Coil turns"),
     number("frequency", "Rotation frequency", "Hz"),
+    choice("circuit", "Output circuit", [[1, "Closed through 10 Ω"], [0, "Open"]]),
   ],
   motor: [
     number("field", "Uniform magnetic field", "T"),
     number("area", "Coil area", "m²"),
     number("turns", "Coil turns"),
     number("current", "Coil current", "A"),
+    number("load", "Shaft load multiplier", "×"),
   ],
   transformer: [
     number("vp", "Primary RMS voltage", "V"),
@@ -1043,6 +1045,8 @@ export const WORK = {
     ),
     W("linkage", "Flux linkage", "Wb turns", "NΦ = NBA cos θ",
       (p, q, n) => `${p.turns} × ${n(q.flux)}`),
+    W("loadCurrent", "Output current", "A", "I = ε/R for a closed circuit",
+      (p, q, n) => p.circuit ? `${n(q.emf)} / ${P.GENERATOR_LOAD_OHMS} Ω` : "Open circuit → I = 0 A"),
   ],
   motor: [
     W(
@@ -1059,6 +1063,8 @@ export const WORK = {
       (p, q, n) => `${p.turns} × ${n(p.field)} × ${n(p.current)} × ${n(p.area)}`),
     W("rpm", "Shaft speed", "rpm", "RPM = ω × 60/(2π)",
       (p, q, n) => `${n(q.omega)} × 60/(2π)`),
+    W("loadTorque", "Opposing load torque", "N m", "τload = L(bω + cω²)",
+      (p, q, n) => `${p.load} × (0.14 × ${n(q.omega)} + 0.035 × ${n(q.omega)}²)`),
   ],
   transformer: [
     W(
@@ -1798,6 +1804,7 @@ Object.assign(CURRICULUM_SIMULATIONS.induction, {
   graphs: [
     dynamicGraph("emf", "Generated emf", ["emf"], "V"),
     dynamicGraph("flux", "Flux per turn", ["flux"], "Wb"),
+    dynamicGraph("load-current", "Output current", ["loadCurrent"], "A"),
   ],
 });
 Object.assign(CURRICULUM_SIMULATIONS.motor, {
@@ -1806,7 +1813,7 @@ Object.assign(CURRICULUM_SIMULATIONS.motor, {
   window: 8,
   graphs: [
     dynamicGraph("rpm", "Shaft speed", ["rpm"], "rpm"),
-    dynamicGraph("torque", "Motor torque", ["torque"], "N m"),
+    dynamicGraph("torque", "Drive and load torque", ["torque","loadTorque"], "N m"),
   ],
 });
 Object.assign(CURRICULUM_SIMULATIONS.charged, {
@@ -1989,9 +1996,11 @@ const SAMPLE_UNITS = {
     emf: "V",
     peak: "V",
     linkage: "Wb",
+    loadCurrent: "A",
+    circuit: "dimensionless",
     frequency: "Hz",
   },
-  motor: { phase: "rad", omega: "rad_s", torque: "N_m", peakTorque: "N_m", sideForce: "N", rpm: "rpm" },
+  motor: { phase: "rad", omega: "rad_s", torque: "N_m", loadTorque: "N_m", peakTorque: "N_m", sideForce: "N", rpm: "rpm" },
   transformer: {
     vs: "V",
     is: "A",

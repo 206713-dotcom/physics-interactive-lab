@@ -32,14 +32,14 @@ const GRAPHS = {
   refraction: ['angles'], dc: ['reading-1'], sensors: ['reading-1'],
   devices: ['reading-0'], rectifier: ['waveforms'], filament: ['current'],
   magnetism: [], charged: ['trajectory'], radiation: ['alpha','beta','gamma'],
-  induction: ['emf'], motor: ['rpm'], transformer: ['reading-0'], atom: [],
+  induction: ['emf','load-current'], motor: ['rpm'], transformer: ['reading-0'], atom: [],
   radioactivity: ['decay'], earthmoon: [], solarsystem: [], stars: [],
   universe: ['reading-0'], pendulum: ['angle'], collisions: ['momentum'], fields: [],
 };
 const CONTROLS = {
   measurement: ['count','period'], motion: ['mode','mass','force','drag'],
   expansion: ['temperature','alpha'], cooling: ['initial','ambient','conductance'],
-  calorimetry: ['mass','power','initial'], induction: ['frequency','field'], motor: ['field','current'],
+  calorimetry: ['mass','power','initial'], induction: ['frequency','field','circuit'], motor: ['field','current','load'],
   universe: ['distance'], atom: ['protons','neutrons','decay'],
   collisions: ['m1','m2','u1','restitution'],
 };
@@ -134,6 +134,7 @@ export function studyControl(id, mode, control) {
     'charged.field': { label: 'Magnetic field direction', options: [[-0.002,'Into the screen'],[0,'Field off'],[0.002,'Out of the screen']], hint: 'Reverse the field and compare the direction of bending.' },
     'radiation.field': { label: 'Magnetic field direction', options: [[-0.1,'Into the screen'],[0,'Field off'],[0.1,'Out of the screen']], hint: 'Alpha and beta bend in opposite directions. Gamma is undeflected.' },
     'induction.field': { label: 'Magnet strength', options: [[0.1,'Weaker'],[0.2,'Medium'],[0.5,'Stronger']], hint: 'Compare the output at the same rotation speed.' },
+    'motor.load': { label: 'Shaft load', options: [[1,'Standard'],[4,'Heavy']], hint: 'Compare speed at the same current and magnetic field.' },
     'universe.distance': { label: 'Galaxy distance', unit: 'million ly', factor: 1 / 3.26156,
       min: 3.26156, max: 978.468, hint: 'A light-year is a distance. More distant galaxies generally recede faster.' },
     'atom.decay': { label: 'Investigation', options: [[0,'Scattering'],[1,'Alpha decay'],[2,'Beta-minus decay'],[3,'Gamma emission']], hint: 'Track changes to proton number and mass number.' },

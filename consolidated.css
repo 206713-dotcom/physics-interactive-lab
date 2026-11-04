@@ -865,6 +865,17 @@ body:has(.model-screen[open]) { overflow: hidden; }
 .commutator-key .half-b { color: #975414; }
 .commutator-result { margin: 12px 0 5px; padding: 10px 12px; background: #e2f2f2; border-radius: 9px; font-size: 14px; }
 .commutator-note { color: #4b6375; }
+.slip-rings-panel a { display: inline-block; margin-top: 6px; color: #0a6871; font-weight: 750; }
+.slip-shaft { stroke: #9bb0bf; stroke-width: 6; stroke-linecap: round; }
+.slip-ring-a, .slip-ring-b { fill: #fff; stroke-width: 9; }
+.slip-ring-a { stroke: #ffc570; }
+.slip-ring-b { stroke: #bb713c; }
+.slip-marker { fill: #583514; }
+.slip-wire, .slip-switch { fill: none; stroke: #42617a; stroke-width: 3; stroke-linecap: round; }
+.slip-terminal-a { fill: #ffc570; stroke: #834700; }
+.slip-terminal-b { fill: #bb713c; stroke: #814619; }
+.slip-resistor { fill: #ccebe8; stroke: #117b71; stroke-width: 2; }
+.slip-current { fill: none; stroke: #7751a3; stroke-width: 3; stroke-linejoin: round; }
 @media (max-width: 550px) {
   .machine-rule { grid-template-columns: 1fr; }
   .machine-rule svg { max-width: 165px; }

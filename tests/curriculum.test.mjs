@@ -73,8 +73,23 @@ test("the current-driven motor starts from rest and accelerates more in the stro
   const weak = run({field:.2}, .5);
   const strong = run({field:.5}, .5);
   assert.ok(weak.rpm > 0 && strong.rpm > weak.rpm && strong.phase > weak.phase);
+  const loaded = run({field:.5, load:4}, .5);
+  assert.ok(loaded.rpm < strong.rpm);
   const max = run({field:1, turns:300, area:.1, current:5}, 10);
   assert.ok(Number.isFinite(max.phase) && max.omega > 0 && max.omega < 66);
+});
+
+test("opening the generator circuit cuts current without changing the emf", () => {
+  const p = P.DEFAULTS.induction;
+  for (const turn of [.25, .75]) {
+    const t = turn / p.frequency;
+    const closed = sample("induction", {circuit:1}, t);
+    const open = sample("induction", {circuit:0}, t);
+    assert.equal(open.emf, closed.emf);
+    close(closed.loadCurrent, closed.emf / P.GENERATOR_LOAD_OHMS);
+    assert.equal(open.loadCurrent, 0);
+    assert.equal(P.machineSide(open.phase, 1, false, false).current, 0);
+  }
 });
 
 test("all 45 scientific instruments expose real calculations, lessons, valid presets and diagram embeds", () => {

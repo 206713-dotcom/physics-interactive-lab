@@ -10,6 +10,10 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 ## What is in the laboratory?
 
+### Version 20.5: machine connections and load
+
+The generator’s slip-ring close-up shows each brush staying on one ring. At a fixed coil angle, open the circuit to see the current go to zero while the terminal voltage remains. The motor has a split-ring close-up and two shaft load settings for comparing speed at the same field and current.
+
 ### Version 20.4: motor acceleration and generator phase
 
 The DC motor starts at rest and accelerates under coil torque against a fixed load. Compare 0.20 T and 0.50 T with the same current, using the live shaft speed display. In the AC generator, the coil-angle control pauses the model at a chosen phase and marks the corresponding voltage on the waveform.
@@ -313,7 +317,7 @@ The pure functions in `js/curriculum-physics.js` are shared by the display, live
 - Optics: plane reflection `i = r`, thin lens `v = fu/(u−f)` and `m = −v/u`; `u = f` returns no finite image. Cauchy dispersion `n = A + B/λ²` uses λ in μm before Snell refraction. Spectrum `f = c/λ`; sound echo `t = 2d/v`. Wavefront spreading is a qualitative construction, not a computed diffraction intensity field.
 - Circuits: series/parallel Ohm/Kirchhoff equations, unloaded potential divider and `Rwire = ρL/A`. The diode uses a 0.7 V forward drop; relay and protective cut-out use stated ideal thresholds. No mains construction advice or real fuse trip curve is implied.
 - Magnetism: long-solenoid `B = μ₀NI/L`, wire `B = μ₀I/(2πr)` at a fixed 5 cm probe, perpendicular charged-particle `F = qv × B`, `r = mv/|qB|` and constant kinetic energy. These are nonrelativistic analytic circular trajectories; `B = 0` is straight motion.
-- Machines: the generator rotates at the selected speed and uses `Φ = BA cos(ωt)` and `ε = NBAω sin(ωt)`. The current-driven motor uses `τ = NBIA|sin θ|` and integrates `J dω/dt = τ − bω − cω|ω|` with `J = 0.12 kg m²`, `b = 0.14 N m/(rad/s)` and `c = 0.035 N m/(rad/s)²`. Its speed depends on the chosen current and the fixed load. Transformer `Vs/Vp = Ns/Np`, `VpIp = VsIs`, with `Ip²Rline` as a separate comparison estimate.
+- Machines: the generator rotates at the selected speed and uses `Φ = BA cos(ωt)` and `ε = NBAω sin(ωt)`. A 10 Ω load gives `I = ε/R` when connected. The current-driven motor uses `τ = NBIA|sin θ|` and integrates `J dω/dt = τ − L(bω + cω|ω|)` with `J = 0.12 kg m²`, `b = 0.14 N m/(rad/s)`, `c = 0.035 N m/(rad/s)²` and the selected load multiplier `L`. Transformer `Vs/Vp = Ns/Np`, `VpIp = VsIs`, with `Ip²Rline` as a separate comparison estimate.
 - Nuclei: `A = Z + N`, ion electron counting, alpha/beta/gamma nuclear accounting, and point-charge Rutherford angle. Impossible daughters return undefined; selecting an equation does not assert that an arbitrary isotope undergoes that decay.
 - Decay: each nucleus gets an exponential waiting time `−ln(1−U)/λ`, with `λ = ln2/T½` from a seeded PRNG. The random sample and expected `N₀2^(−t/T½)` are shown separately. Attenuation is `exp(−μx)`; the detector is an expected rate, not experimental data or a Poisson counter.
 - Space: circular orbits use `v = √(GM☉/r)` and `T = 2π√(r³/GM☉)`; the orrery screen radii are logarithmic and body sizes enlarged. Daylight uses a geometric declination approximation; Moon illumination `(1−cos phase)/2`. Stellar evolution is a qualitative storyboard with approximate main-sequence scaling, not a stellar structure solver. Low-redshift `v = H₀d`, `z ≈ v/c`, `λobs = λrest(1+z)` and Hubble time `1/H₀` are explicitly approximate.

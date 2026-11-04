@@ -161,12 +161,14 @@ export const RANGES = {
     area: [0.02, 0.005, 0.1],
     turns: [100, 10, 300],
     frequency: [1, 0.2, 5],
+    circuit: [1, 0, 1],
   },
   motor: {
     field: [0.2, 0.02, 1],
     area: [0.02, 0.005, 0.1],
     turns: [100, 10, 300],
     current: [2, 0.2, 5],
+    load: [1, 1, 4],
   },
   transformer: {
     vp: [230, 10, 250],
@@ -214,15 +216,17 @@ export const CURRICULUM_IDS = Object.keys(RANGES);
 const MOTOR_INERTIA = 0.12; // kg m²
 const MOTOR_VISCOUS_LOAD = 0.14; // N m per rad/s
 const MOTOR_QUADRATIC_LOAD = 0.035; // N m per (rad/s)²
+export const GENERATOR_LOAD_OHMS = 10;
 const COMMUTATION_EPSILON = 1e-10;
 const motorPeakTorque = p => p.turns * p.field * p.area * p.current;
 function motorTorque(phase, p) {
   const leverArm = Math.abs(Math.sin(phase));
   return leverArm < COMMUTATION_EPSILON ? 0 : motorPeakTorque(p) * leverArm;
 }
+const motorLoadTorque = (omega, p) =>
+  p.load * (MOTOR_VISCOUS_LOAD*omega + MOTOR_QUADRATIC_LOAD*omega*Math.abs(omega));
 const motorAcceleration = (phase, omega, p) =>
-  (motorTorque(phase,p) - MOTOR_VISCOUS_LOAD*omega
-    - MOTOR_QUADRATIC_LOAD*omega*Math.abs(omega)) / MOTOR_INERTIA;
+  (motorTorque(phase,p) - motorLoadTorque(omega,p)) / MOTOR_INERTIA;
 
 function stepMotor(state, p, dt) {
   const {phase, omega, t} = state;
@@ -241,9 +245,9 @@ function stepMotor(state, p, dt) {
 }
 /** End-on view: the magnetic field is +x and the shaft is +y.
  * Each long side lies at ±(sin θ, 0, cos θ) around the shaft. */
-export function machineSide(phase, side, motor) {
+export function machineSide(phase, side, motor, conducting = true) {
   const x = side * Math.sin(phase), z = side * Math.cos(phase);
-  const current = Math.abs(x) < COMMUTATION_EPSILON ? 0 : Math.sign(motor ? x : -x);
+  const current = !conducting || Math.abs(x) < COMMUTATION_EPSILON ? 0 : Math.sign(motor ? x : -x);
   return {
     x, z,
     motion: [z, 0, -x],
@@ -258,6 +262,7 @@ export const DEFAULTS = Object.fromEntries(
   ]),
 );
 const INTEGERS = new Set([
+  "circuit",
   "count",
   "mode",
   "state",
@@ -629,12 +634,16 @@ export function sampleCurriculum(id, s, p) {
     case "induction": {
       const omega = 2 * Math.PI * p.frequency,
         phase = omega * t,
-        flux = p.field * p.area * Math.cos(phase),
-        emf = p.turns * p.field * p.area * omega * Math.sin(phase);
+        cosine = Math.cos(phase),
+        sine = Math.sin(phase),
+        flux = Math.abs(cosine) < COMMUTATION_EPSILON ? 0 : p.field * p.area * cosine,
+        emf = Math.abs(sine) < COMMUTATION_EPSILON ? 0 : p.turns * p.field * p.area * omega * sine;
       Object.assign(q, {
         phase,
         flux,
         emf,
+        circuit: p.circuit,
+        loadCurrent: p.circuit ? emf / GENERATOR_LOAD_OHMS : 0,
         peak: p.turns * p.field * p.area * omega,
         linkage: p.turns * flux,
         frequency: p.frequency,
@@ -647,6 +656,7 @@ export function sampleCurriculum(id, s, p) {
         phase,
         omega,
         torque: motorTorque(phase,p),
+        loadTorque: motorLoadTorque(omega,p),
         peakTorque: motorPeakTorque(p),
         sideForce: p.turns * p.field * p.current * Math.sqrt(p.area),
         rpm: omega * 30 / Math.PI,

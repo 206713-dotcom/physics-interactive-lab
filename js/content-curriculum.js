@@ -193,6 +193,15 @@ const NOTES = {
     "At maximum flux, is the generated emf maximum?",
     "No. At maximum flux its time derivative is zero. The generated emf is largest as the flux passes through zero.",
   ],
+  "magnet-coil": [
+    "A moving magnet can make a current flow in a fixed coil.",
+    "A changing magnetic flux induces an emf. In a closed circuit, this drives a current through the load.",
+    "A north pole moving towards the coil makes the coil's near face north, repelling the approaching pole. Withdrawal reverses the current and makes the near face south. A stationary magnet gives zero induced emf.",
+    "The bar magnet is an ideal axial magnetic dipole and the winding is represented by a circular coil. The prescribed stroke and 10 Ω load omit coil self-inductance and mechanical feedback. Clockwise current is positive when viewed from the magnet.",
+    "Pickup coils, motion sensors and electromagnetic induction demonstrations.",
+    "Does a stronger field produce current while the magnet is stationary?",
+    "No. The flux may be larger, but current requires a changing flux and a closed circuit.",
+  ],
   motor: [
     "A magnetic force couple turns the coil.",
     "A DC supply sends conventional current through opposite sides of the coil. The uniform field makes the forces point in opposite directions.",

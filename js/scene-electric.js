@@ -5,7 +5,7 @@ import { PALETTE as C, clamp, setPath } from "./scene-kit.js";
 import { createParticleChamber } from "./scene-particle-chamber.js";
 import { createMagnetismApparatus } from "./scene-magnetism.js";
 import { createDCBench } from './scene-dc-bench.js';
-import { machineSide } from "./curriculum-physics.js";
+import { machineSide, MAGNET_STROKE_METRES } from "./curriculum-physics.js";
 import {
   radiationReferences,
   particlePosition,
@@ -207,6 +207,75 @@ export const ELECTRIC_SCENES = {
         );
         dots[id].position.set(...point(duration));
       }
+    };
+  },
+  "magnet-coil"(p, k) {
+    board(k);
+    const height = 1.65;
+    const radius = .82;
+    const northFirst = p.pole > 0;
+    const winding = Array.from({length:241}, (_,i) => {
+      const fraction = i/240, angle = fraction*16*Math.PI;
+      return new T.Vector3(-.59+1.18*fraction, height+radius*Math.cos(angle), radius*Math.sin(angle));
+    });
+    const curve = new T.CatmullRomCurve3(winding);
+    k.mesh(new T.TubeGeometry(curve,240,.043,8,false),0xda9658,[0,0,0],
+      {metalness:.65,roughness:.31});
+    for (const x of [-.65,.65]) {
+      const rim = k.mesh(new T.TorusGeometry(radius+.02,.075,12,64),0x718b9e,[x,height,0]);
+      rim.rotation.y = Math.PI/2;
+      k.box(.19,.59,.42,0x526c7f,[x,.56,0]);
+    }
+    const loadX = -2.15, loadY = .45;
+    k.box(.9,.28,.91,0x304a5f,[loadX,loadY,0],{roughness:.46});
+    for (const z of [-.31,.31])
+      k.cylinder(.075,.12,0xe3ae6c,[loadX,.65,z],{metalness:.55});
+    const rearLead = [[.59,height+radius,0],[.59,height+radius,-1.06],[.59,.64,-1.06],
+      [loadX,.64,-1.06],[loadX,.64,-.31]];
+    const frontLead = [[-.59,height+radius,0],[-.8,height+radius,.52],[-1.2,.64,.76],
+      [loadX,.64,.76],[loadX,.64,.31]];
+    for (const lead of [rearLead,frontLead])
+      for (let i=1; i<lead.length; i++) k.rod(lead[i-1],lead[i],0x657d96,.028);
+    k.rod([loadX,.72,-.31],[loadX,.72,p.circuit ? .31 : .1],0xcca365,.034);
+    k.label(p.circuit ? "10 Ω load" : "Open switch",[loadX,1.03,0],"#d4e8f2",1.1);
+    for (let i=0; i<=6; i++)
+      k.rod([i*.54,.19,.57],[i*.54,.19,.71],0x7295a9,.016);
+    const magnet = new T.Group();
+    magnet.userData.role = "moving-magnet";
+    k.add(magnet,[3.24,0,0]);
+    for (const side of [-1,1]) {
+      const north = side === -1 ? northFirst : !northFirst;
+      const block = k.box(.59,.44,.48,north ? C.red : C.blue,[side*.294,height,0]);
+      magnet.add(block);
+      const pole = k.label(north ? "N" : "S",[side*.294,height+.32,0],"#f2f8ff",.46);
+      if (pole) magnet.add(pole);
+    }
+    k.label("Fixed coil",[-.1,2.87,0],"#f3c99f",1.25);
+    const motion = k.arrow([0,0,0],[0,0,0],C.gold);
+    const current = k.arrow([0,0,0],[0,0,0],C.purple);
+    const arc = k.line([],C.purple,.85);
+    let shownDirection;
+    return {
+      camera: {target:[1.15,1.35,0],radius:10,polar:1.08,azimuth:.58,fitAspect:1.42},
+      update(_state, q) {
+        magnet.position.x = 3.24*q.distance/MAGNET_STROKE_METRES;
+        const moving = Math.sign(q.speed);
+        k.setArrow(motion,[magnet.position.x,height+.8,0],[.82*moving,0,0]);
+        const direction = -Math.sign(q.loadCurrent);
+        if (direction !== shownDirection) {
+          shownDirection = direction;
+          const points = direction ? Array.from({length:35}, (_,i) => {
+            const angle = .3 + direction*i*3.6/34;
+            return [.91,height+1.04*Math.cos(angle),1.04*Math.sin(angle)];
+          }) : [];
+          setPath(arc,points);
+          const angle = .3+direction*3.6;
+          k.setArrow(current,
+            [.91,height+1.04*Math.cos(angle),1.04*Math.sin(angle)],
+            [0,-.35*direction*Math.sin(angle),.35*direction*Math.cos(angle)]);
+        }
+      },
+      afterVisibility(lab) { arc.visible = shownDirection !== 0 && lab.vectors !== false; },
     };
   },
   motor(p, k) {

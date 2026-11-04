@@ -20,6 +20,7 @@ const WORKING = {
   transformer: ['vs-0','loss-3'], atom: ['massNumber-0','daughterZ-2'],
   solarsystem: ['lightTime-2'], universe: ['speed-0'],
   collisions: ['momentum'], vectors: ['resultant-2'],
+  induction: ['loadCurrent-4'], 'magnet-coil': ['loadCurrent-0'],
 };
 const GRAPHS = {
   measurement: ['period'], motion: ['position','velocity','acceleration'],
@@ -33,6 +34,7 @@ const GRAPHS = {
   devices: ['reading-0'], rectifier: ['waveforms'], filament: ['current'],
   magnetism: [], charged: ['trajectory'], radiation: ['alpha','beta','gamma'],
   induction: ['emf','load-current'], motor: ['rpm'], transformer: ['reading-0'], atom: [],
+  'magnet-coil': ['load-current','emf'],
   radioactivity: ['decay'], earthmoon: [], solarsystem: [], stars: [],
   universe: ['reading-0'], pendulum: ['angle'], collisions: ['momentum'], fields: [],
 };
@@ -51,7 +53,7 @@ const SETUP = {
 const SUPPLEMENT = new Set([
   'motion','vectors','buoyancy','energy','hooke','hydraulics','calorimetry',
   'cooling','dispersion','refraction','dc','sensors','transformer','universe','collisions',
-  'gases','lenses','stars','solarsystem','charged','radiation','induction','motor',
+  'gases','lenses','stars','solarsystem','charged','radiation','induction','motor','magnet-coil',
 ]);
 export const IGCSE_AREAS = [
   'Motion, forces and energy','Thermal physics','Waves',

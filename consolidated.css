@@ -768,11 +768,13 @@ body:has(.model-screen[open]) { overflow: hidden; }
 .machine-console-reading { display: grid; gap: 3px; }
 .machine-caption { color: #a6d5e1; font-size: 10px; font-weight: 800; letter-spacing: .09em; }
 .machine-value { font-size: 20px; font-weight: 750; font-variant-numeric: tabular-nums; }
+.machine-voltage { color: #bcdae5; font-size: 12px; }
 .machine-console meter, .machine-console input { width: 100%; accent-color: #80dfd1; }
 .machine-console meter { height: 12px; }
 .machine-meter-scale { display: flex; justify-content: space-between; font-size: 10px; color: #bcdae5; }
 .machine-actions { display: grid; gap: 5px; }
 .machine-actions > div { display: flex; flex-wrap: wrap; gap: 5px; }
+.machine-actions a { align-self: center; padding: 4px 6px; color: #a1efe4; font-size: 12px; }
 .machine-actions button {
   padding: 5px 10px;
   min-height: 30px;
@@ -876,6 +878,7 @@ body:has(.model-screen[open]) { overflow: hidden; }
 .slip-terminal-b { fill: #bb713c; stroke: #814619; }
 .slip-resistor { fill: #ccebe8; stroke: #117b71; stroke-width: 2; }
 .slip-current { fill: none; stroke: #7751a3; stroke-width: 3; stroke-linejoin: round; }
+.slip-rings-panel .slip-current-label { fill: #683da0; font-size: 13px; }
 @media (max-width: 550px) {
   .machine-rule { grid-template-columns: 1fr; }
   .machine-rule svg { max-width: 165px; }

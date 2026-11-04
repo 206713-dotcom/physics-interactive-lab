@@ -217,6 +217,12 @@ export const SCENE_GUIDES = {
     "Pause at 90°. Open the circuit and compare the voltage and current.",
     "Coil and ring sizes are schematic. The drive maintains the selected speed. The external circuit can be open or closed through a 10 Ω resistor.",
   ],
+  "magnet-coil": [
+    "The coil stays fixed. The gold arrow shows the magnet’s motion, and purple shows current around the coil.",
+    "The coil’s induced field opposes the change in flux. A north pole approaching gives anticlockwise conventional current as seen from the magnet.",
+    "Compare Push in, Hold at centre and Pull out. Flip the magnet and predict which way current flows.",
+    "Magnet and winding sizes are illustrative. The model uses an axial dipole, a circular coil and a 10 Ω resistive load. Motion is prescribed.",
+  ],
   motor: [
     "Purple shows conventional current. Gold shows the force on each side of the coil.",
     "The opposite forces form a couple. The split ring reverses current every half-turn so torque keeps its direction.",

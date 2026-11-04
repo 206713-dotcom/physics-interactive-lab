@@ -1,7 +1,7 @@
 import { calculationNumber } from "./calculations.js";
 import { GENERATOR_LOAD_OHMS } from "./curriculum-physics.js";
 
-export function installGeneratorSlipRings(stage, {seekGeneratorPhase, setGeneratorCircuit}) {
+export function installGeneratorSlipRings(stage, {seekInductionPhase, setInductionCircuit}) {
   const panel = document.createElement("section");
   panel.className = "commutator-panel slip-rings-panel";
   panel.id = "generator-slip-rings";
@@ -48,9 +48,9 @@ export function installGeneratorSlipRings(stage, {seekGeneratorPhase, setGenerat
           <rect x="216" y="66" width="18" height="43" rx="2" class="slip-resistor"/>
           <text x="256" y="92">${GENERATOR_LOAD_OHMS} Ω</text>
           <path d="M176 126h-49m7-6-7 6 7 6" class="slip-current"/>
-          <text x="150" y="92" class="slip-voltage"></text>
+          <text x="150" y="82" class="slip-current-label"></text>
+          <text x="150" y="104" class="slip-voltage"></text>
         </svg>
-        <div class="commutator-key"><span class="slip-current-label"></span></div>
       </figure>
     </div>
     <p class="commutator-result"></p>
@@ -64,9 +64,9 @@ export function installGeneratorSlipRings(stage, {seekGeneratorPhase, setGenerat
   const current = panel.querySelector(".slip-current-label");
   const result = panel.querySelector(".commutator-result");
   const toggle = panel.querySelector(".slip-toggle");
-  toggle.onclick = () => setGeneratorCircuit(Number(toggle.getAttribute("aria-pressed") !== "true"));
+  toggle.onclick = () => setInductionCircuit(Number(toggle.getAttribute("aria-pressed") !== "true"));
   for (const button of panel.querySelectorAll("[data-slip-angle]"))
-    button.onclick = () => seekGeneratorPhase(Number(button.dataset.slipAngle));
+    button.onclick = () => seekInductionPhase(Number(button.dataset.slipAngle));
   let lastTime, lastParams;
   return {
     render(lab) {

@@ -1232,6 +1232,36 @@ export function drawCurriculum(canvas, lab) {
       foot(`K = ${fmt(q.kinetic)} J (constant)`, q.radius === null ? "F = 0 N · no circular radius" : `r = ${fmt(q.radius)} m · |F| = ${fmt(q.force)} N`);
       break;
     }
+    case "magnet-coil": {
+      title("Moving magnet and fixed coil", "");
+      const coilX=307, y=235;
+      const magnetX=coilX+320*q.distance/P.MAGNET_STROKE_METRES;
+      const nearPole=p.pole>0 ? "N" : "S";
+      const farPole=p.pole>0 ? "S" : "N";
+      line([[72,y],[766,y]],"#9db3c5",1,[5,5]);
+      rect(magnetX-65,y-24,65,48,nearPole==="N"?"#f0bab5":"#b8d3f3",nearPole==="N"?"#ae5854":BLUE,3);
+      rect(magnetX,y-24,65,48,farPole==="N"?"#f0bab5":"#b8d3f3",farPole==="N"?"#ae5854":BLUE,3);
+      text(nearPole,magnetX-32,y+8,WHITE,24,"center");
+      text(farPole,magnetX+32,y+8,WHITE,24,"center");
+      for (let i=0; i<9; i++) {
+        c.beginPath(); c.ellipse(coilX-65+i*16,y,14,66,0,0,TAU);
+        c.strokeStyle="#ae6b33"; c.lineWidth=3; c.stroke();
+      }
+      text("Fixed coil",coilX,153,WHITE,21,"center");
+      if(lab.vectors!==false && q.speed) arrow(magnetX,y-52,65*Math.sign(q.speed),0,GOLD,3);
+      const cx=660, cy=341, direction=Math.sign(q.loadCurrent);
+      arc(cx,cy,30,0,TAU,"#9072ad",2);
+      if(lab.vectors!==false && direction) {
+        const start=-Math.PI/2, end=start+direction*1.65*Math.PI;
+        arc(cx,cy,35,Math.min(start,end),Math.max(start,end),PURPLE,3);
+        arrow(cx+35*Math.cos(end),cy+35*Math.sin(end),
+          -10*direction*Math.sin(end),10*direction*Math.cos(end),PURPLE,2);
+      }
+      text("Viewed from the magnet",cx,399,WHITE,17,"center");
+      foot(`Induced current: ${fmt(q.loadCurrent*1000,1)} mA`,
+        direction ? (direction>0?"Clockwise":"Anticlockwise") : "No current");
+      break;
+    }
     case "motor":
     case "induction": {
       const motor = lab.type === "motor";
@@ -1665,6 +1695,7 @@ export function curriculumThumbnail(id) {
       "M80 90q115-110 230 0M80 90q115 110 230 0M120 65h150v50H120zm20-10v70m25-70v70m25-70v70m25-70v70",
     induction: "M65 40h65v100H65zm195 0h65v100h-65zM165 50l70 20-10 65-70-20z",
     motor: "M65 40h65v100H65zm195 0h65v100h-65zM167 57l63 13-11 52-63-13zM190 24v116m-15 8h30m-26 9h22",
+    "magnet-coil": "M55 84h270m-200-48q40 0 40 48t-40 48q-40 0-40-48t40-48zm42 0q40 0 40 48t-40 48q-40 0-40-48t40-48zM230 64h99v40h-99zM279 64v40",
     transformer:
       "M110 35h170v110H110zm40 30h90v55h-90zM90 55h40m-40 20h40m-40 20h40m130-40h40m-40 20h40m-40 20h40",
     atom: "M75 85h90m-90-30h80l125-30M75 115h80l125 30",

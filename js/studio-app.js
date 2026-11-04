@@ -432,7 +432,7 @@ function labPage(type, query) {
   // The course focus replaces the duplicated three-step walkthrough.
 
   presentationStudio = installPresentationStudio($("#stage"), $(".controls"), type, d.short,
-    () => setView("3d"), { runMotorSetup, seekGeneratorPhase, setGeneratorCircuit });
+    () => setView("3d"), { runMotorSetup, seekInductionPhase, setInductionCircuit, flipMagnet });
   if(["spring","pendulum"].includes(type) && studyMode !== "igcse") {
     const tools=document.createElement("div");
     tools.className="oscillation-tools";tools.setAttribute("aria-label","Oscillation indicators");
@@ -686,15 +686,20 @@ function runMotorSetup(patch) {
   reset({ ...lab.params, ...patch });
   syncInputs();
 }
-function setGeneratorCircuit(circuit) {
-  if (lab.params.circuit === circuit) return;
-  lab.params = studyParams(lab.type, lab.studyMode, lab.definition, { ...lab.params, circuit });
+function changeInductionSetup(patch) {
+  lab.params = studyParams(lab.type, lab.studyMode, lab.definition, { ...lab.params, ...patch });
   sample();
   updateReadouts();
   updateCharts();
   syncInputs();
 }
-function seekGeneratorPhase(degrees) {
+function setInductionCircuit(circuit) {
+  if (lab.params.circuit !== circuit) changeInductionSetup({ circuit });
+}
+function flipMagnet() {
+  changeInductionSetup({ pole: -lab.params.pole });
+}
+function seekInductionPhase(degrees) {
   const {definition, params} = lab;
   const t = degrees / (360 * params.frequency);
   const interval = definition.sampleEvery(params);
@@ -730,7 +735,7 @@ function bindControls() {
     const commit = (raw, slider = false) => {
       const value = d.options ? raw : d.log ? (slider ? 10 ** raw : raw) : raw * (d.factor || 1);
       try {
-        if (lab.type === "induction" && d.key === "circuit") setGeneratorCircuit(value);
+        if (["induction","magnet-coil"].includes(lab.type) && d.key === "circuit") setInductionCircuit(value);
         else reset({ ...lab.params, [d.key]: value });
         $("#control-error").textContent = "";
       } catch (error) {

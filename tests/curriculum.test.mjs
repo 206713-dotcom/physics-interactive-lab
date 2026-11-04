@@ -92,8 +92,24 @@ test("opening the generator circuit cuts current without changing the emf", () =
   }
 });
 
-test("all 45 scientific instruments expose real calculations, lessons, valid presets and diagram embeds", () => {
-  assert.equal(P.CURRICULUM_IDS.length, 45);
+test("moving a magnet changes linked flux with the expected current and Lenz-law direction", () => {
+  const frequency = P.DEFAULTS["magnet-coil"].frequency;
+  const inTime = .375/frequency, outTime = .625/frequency;
+  const inward = sample("magnet-coil", {}, inTime);
+  const outward = sample("magnet-coil", {}, outTime);
+  assert.ok(inward.loadCurrent < 0 && outward.loadCurrent > 0);
+  close(inward.distance, outward.distance);
+  close(inward.loadCurrent, -outward.loadCurrent);
+  close(sample("magnet-coil", {pole:-1}, inTime).loadCurrent, -inward.loadCurrent);
+  assert.equal(sample("magnet-coil", {}, .5/frequency).loadCurrent, 0);
+  assert.equal(sample("magnet-coil", {circuit:0}, inTime).loadCurrent, 0);
+  const h = 1e-5;
+  const fluxChange = (sample("magnet-coil", {}, inTime+h).flux - sample("magnet-coil", {}, inTime-h).flux)/(2*h);
+  close(inward.emf, -P.DEFAULTS["magnet-coil"].turns*fluxChange, 1e-7);
+});
+
+test("all 46 scientific instruments expose real calculations, lessons, valid presets and diagram embeds", () => {
+  assert.equal(P.CURRICULUM_IDS.length, 46);
   for (const [id, d] of Object.entries(LABS)) {
     assert.equal(d.presets.length, 3);
     assert.equal(CURRICULUM_LESSONS[id].questions.length, 5);

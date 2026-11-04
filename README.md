@@ -1,6 +1,6 @@
 # Physics Interactive Lab — IGCSE course & 3D studios
 
-**58 working laboratories. 1,000 textbook-inspired A Level questions. Live calculations you can follow.**
+**59 working laboratories. 1,000 textbook-inspired A Level questions. Live calculations you can follow.**
 
 [Open the live laboratory](https://206713-dotcom.github.io/physics-interactive-lab/) · [Browse the source](https://github.com/206713-dotcom/physics-interactive-lab) · [Automated checks](https://github.com/206713-dotcom/physics-interactive-lab/actions)
 
@@ -9,6 +9,10 @@ A browser-only laboratory for IGCSE, A Level and extension exploration. The [IGC
 This is an independent student prototype and a proposed contribution to [FocusPhysics](https://focusphysics.com), not an official or endorsed FocusPhysics integration.
 
 ## What is in the laboratory?
+
+### Version 20.6: induced current and a moving bar magnet
+
+The AC generator puts current and its waveform first, with voltage shown alongside. The separate moving-magnet lab lets you inspect approach, rest and withdrawal, flip the pole and open the circuit. It uses an axial dipole approximation for flux through a circular coil, Faraday’s law for voltage, and a 10 Ω load for current. The motion is prescribed and the diagrams enlarge the apparatus for clarity.
 
 ### Version 20.5: machine connections and load
 

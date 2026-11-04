@@ -39,7 +39,7 @@ function addHandRule(stage, motor) {
   stage.append(guide);
 }
 
-function addMachineConsole(stage, motor, {runMotorSetup, seekGeneratorPhase, setGeneratorCircuit}, cutaway) {
+function addMachineConsole(stage, motor, {runMotorSetup, seekInductionPhase, setInductionCircuit}, cutaway) {
   const consolePanel = document.createElement('section');
   consolePanel.className = 'machine-console';
   consolePanel.setAttribute('aria-label', motor ? 'Compare motor speeds' : 'Inspect the generator phase');
@@ -60,8 +60,9 @@ function addMachineConsole(stage, motor, {runMotorSetup, seekGeneratorPhase, set
       <p class="machine-phase-note"></p>
     </div>` : `
     <div class="machine-console-reading">
-      <span class="machine-caption">GENERATED VOLTAGE</span>
-      <output class="machine-value" aria-live="off">0° · 0 V</output>
+      <span class="machine-caption">INDUCED CURRENT</span>
+      <output class="machine-value" aria-live="off">0° · 0 A</output>
+      <small class="machine-voltage">Generated voltage 0 V</small>
       <svg viewBox="0 0 220 48" aria-hidden="true" class="machine-wave">
         <path d="M6 24H214" class="wave-axis"/>
         <path class="wave-curve"/>
@@ -76,7 +77,8 @@ function addMachineConsole(stage, motor, {runMotorSetup, seekGeneratorPhase, set
       <button type="button" data-angle="180">180°</button>
       <button type="button" data-angle="270">270°</button>
       <button type="button" class="generator-switch" aria-label="Connect the ${GENERATOR_LOAD_OHMS} ohm load" aria-pressed="true">Circuit closed</button>
-      <button type="button" class="commutator-jump" aria-controls="generator-slip-rings">Slip-ring close-up ↓</button></div>
+      <button type="button" class="commutator-jump" aria-controls="generator-slip-rings">Slip-ring close-up ↓</button>
+      <a href="#/magnet-coil">Try a moving bar magnet →</a></div>
       <p class="machine-phase-note"></p>
     </div>`;
   stage.querySelector('.transport').before(consolePanel);
@@ -105,28 +107,30 @@ function addMachineConsole(stage, motor, {runMotorSetup, seekGeneratorPhase, set
   const curve = consolePanel.querySelector('.wave-curve');
   const marker = consolePanel.querySelector('circle');
   const circuitSwitch = consolePanel.querySelector('.generator-switch');
-  circuitSwitch.onclick = () => setGeneratorCircuit(Number(circuitSwitch.getAttribute('aria-pressed') !== 'true'));
-  let waveDrawn = false;
-  buttons.forEach(button => button.onclick = () => seekGeneratorPhase(Number(button.dataset.angle)));
-  slider.oninput = () => seekGeneratorPhase(slider.valueAsNumber);
+  circuitSwitch.onclick = () => setInductionCircuit(Number(circuitSwitch.getAttribute('aria-pressed') !== 'true'));
+  const voltageReading = consolePanel.querySelector('.machine-voltage');
+  let waveCircuit;
+  buttons.forEach(button => button.onclick = () => seekInductionPhase(Number(button.dataset.angle)));
+  slider.oninput = () => seekInductionPhase(slider.valueAsNumber);
   return lab => {
     const {emf, peak, circuit, loadCurrent} = lab.definition.sample(lab.state, lab.params);
-    if (!waveDrawn) {
+    if (waveCircuit !== circuit) {
       const points = Array.from({length:65}, (_,i) => {
         const fraction = i / 64;
         const row = lab.definition.sample({t:fraction/lab.params.frequency}, lab.params);
-        return `${i ? 'L' : 'M'}${6+208*fraction},${24-18*row.emf/peak}`;
+        return `${i ? 'L' : 'M'}${6+208*fraction},${24-18*row.loadCurrent*GENERATOR_LOAD_OHMS/peak}`;
       });
       curve.setAttribute('d',points.join(' '));
-      waveDrawn = true;
+      waveCircuit = circuit;
     }
     const turns = lab.state.t * lab.params.frequency;
     const degrees = Math.round(360*(turns < 1.00000001 ? Math.min(turns,1) : turns % 1));
     const voltage = Math.abs(emf) < 1e-10 ? 0 : emf;
     slider.value = degrees;
     marker.setAttribute('cx',6+208*degrees/360);
-    marker.setAttribute('cy',24-18*voltage/peak);
-    value.textContent = `${degrees}° · ${calculationNumber(voltage)} V`;
+    marker.setAttribute('cy',24-18*loadCurrent*GENERATOR_LOAD_OHMS/peak);
+    value.textContent = `${degrees}° · ${calculationNumber(loadCurrent)} A`;
+    voltageReading.textContent = `Generated voltage ${calculationNumber(voltage)} V`;
     circuitSwitch.textContent = circuit ? 'Circuit closed' : 'Circuit open';
     circuitSwitch.setAttribute('aria-pressed', String(Boolean(circuit)));
     buttons.forEach(button => button.setAttribute('aria-pressed', String(!lab.running && degrees === Number(button.dataset.angle))));
@@ -135,6 +139,59 @@ function addMachineConsole(stage, motor, {runMotorSetup, seekGeneratorPhase, set
       : voltage === 0
       ? 'Zero output. The long coil sides move along the field.'
       : `Closed through ${GENERATOR_LOAD_OHMS} Ω · ${calculationNumber(loadCurrent)} A. Compare the purple current arrows across half-turns.`;
+  };
+}
+
+function addMagnetConsole(stage, {seekInductionPhase, setInductionCircuit, flipMagnet}) {
+  const panel = document.createElement('section');
+  panel.className = 'machine-console';
+  panel.setAttribute('aria-label','Inspect magnet movement and induced current');
+  panel.innerHTML = `
+    <div class="machine-console-reading">
+      <span class="machine-caption">INDUCED CURRENT · COIL VIEWED FROM THE MAGNET</span>
+      <output class="machine-value" aria-live="off"></output>
+      <small class="machine-voltage"></small>
+    </div>
+    <div class="machine-actions">
+      <span class="machine-caption">PAUSE AT A POINT IN THE MOTION</span>
+      <div>
+        <button type="button" data-magnet-angle="135">Push in</button>
+        <button type="button" data-magnet-angle="180">Hold at centre</button>
+        <button type="button" data-magnet-angle="225">Pull out</button>
+        <button type="button" class="magnet-flip">Flip magnet</button>
+        <button type="button" class="magnet-circuit" aria-label="Connect the magnet-coil load" aria-pressed="true">Circuit closed</button>
+        <a href="#/generator">Try the rotating generator →</a>
+      </div>
+      <p class="machine-phase-note"></p>
+    </div>`;
+  stage.querySelector('.transport').before(panel);
+  const buttons = [...panel.querySelectorAll('[data-magnet-angle]')];
+  const toggle = panel.querySelector('.magnet-circuit');
+  const value = panel.querySelector('.machine-value');
+  const voltage = panel.querySelector('.machine-voltage');
+  const note = panel.querySelector('.machine-phase-note');
+  for (const button of buttons)
+    button.onclick = () => seekInductionPhase(Number(button.dataset.magnetAngle));
+  panel.querySelector('.magnet-flip').onclick = flipMagnet;
+  toggle.onclick = () => setInductionCircuit(Number(toggle.getAttribute('aria-pressed') !== 'true'));
+  return lab => {
+    const q = lab.definition.sample(lab.state, lab.params);
+    const direction = Math.sign(q.loadCurrent);
+    const motion = q.speed < 0 ? 'Approaching' : q.speed > 0 ? 'Withdrawing' : 'Momentarily stationary';
+    const degrees = q.phase * 180/Math.PI % 360;
+    value.textContent = direction
+      ? `${calculationNumber(Math.abs(q.loadCurrent)*1000)} mA · ${direction > 0 ? 'clockwise' : 'anticlockwise'}`
+      : '0 mA · no current';
+    voltage.textContent = `Induced voltage ${calculationNumber(q.emf)} V`;
+    toggle.textContent = q.circuit ? 'Circuit closed' : 'Circuit open';
+    toggle.setAttribute('aria-pressed',String(Boolean(q.circuit)));
+    for (const button of buttons)
+      button.setAttribute('aria-pressed',String(!lab.running && Math.abs(degrees-Number(button.dataset.magnetAngle))<1e-8));
+    note.textContent = `${lab.params.pole > 0 ? 'North' : 'South'} pole first · ${motion}. ${!q.circuit
+      ? 'The open circuit stops current.' : !q.speed
+      ? 'The flux is momentarily steady.' : direction
+      ? `The coil’s near face becomes ${direction > 0 ? 'south' : 'north'}.`
+      : 'The linked flux is momentarily steady.'}`;
   };
 }
 
@@ -150,7 +207,8 @@ export function installPresentationStudio(stage, controls, id, title, show3D, ma
   const commutator = id === 'motor' ? installMotorCommutator(stage) : null;
   const slipRings = id === 'induction' ? installGeneratorSlipRings(stage, machineActions) : null;
   const updateMachine = id === 'motor' || id === 'induction'
-    ? addMachineConsole(stage, id === 'motor', machineActions, commutator || slipRings) : null;
+    ? addMachineConsole(stage, id === 'motor', machineActions, commutator || slipRings)
+    : id === 'magnet-coil' ? addMagnetConsole(stage, machineActions) : null;
   const values = panel.querySelector('.instrument-values'), context = panel.querySelector('.instrument-context');
   const toolbar = stage.querySelector('.stage-views');
   const scene = stage.querySelector('.scene-container');
@@ -244,6 +302,8 @@ export function installPresentationStudio(stage, controls, id, title, show3D, ma
         context.textContent = 'Cyan shows the field, purple shows conventional current, and gold shows force. Follow one coil side through a half-turn.';
       if (id === 'induction')
         context.textContent = 'Cyan shows the field and gold shows conductor motion. Purple shows induced conventional current for a closed resistive circuit.';
+      if (id === 'magnet-coil')
+        context.textContent = 'Gold shows the magnet’s motion. Purple shows the induced current in the coil. Compare the same pole moving in and out.';
       if(id==='waves' && lab.studyMode==='igcse')
         context.textContent='The marked particle moves up and down. The wave pattern travels to the right.';
       if(id==='refraction' && lab.studyMode==='igcse')

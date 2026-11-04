@@ -163,6 +163,14 @@ export const RANGES = {
     frequency: [1, 0.2, 5],
     circuit: [1, 0, 1],
   },
+  "magnet-coil": {
+    pole: [1, -1, 1],
+    moment: [0.8, 0.2, 1.6],
+    radius: [0.04, 0.025, 0.06],
+    turns: [160, 40, 320],
+    frequency: [0.42, 0.2, 1.2],
+    circuit: [1, 0, 1],
+  },
   motor: {
     field: [0.2, 0.02, 1],
     area: [0.02, 0.005, 0.1],
@@ -217,6 +225,7 @@ const MOTOR_INERTIA = 0.12; // kg m²
 const MOTOR_VISCOUS_LOAD = 0.14; // N m per rad/s
 const MOTOR_QUADRATIC_LOAD = 0.035; // N m per (rad/s)²
 export const GENERATOR_LOAD_OHMS = 10;
+export const MAGNET_STROKE_METRES = 0.18;
 const COMMUTATION_EPSILON = 1e-10;
 const motorPeakTorque = p => p.turns * p.field * p.area * p.current;
 function motorTorque(phase, p) {
@@ -263,6 +272,7 @@ export const DEFAULTS = Object.fromEntries(
 );
 const INTEGERS = new Set([
   "circuit",
+  "pole",
   "count",
   "mode",
   "state",
@@ -297,6 +307,8 @@ export function validate(id, p) {
   }
   if (id === "lenses" && ![-1, 1].includes(p.kind))
     throw new RangeError("Choose a converging or diverging lens.");
+  if (id === "magnet-coil" && ![-1, 1].includes(p.pole))
+    throw new RangeError("Choose the north or south pole facing the coil.");
   if (id === "charged" && ![-1, 1].includes(p.charge))
     throw new RangeError("Choose a positive or negative elementary charge.");
   if (id === "atom" && p.protons - p.charge < 0)
@@ -647,6 +659,26 @@ export function sampleCurriculum(id, s, p) {
         peak: p.turns * p.field * p.area * omega,
         linkage: p.turns * flux,
         frequency: p.frequency,
+      });
+      break;
+    }
+    case "magnet-coil": {
+      const omega = 2 * Math.PI * p.frequency;
+      const phase = omega * t;
+      const distance = MAGNET_STROKE_METRES * (1 + Math.cos(phase)) / 2;
+      const sine = Math.sin(phase);
+      const speed = Math.abs(sine) < COMMUTATION_EPSILON ? 0 : -MAGNET_STROKE_METRES * omega * sine / 2;
+      // Axial magnetic dipole, circular coil. Integrating the dipole vector
+      // potential along a turn gives the flux; differentiate it analytically.
+      const radiusSquared = p.radius ** 2;
+      const denominator = radiusSquared + distance ** 2;
+      const dipoleFactor = 2e-7 * Math.PI * p.pole * p.moment * radiusSquared;
+      const flux = dipoleFactor / denominator ** 1.5;
+      const emf = speed === 0 ? 0 : 3 * p.turns * flux * distance * speed / denominator;
+      Object.assign(q, {
+        phase, distance, speed, flux, emf,
+        loadCurrent: p.circuit ? emf / GENERATOR_LOAD_OHMS : 0,
+        circuit: p.circuit,
       });
       break;
     }

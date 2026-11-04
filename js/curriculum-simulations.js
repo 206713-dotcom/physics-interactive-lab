@@ -248,6 +248,14 @@ export const PARAMETERS = {
     number("frequency", "Rotation frequency", "Hz"),
     choice("circuit", "Output circuit", [[1, "Closed through 10 Ω"], [0, "Open"]]),
   ],
+  "magnet-coil": [
+    choice("pole", "Pole facing the coil", [[1, "North"], [-1, "South"]]),
+    number("frequency", "Push–pull cycles per second", "Hz"),
+    number("moment", "Magnet dipole moment", "A m²"),
+    number("radius", "Coil radius", "m"),
+    number("turns", "Coil turns"),
+    choice("circuit", "Output circuit", [[1, "Closed through 10 Ω"], [0, "Open"]]),
+  ],
   motor: [
     number("field", "Uniform magnetic field", "T"),
     number("area", "Coil area", "m²"),
@@ -1048,6 +1056,16 @@ export const WORK = {
     W("loadCurrent", "Output current", "A", "I = ε/R for a closed circuit",
       (p, q, n) => p.circuit ? `${n(q.emf)} / ${P.GENERATOR_LOAD_OHMS} Ω` : "Open circuit → I = 0 A"),
   ],
+  "magnet-coil": [
+    W("loadCurrent", "Induced current", "A", "I = ε/R for a closed circuit",
+      (p, q, n) => p.circuit ? `${n(q.emf)} / ${P.GENERATOR_LOAD_OHMS} Ω` : "Open circuit → I = 0 A"),
+    W("emf", "Induced emf", "V", "ε = 3NΦxv / (a² + x²)",
+      (p,q,n) => `3 × ${p.turns} × ${n(q.flux)} × ${n(q.distance)} × ${n(q.speed)} / (${n(p.radius)}² + ${n(q.distance)}²)`),
+    W("flux", "Flux per turn", "Wb", "Φ = μ₀ma² / [2(a² + x²)^(3/2)]",
+      (p,q,n) => `2π × 10⁻⁷ × ${n(p.pole*p.moment)} × ${n(p.radius)}² / (${n(p.radius)}² + ${n(q.distance)}²)^(3/2)`),
+    W("speed", "Signed magnet velocity", "m/s", "v = −πLf sin(2πft)",
+      (p,q,n) => `−π × ${P.MAGNET_STROKE_METRES} × ${n(p.frequency)} × sin(${n(q.phase)})`),
+  ],
   motor: [
     W(
       "torque",
@@ -1430,6 +1448,13 @@ const INFO = {
     "ε = −N dΦ/dt",
     null,
   ],
+  "magnet-coil": [
+    "Bar magnet through a coil",
+    "Magnetism",
+    "Push a bar magnet into a coil, pull it out, and watch the induced current reverse.",
+    "ε = −N dΦ/dt",
+    null,
+  ],
   motor: [
     "DC motor",
     "Magnetism",
@@ -1539,6 +1564,7 @@ export const CURRICULUM_SIMULATIONS = Object.fromEntries(
         devices: [{ voltage: -6 }, { mode: 2, voltage: 12, rating: 0.05 }],
         magnetism: [{ current: -2 }, { mode: 1 }],
         induction: [{ frequency: 2 }, { field: 0.5 }],
+        "magnet-coil": [{ frequency: 0.84 }, { pole: -1 }],
         motor: [{ current: 4 }, { field: 0.5 }],
         transformer: [{ ns: 1000 }, { ns: 50 }],
         atom: [
@@ -1566,6 +1592,7 @@ export const CURRICULUM_SIMULATIONS = Object.fromEntries(
       dc: ["Parallel", "Divider"],
       devices: ["Reverse diode", "Overcurrent"],
       induction: ["Faster rotation", "Stronger field"],
+      "magnet-coil": ["Faster movement", "South pole first"],
       motor: ["More current", "Stronger field"],
       atom: ["Alpha decay", "Beta-minus decay"],
       earthmoon: ["June solstice", "December solstice"],
@@ -1802,9 +1829,19 @@ Object.assign(CURRICULUM_SIMULATIONS.induction, {
   sampleEvery: p => 1 / (p.frequency * 48),
   window: p => 3 / p.frequency,
   graphs: [
+    dynamicGraph("load-current", "Induced current", ["loadCurrent"], "A"),
     dynamicGraph("emf", "Generated emf", ["emf"], "V"),
     dynamicGraph("flux", "Flux per turn", ["flux"], "Wb"),
-    dynamicGraph("load-current", "Output current", ["loadCurrent"], "A"),
+  ],
+});
+Object.assign(CURRICULUM_SIMULATIONS["magnet-coil"], {
+  hFor: p => 1/Math.max(120, p.frequency * 192),
+  sampleEvery: p => 1/(p.frequency * 96),
+  window: p => 2.5/p.frequency,
+  graphs: [
+    dynamicGraph("load-current", "Induced current", ["loadCurrent"], "A"),
+    dynamicGraph("emf", "Induced emf", ["emf"], "V"),
+    dynamicGraph("flux", "Flux per turn", ["flux"], "Wb"),
   ],
 });
 Object.assign(CURRICULUM_SIMULATIONS.motor, {
@@ -2001,6 +2038,7 @@ const SAMPLE_UNITS = {
     frequency: "Hz",
   },
   motor: { phase: "rad", omega: "rad_s", torque: "N_m", loadTorque: "N_m", peakTorque: "N_m", sideForce: "N", rpm: "rpm" },
+  "magnet-coil": { phase: "rad", distance: "m", speed: "m_s", flux: "Wb", emf: "V", loadCurrent: "A", circuit: "dimensionless" },
   transformer: {
     vs: "V",
     is: "A",

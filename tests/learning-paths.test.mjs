@@ -39,7 +39,7 @@ test("all cited section identifiers exist in the checked syllabus editions and l
           );
       }
 });
-test("all 93 teaching profiles provide usable investigations and supported physical starting conditions", () => {
+test("all 95 teaching profiles provide usable investigations and supported physical starting conditions", () => {
   let count = 0;
   for (const [id, profiles] of Object.entries(LEARNING_PATHS))
     for (const p of Object.values(profiles)) {
@@ -56,7 +56,7 @@ test("all 93 teaching profiles provide usable investigations and supported physi
           id + ":" + key,
         );
     }
-  assert.equal(count, 93);
+  assert.equal(count, 95);
 });
 test("mode-focused calculations use existing authoritative results, with no invented readings", () => {
   for (const [id, profiles] of Object.entries(LEARNING_PATHS)) {

@@ -1651,6 +1651,7 @@ function frame(now) {
         : lab;
     if (lab.view === "3d" && view) view.update(displayLab);
     else if (lab.view === "2d") draw2D($("#simulation"), displayLab);
+    presentationStudio?.render?.(displayLab);
     if (now - lab.lastUI > 125) {
       updateReadouts();
       if (selectedGraph().spatial === "wave") lab.graphDirty = true;

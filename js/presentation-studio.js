@@ -5,6 +5,7 @@ import { buoyancySample } from './buoyancy-physics.js';
 import { studyReadings } from './study-policy.js';
 import { calculationNumber } from './calculations.js';
 import { getProfile } from './learning-paths.js';
+import { installMotorCommutator } from './motor-commutator.js';
 
 function addHandRule(stage, motor) {
   const guide = document.createElement('section');
@@ -36,7 +37,7 @@ function addHandRule(stage, motor) {
   stage.append(guide);
 }
 
-function addMachineConsole(stage, motor, {runMotorField, seekGeneratorPhase}) {
+function addMachineConsole(stage, motor, {runMotorField, seekGeneratorPhase}, commutator) {
   const consolePanel = document.createElement('section');
   consolePanel.className = 'machine-console';
   consolePanel.setAttribute('aria-label', motor ? 'Compare motor speeds' : 'Inspect the generator phase');
@@ -50,7 +51,8 @@ function addMachineConsole(stage, motor, {runMotorField, seekGeneratorPhase}) {
     <div class="machine-actions">
       <span class="machine-caption">COMPARE FIELD STRENGTH AT THE SAME CURRENT</span>
       <div><button type="button" data-field=".2">Run at 0.20 T</button>
-      <button type="button" data-field=".5">Run at 0.50 T</button></div>
+      <button type="button" data-field=".5">Run at 0.50 T</button>
+      <button type="button" class="commutator-jump" aria-controls="motor-commutator">Split-ring close-up ↓</button></div>
       <p class="machine-phase-note"></p>
     </div>` : `
     <div class="machine-console-reading">
@@ -74,9 +76,10 @@ function addMachineConsole(stage, motor, {runMotorField, seekGeneratorPhase}) {
   stage.querySelector('.transport').before(consolePanel);
   const value = consolePanel.querySelector('.machine-value');
   const note = consolePanel.querySelector('.machine-phase-note');
-  const buttons = [...consolePanel.querySelectorAll('button')];
+  const buttons = [...consolePanel.querySelectorAll(motor ? '[data-field]' : '[data-angle]')];
   if (motor) {
     const meter = consolePanel.querySelector('meter');
+    consolePanel.querySelector('.commutator-jump').onclick = commutator.reveal;
     buttons.forEach(button => button.onclick = () => runMotorField(Number(button.dataset.field)));
     return lab => {
       const {rpm} = lab.definition.sample(lab.state, lab.params);
@@ -126,8 +129,9 @@ export function installPresentationStudio(stage, controls, id, title, show3D, ma
   panel.innerHTML = '<div class="instrument-values"></div><div class="instrument-observe"><strong>What to watch</strong><span class="instrument-context"></span></div>';
   stage.querySelector('.transport').after(panel);
   if (id === 'motor' || id === 'induction') addHandRule(stage, id === 'motor');
+  const commutator = id === 'motor' ? installMotorCommutator(stage) : null;
   const updateMachine = id === 'motor' || id === 'induction'
-    ? addMachineConsole(stage, id === 'motor', machineActions) : null;
+    ? addMachineConsole(stage, id === 'motor', machineActions, commutator) : null;
   const values = panel.querySelector('.instrument-values'), context = panel.querySelector('.instrument-context');
   const toolbar = stage.querySelector('.stage-views');
   const scene = stage.querySelector('.scene-container');
@@ -186,6 +190,7 @@ export function installPresentationStudio(stage, controls, id, title, show3D, ma
   dialog.onclose = () => { if (!dialog.open) restore(); };
   let signature = '', nodes = [];
   return {
+    render: commutator ? lab => commutator.render(lab.state.phase) : null,
     dispose() {
       if (dialog.open) dialog.close();
       restore(false);

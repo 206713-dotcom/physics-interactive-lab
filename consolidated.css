@@ -794,8 +794,80 @@ body:has(.model-screen[open]) { overflow: hidden; }
 .machine-wave .wave-axis { stroke: #7ca2b6; stroke-dasharray: 3 4; }
 .machine-wave .wave-curve { stroke: #8cebd9; stroke-width: 2; }
 .machine-wave circle { fill: #ffd293; stroke: #142d43; }
+.model-screen .commutator-panel,
+.model-screen .commutator-jump { display: none; }
+.commutator-panel {
+  scroll-margin-top: 90px;
+  padding: clamp(16px, 3vw, 30px);
+  border-top: 1px solid #d4e2ea;
+  background: #eff6fa;
+  color: #16354b;
+}
+.commutator-heading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: end;
+  gap: 12px 20px;
+  margin-bottom: 16px;
+}
+.commutator-heading h2 { margin: 4px 0; font-size: clamp(21px, 3vw, 29px); }
+.commutator-heading p, .commutator-note { margin: 0; font-size: 13px; }
+.commutator-modes, .commutator-key { display: flex; flex-wrap: wrap; gap: 6px 10px; }
+.commutator-modes button {
+  border: 1px solid #a7c3d2;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #fff;
+  color: #16354b;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.commutator-modes button:hover { background: #e1f1f2; }
+.commutator-modes button[aria-pressed="true"] { background: #12394d; border-color: #12394d; color: #fff; }
+.commutator-diagrams { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.commutator-diagrams figure {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  margin: 0;
+  padding: 12px 10px;
+  background: #fff;
+  border: 1px solid #d3e4ec;
+  border-radius: 12px;
+}
+.commutator-diagrams figcaption { font-size: 13px; font-weight: 750; text-align: center; }
+.commutator-diagrams svg { display: block; width: min(100%, 400px); }
+.commutator-diagrams text { fill: #193c54; font: 700 12px Manrope, sans-serif; text-anchor: middle; }
+.commutator-diagrams .commutator-current { fill: #683da0; font-size: 16px; }
+.commutator-diagrams .commutator-ring-end { fill: #19130e; font-size: 11px; }
+.commutator-diagrams .commutator-field-label { fill: #08776e; }
+.commutator-diagrams .brush-minus { fill: #345d93; }
+.commutator-diagrams .brush-plus { fill: #9b4139; }
+.commutator-lead, .commutator-coil { stroke: #648094; stroke-width: 3; }
+.commutator-brush { fill: #435c6f; stroke: #203b4f; }
+.commutator-brush[data-contact="a"] { stroke: #ffc570; stroke-width: 3; }
+.commutator-brush[data-contact="b"] { stroke: #bb713c; stroke-width: 3; }
+.commutator-insulation { fill: #2c4050; }
+.commutator-half-a, .commutator-half-b { fill: none; stroke-width: 16px; }
+.commutator-half-a { stroke: #ffc570; }
+.commutator-half-b { stroke: #bb713c; }
+.commutator-shaft { fill: #8faaba; stroke: #304b60; stroke-width: 2; }
+.commutator-field, .commutator-force { fill: none; stroke-linejoin: round; stroke-width: 2; }
+.commutator-field { stroke: #168e83; opacity: .64; }
+.commutator-force { stroke: #a26316; }
+.commutator-orbit { fill: none; stroke: #94aebd; stroke-dasharray: 3 4; }
+.commutator-wire { fill: #f4eafc; stroke: #7751a3; }
+.commutator-key { justify-content: center; font-size: 11px; }
+.commutator-key .half-a { color: #834700; }
+.commutator-key .half-b { color: #975414; }
+.commutator-result { margin: 12px 0 5px; padding: 10px 12px; background: #e2f2f2; border-radius: 9px; font-size: 14px; }
+.commutator-note { color: #4b6375; }
 @media (max-width: 550px) {
   .machine-rule { grid-template-columns: 1fr; }
   .machine-rule svg { max-width: 165px; }
   .machine-console { grid-template-columns: minmax(0, 1fr); gap: 7px; padding: 9px 12px; }
+  .commutator-diagrams { grid-template-columns: minmax(0, 1fr); }
 }

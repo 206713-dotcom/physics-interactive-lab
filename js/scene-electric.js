@@ -256,14 +256,17 @@ export const ELECTRIC_SCENES = {
     k.add(contacts, [0, 3.14, 0]);
     for (const side of [-1, 1]) {
       const ring = k.mesh(new T.TorusGeometry(.19,.036,10,44,motor ? Math.PI-.23 : TAU),
-        0xda9c64, [0,motor ? 0 : side*.105,0],metal);
+        motor && side < 0 ? 0xf4be78 : 0xda9c64, [0,motor ? 0 : side*.105,0],metal);
       ring.rotation.x = -Math.PI/2;
       ring.rotation.z = motor ? (side<0 ? Math.PI : 0)+.115 : 0;
       contacts.add(ring);
       const x = motor ? side*.30 : .30, y = 3.14 + (motor ? 0 : side*.105);
+      const leadColor = motor ? (side > 0 ? C.red : C.blue) : (side < 0 ? C.gold : C.blue);
       k.box(.18,.105,.14,0x546474,[x,y,0],metal);
-      k.rod([x,y,0],[x,y,.73],side<0 ? C.gold : C.blue,.022);
-      k.rod([x,y,.73],[motor ? side*.8 : .8,y,.73],side<0 ? C.gold : C.blue,.022);
+      k.rod([x,y,0],[x,y,.73],leadColor,.022);
+      k.rod([x,y,.73],[motor ? side*.8 : .8,y,.73],leadColor,.022);
+      if (motor)
+        k.label(side > 0 ? "+" : "−", [side*.88,y,.73],side > 0 ? "#ffb4ac" : "#a8cbff", .36);
     }
     k.label(motor ? "Split ring · DC supply" : "Slip rings · AC output",
       [0,3.85,.85],"#dbedf5",2.3);

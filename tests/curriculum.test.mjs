@@ -57,6 +57,7 @@ test("motor commutation preserves torque direction while generator current follo
   assert.equal(P.machineSide(Math.PI,1,false).current, 0);
   const params = P.DEFAULTS.motor;
   const read = phase => P.sampleCurriculum("motor", {t:0, phase, omega:0}, params);
+  assert.equal(read(Math.PI).torque, 0);
   close(read(Math.PI/2).torque, read(3*Math.PI/2).torque);
 });
 

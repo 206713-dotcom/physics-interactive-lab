@@ -214,8 +214,12 @@ export const CURRICULUM_IDS = Object.keys(RANGES);
 const MOTOR_INERTIA = 0.12; // kg m²
 const MOTOR_VISCOUS_LOAD = 0.14; // N m per rad/s
 const MOTOR_QUADRATIC_LOAD = 0.035; // N m per (rad/s)²
+const COMMUTATION_EPSILON = 1e-10;
 const motorPeakTorque = p => p.turns * p.field * p.area * p.current;
-const motorTorque = (phase, p) => motorPeakTorque(p) * Math.abs(Math.sin(phase));
+function motorTorque(phase, p) {
+  const leverArm = Math.abs(Math.sin(phase));
+  return leverArm < COMMUTATION_EPSILON ? 0 : motorPeakTorque(p) * leverArm;
+}
 const motorAcceleration = (phase, omega, p) =>
   (motorTorque(phase,p) - MOTOR_VISCOUS_LOAD*omega
     - MOTOR_QUADRATIC_LOAD*omega*Math.abs(omega)) / MOTOR_INERTIA;
@@ -239,7 +243,7 @@ function stepMotor(state, p, dt) {
  * Each long side lies at ±(sin θ, 0, cos θ) around the shaft. */
 export function machineSide(phase, side, motor) {
   const x = side * Math.sin(phase), z = side * Math.cos(phase);
-  const current = Math.abs(x) < 1e-10 ? 0 : Math.sign(motor ? x : -x);
+  const current = Math.abs(x) < COMMUTATION_EPSILON ? 0 : Math.sign(motor ? x : -x);
   return {
     x, z,
     motion: [z, 0, -x],

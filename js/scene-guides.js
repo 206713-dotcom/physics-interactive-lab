@@ -219,7 +219,7 @@ export const SCENE_GUIDES = {
   ],
   "magnet-coil": [
     "The coil stays fixed. The gold arrow shows the magnet’s motion, and purple shows current around the coil.",
-    "The coil’s induced field opposes the change in flux. A north pole approaching gives anticlockwise conventional current as seen from the magnet.",
+    "The coil’s induced field opposes the change in flux. A north pole approaching from the right gives anticlockwise conventional current as seen from the right end.",
     "Choose Move it yourself. Drag slowly, then quickly through the same position. Watch the lamp and compare the current.",
     "The model uses an axial dipole and circular coil. The demo lamp is a 10 Ω resistor and its glow is amplified to make small powers visible.",
   ],

@@ -9,7 +9,7 @@ import { chamberParticle, convectionPosition, EXPANSION_MAGNIFICATION, particleC
 import { drawMotionDiagram } from "./render-motion.js";
 import { lunarLitInterval, solarDisplayRadius } from "./space-display.js";
 const chargedViews = new WeakMap();
-export const MAGNET_DIAGRAM = {coilX:307, y:235, travel:320};
+export const MAGNET_DIAGRAM = {coilX:420, y:235, travel:285};
 export function magnetDiagramPoint(canvas, clientX, clientY) {
   const rect = canvas.getBoundingClientRect();
   const scale = Math.min(rect.width/840, rect.height/470);
@@ -1248,6 +1248,8 @@ export function drawCurriculum(canvas, lab) {
       const nearPole=p.pole>0 ? "N" : "S";
       const farPole=p.pole>0 ? "S" : "N";
       line([[72,y],[766,y]],"#9db3c5",1,[5,5]);
+      line([[coilX,y+66],[coilX,y+89]],"#557487",1.6);
+      text("Coil centre",coilX,y+109,WHITE,16,"center");
       rect(magnetX-65,y-24,65,48,nearPole==="N"?"#f0bab5":"#b8d3f3",nearPole==="N"?"#ae5854":BLUE,3);
       rect(magnetX,y-24,65,48,farPole==="N"?"#f0bab5":"#b8d3f3",farPole==="N"?"#ae5854":BLUE,3);
       text(nearPole,magnetX-32,y+8,WHITE,24,"center");
@@ -1257,17 +1259,25 @@ export function drawCurriculum(canvas, lab) {
         c.strokeStyle="#ae6b33"; c.lineWidth=3; c.stroke();
       }
       const lampX = 128, lampY = 289;
-      const glow = P.magnetLampLevel(q.loadPower);
+      const glow = q.circuit ? Math.max(P.magnetLampLevel(q.loadPower,lab.magnetManual),lab.magnetFlash || 0) : 0;
       line([[coilX-65,y+66],[coilX-65,365],[lampX+18,365],[lampX+18,lampY+22]],"#5e7c8c",2);
       line([[coilX-65,y-66],[192,y-66]],"#5e7c8c",2);
       line([[168,y-66],[lampX-18,y-66],[lampX-18,lampY-5]],"#5e7c8c",2);
       line([[192,y-66],[168,y-66-(q.circuit ? 0 : 12)]],"#5e7c8c",3);
       if (glow > 0) {
-        const light=c.createRadialGradient(lampX,lampY,10,lampX,lampY,54);
-        light.addColorStop(0,`rgba(255,174,54,${glow*.78})`);
+        const reach = lab.magnetManual ? 92 : 54;
+        const light=c.createRadialGradient(lampX,lampY,10,lampX,lampY,reach);
+        light.addColorStop(0,`rgba(255,162,34,${glow*.95})`);
+        light.addColorStop(.5,`rgba(255,192,54,${glow*.38})`);
         light.addColorStop(1,"rgba(255,174,54,0)");
         c.fillStyle=light;
-        c.fillRect(lampX-54,lampY-54,108,108);
+        c.fillRect(lampX-reach,lampY-reach,2*reach,2*reach);
+        if (lab.magnetManual && glow > .08)
+          for (let i=0; i<8; i++) {
+            const angle = i*TAU/8, x = Math.cos(angle), y = Math.sin(angle);
+            line([[lampX+28*x,lampY+28*y],[lampX+(35+14*glow)*x,lampY+(35+14*glow)*y]],
+              `rgba(191,108,11,${glow})`,2.5);
+          }
       }
       rect(lampX-13,lampY+15,26,13,"#7d91a2","#526c7f",3);
       c.beginPath(); c.arc(lampX,lampY,22,0,TAU);
@@ -1285,7 +1295,7 @@ export function drawCurriculum(canvas, lab) {
         arrow(cx+35*Math.cos(end),cy+35*Math.sin(end),
           -10*direction*Math.sin(end),10*direction*Math.cos(end),PURPLE,2);
       }
-      text("Viewed from the magnet",cx,399,WHITE,17,"center");
+      text("Viewed from the right end",cx,399,WHITE,17,"center");
       foot(`Induced current: ${fmt(q.loadCurrent*1000,1)} mA`,
         direction ? (direction>0?"Clockwise":"Anticlockwise") : "No current");
       break;

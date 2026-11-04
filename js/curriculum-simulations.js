@@ -249,7 +249,7 @@ export const PARAMETERS = {
     choice("circuit", "Output circuit", [[1, "Closed through 10 Ω"], [0, "Open"]]),
   ],
   "magnet-coil": [
-    choice("pole", "Pole facing the coil", [[1, "North"], [-1, "South"]]),
+    choice("pole", "Left end of the magnet", [[1, "North"], [-1, "South"]]),
     number("frequency", "Push–pull cycles per second", "Hz"),
     number("moment", "Magnet dipole moment", "A m²"),
     number("radius", "Coil radius", "m"),
@@ -1064,8 +1064,9 @@ export const WORK = {
     W("flux", "Flux per turn", "Wb", "Φ = μ₀ma² / [2(a² + x²)^(3/2)]",
       (p,q,n) => `2π × 10⁻⁷ × ${n(p.pole*p.moment)} × ${n(p.radius)}² / (${n(p.radius)}² + ${n(q.distance)}²)^(3/2)`),
     W("speed", "Signed magnet velocity", "m/s", "v = dx/dt",
-      (p,q,n) => q.phase === null ? `From successive positions and times: ${n(q.speed)} m/s`
-        : `−π × ${P.MAGNET_STROKE_METRES} × ${n(p.frequency)} × sin(${n(q.phase)})`),
+      (p,q,n,s) => q.phase === null ? `From successive positions and times: ${n(q.speed)} m/s`
+        : s.held ? "Held at the centre: 0 m/s"
+        : `−2π × ${P.MAGNET_STROKE_METRES} × ${n(p.frequency)} × sin(${n(q.phase)})`),
     W("loadPower", "Power in the lamp", "W", "P = I²R",
       (p,q,n) => `${n(q.loadCurrent)}² × ${P.GENERATOR_LOAD_OHMS} Ω`),
   ],

@@ -226,8 +226,9 @@ const MOTOR_VISCOUS_LOAD = 0.14; // N m per rad/s
 const MOTOR_QUADRATIC_LOAD = 0.035; // N m per (rad/s)²
 export const GENERATOR_LOAD_OHMS = 10;
 export const MAGNET_STROKE_METRES = 0.18;
-// The demonstrator amplifies the glow. The electrical power stays in SI.
-export const magnetLampLevel = power => -Math.expm1(-power / 8e-6);
+// Manual mode boosts the visual response to short pulses. Power stays in SI.
+export const magnetLampLevel = (power, manual = false) =>
+  -Math.expm1(-power / (manual ? .6e-6 : 8e-6));
 const COMMUTATION_EPSILON = 1e-10;
 const motorPeakTorque = p => p.turns * p.field * p.area * p.current;
 function motorTorque(phase, p) {
@@ -353,6 +354,7 @@ export function stepCurriculum(id, s, p, h) {
     for (let i = 0; i < count; i++) s = stepMotor(s, p, h/count);
     return s;
   }
+  if (id === "magnet-coil" && s.held) return { t:s.t+h };
   if (id === "buoyancy") return stepBuoyancy(s, p, h);
   if (id === "moments") return stepMoments(s, p, h);
   return { ...s, t: s.t + h };
@@ -667,9 +669,10 @@ export function sampleCurriculum(id, s, p) {
     case "magnet-coil": {
       const omega = 2 * Math.PI * p.frequency;
       const phase = omega * t;
-      const distance = s.manualDistance ?? MAGNET_STROKE_METRES * (1 + Math.cos(phase)) / 2;
+      const cosine = Math.cos(phase);
+      const distance = s.manualDistance ?? (Math.abs(cosine) < COMMUTATION_EPSILON ? 0 : MAGNET_STROKE_METRES * cosine);
       const sine = Math.sin(phase);
-      const speed = s.manualSpeed ?? (Math.abs(sine) < COMMUTATION_EPSILON ? 0 : -MAGNET_STROKE_METRES * omega * sine / 2);
+      const speed = s.manualSpeed ?? (s.held || Math.abs(sine) < COMMUTATION_EPSILON ? 0 : -MAGNET_STROKE_METRES * omega * sine);
       // Axial magnetic dipole, circular coil. Integrating the dipole vector
       // potential along a turn gives the flux; differentiate it analytically.
       const radiusSquared = p.radius ** 2;

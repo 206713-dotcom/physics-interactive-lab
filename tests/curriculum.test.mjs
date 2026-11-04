@@ -94,14 +94,18 @@ test("opening the generator circuit cuts current without changing the emf", () =
 
 test("moving a magnet changes linked flux with the expected current and Lenz-law direction", () => {
   const frequency = P.DEFAULTS["magnet-coil"].frequency;
-  const inTime = .375/frequency, outTime = .625/frequency;
+  const inTime = .21/frequency, outTime = .29/frequency;
   const inward = sample("magnet-coil", {}, inTime);
   const outward = sample("magnet-coil", {}, outTime);
   assert.ok(inward.loadCurrent < 0 && outward.loadCurrent > 0);
-  close(inward.distance, outward.distance);
+  assert.ok(inward.distance>0 && outward.distance<0);
+  close(inward.distance, -outward.distance);
   close(inward.loadCurrent, -outward.loadCurrent);
   close(sample("magnet-coil", {pole:-1}, inTime).loadCurrent, -inward.loadCurrent);
   assert.equal(sample("magnet-coil", {}, .5/frequency).loadCurrent, 0);
+  const centre = P.sampleCurriculum("magnet-coil", {t:.25/frequency, held:true}, P.DEFAULTS["magnet-coil"]);
+  assert.equal(centre.distance, 0);
+  assert.equal(centre.speed, 0);
   assert.equal(sample("magnet-coil", {circuit:0}, inTime).loadCurrent, 0);
   const h = 1e-5;
   const fluxChange = (sample("magnet-coil", {}, inTime+h).flux - sample("magnet-coil", {}, inTime-h).flux)/(2*h);
@@ -119,6 +123,9 @@ test("manual magnet motion powers the lamp in either direction, and rest or an o
   close(inward.loadPower,outward.loadPower);
   close(at(.4).loadPower,4*outward.loadPower);
   assert.ok(P.magnetLampLevel(outward.loadPower)>0);
+  assert.ok(P.magnetLampLevel(outward.loadPower,true)>P.magnetLampLevel(outward.loadPower));
+  const across = P.sampleCurriculum("magnet-coil",{t:2,manualDistance:-.03,manualSpeed:-.2},p);
+  close(across.loadCurrent,-inward.loadCurrent);
   assert.equal(at(0).loadPower,0);
   assert.equal(at(.2,0).loadPower,0);
 });

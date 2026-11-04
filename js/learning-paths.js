@@ -842,7 +842,7 @@ export const LEARNING_PATHS = {
       "4.5.1",
       "Induce a current by moving a magnet",
       "Compare a moving magnet with a stationary magnet|Observe current reversal on withdrawal|Predict the effect of reversing the magnet",
-      "Push in with the north pole first. Then pull out and compare the direction of current.",
+      "Push in from the right with the north pole first. Then inspect the magnet exiting on the left and compare the current direction.",
       "Changing magnetic flux induces a voltage",
       "Why does the current fall to zero when the magnet is held still?",
       "The field can remain strong, but the flux through the fixed coil is steady.",

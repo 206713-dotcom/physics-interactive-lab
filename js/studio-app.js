@@ -9,7 +9,7 @@ import { ADVANCED_LESSONS } from "./content-advanced.js";
 import { ADVANCED_IDS } from "./physics-advanced.js";
 import { CURRICULUM_LESSONS } from "./content-curriculum.js";
 import { curriculumThumbnail, magnetDiagramPoint, MAGNET_DIAGRAM } from "./render-curriculum.js";
-import { MAGNET_STROKE_METRES } from "./curriculum-physics.js";
+import { MAGNET_STROKE_METRES, magnetLampLevel } from "./curriculum-physics.js";
 import { renderCourse, relatedLessons } from "./course.js";
 import { renderTextbookLibrary } from "./textbook-library.js";
 import { draw2D } from "./render2d.js";
@@ -651,6 +651,7 @@ function reset(params = lab.params, { deferUI = false } = {}) {
     fieldKey: null,
     vectorProgress: 1,
     magnetInputAt: null,
+    magnetFlash: 0,
   });
   $$("[data-preset]").forEach((b) => b.setAttribute("aria-pressed", "false"));
   sample();
@@ -703,7 +704,10 @@ function changeInductionSetup(patch) {
   syncInputs();
 }
 function setInductionCircuit(circuit) {
-  if (lab.params.circuit !== circuit) changeInductionSetup({ circuit });
+  if (lab.params.circuit !== circuit) {
+    lab.magnetFlash = 0;
+    changeInductionSetup({ circuit });
+  }
 }
 function flipMagnet() {
   stopManualMagnet();
@@ -727,13 +731,23 @@ function moveManualMagnet(position) {
   if (!lab?.magnetManual || !Number.isFinite(position)) return;
   const now = performance.now();
   const elapsed = Math.max(1/60, (now - (lab.magnetInputAt ?? now))/1000);
-  const distance = Math.max(0, Math.min(MAGNET_STROKE_METRES, position));
-  const change = distance - lab.state.manualDistance;
+  const distance = Math.max(-MAGNET_STROKE_METRES, Math.min(MAGNET_STROKE_METRES, position));
+  const previous = lab.state.manualDistance;
+  const change = distance - previous;
   lab.magnetInputAt = now;
   if (!change) return;
   lab.state.manualDistance = distance;
   lab.state.manualSpeed = change/elapsed;
   lab.magnetMovedAt = now;
+  if (lab.params.circuit) {
+    // At constant speed the dipole model's pulse peaks at x = ±radius/2.
+    // Include crossed peaks in the visual flash when one input event spans them.
+    for (const x of [distance, -lab.params.radius/2, lab.params.radius/2]) {
+      if (x < Math.min(previous,distance) || x > Math.max(previous,distance)) continue;
+      const {loadPower} = lab.definition.sample({...lab.state, manualDistance:x}, lab.params);
+      lab.magnetFlash = Math.max(lab.magnetFlash, magnetLampLevel(loadPower,true));
+    }
+  }
   sample();
   presentationStudio?.update(lab);
 }
@@ -769,7 +783,7 @@ function bindMagnetDiagram(canvas) {
   for (const name of ["pointerup","pointercancel","lostpointercapture"])
     canvas.addEventListener(name, end);
 }
-function seekInductionPhase(degrees) {
+function seekInductionPhase(degrees, held = false) {
   const {definition, params} = lab;
   const t = degrees / (360 * params.frequency);
   const interval = definition.sampleEvery(params);
@@ -777,7 +791,7 @@ function seekInductionPhase(degrees) {
   for (let i = 0; i * interval < t; i++)
     history.push(definition.sample({t: i * interval}, params));
   Object.assign(lab, {
-    running: false, accumulator: 0, previousState: null, state: {t},
+    running: false, accumulator: 0, previousState: null, state: held ? {t,held} : {t},
     history, nextSample: t + interval, lastUI: -1,
   });
   sample();
@@ -1716,7 +1730,11 @@ function frame(now) {
   if (lab) {
     if (lab.magnetManual && !document.hidden) {
       lab.state.t += dt;
-      if (now - lab.magnetMovedAt > 90) stopManualMagnet();
+      const idleMs = now - lab.magnetMovedAt;
+      if (idleMs > 90) stopManualMagnet();
+      // Hold the peak briefly so a fast swipe is visible even at low frame rates.
+      if (idleMs > 72) lab.magnetFlash *= Math.exp(-Math.min(dt,(idleMs-72)/1000)/.064);
+      if (lab.magnetFlash < .015) lab.magnetFlash = 0;
       if (lab.state.t >= lab.nextSample) {
         sample();
         lab.nextSample = lab.state.t + .04;

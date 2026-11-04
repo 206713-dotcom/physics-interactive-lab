@@ -12,7 +12,7 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 ### Version 20.7: drag the magnet and power a lamp
 
-The moving-magnet lab keeps the automatic animation and offers direct dragging in 2D and 3D, with a keyboard-accessible position slider. Manual motion estimates velocity from positions and times. The demo bulb shows the power dissipated in the 10 Ω load, with amplified glow to make the small changes visible.
+The magnet travels through the coil in automatic mode. You can also drag it from end to end in 2D or 3D, or use the position slider. Manual motion estimates velocity from positions and times. The power display reports the calculated value for the 10 Ω load. The demo bulb uses a stronger glow and a brief visual afterglow in manual mode.
 
 ### Version 20.6: induced current and a moving bar magnet
 

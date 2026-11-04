@@ -305,7 +305,7 @@ export const ELECTRIC_SCENES = {
       update(_state, q, lab) {
         manual = Boolean(lab.magnetManual);
         magnet.position.x = 3.24*q.distance/MAGNET_STROKE_METRES;
-        const glow = q.circuit ? Math.max(magnetLampLevel(q.loadPower,manual),lab.magnetFlash || 0) : 0;
+        const glow = magnetLampLevel(q.loadPower,manual);
         bulb.material.emissiveIntensity = glow*(manual ? 7 : 3.8);
         bulb.material.opacity = .46+glow*.42;
         filament.material.emissiveIntensity = glow*(manual ? 9 : 5);

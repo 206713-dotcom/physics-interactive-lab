@@ -9,7 +9,7 @@ import { ADVANCED_LESSONS } from "./content-advanced.js";
 import { ADVANCED_IDS } from "./physics-advanced.js";
 import { CURRICULUM_LESSONS } from "./content-curriculum.js";
 import { curriculumThumbnail, magnetDiagramPoint, MAGNET_DIAGRAM } from "./render-curriculum.js";
-import { MAGNET_STROKE_METRES, magnetLampLevel } from "./curriculum-physics.js";
+import { MAGNET_STROKE_METRES } from "./curriculum-physics.js";
 import { renderCourse, relatedLessons } from "./course.js";
 import { renderTextbookLibrary } from "./textbook-library.js";
 import { draw2D } from "./render2d.js";
@@ -435,7 +435,7 @@ function labPage(type, query) {
 
   presentationStudio = installPresentationStudio($("#stage"), $(".controls"), type, d.short,
     () => setView("3d"), { runMotorSetup, seekInductionPhase, setInductionCircuit, flipMagnet,
-      setMagnetManual, beginManualMagnet, moveManualMagnet });
+      setMagnetManual, beginManualMagnet, moveManualMagnet, stopManualMagnet });
   if (type === "magnet-coil") bindMagnetDiagram($("#simulation"));
   if(["spring","pendulum"].includes(type) && studyMode !== "igcse") {
     const tools=document.createElement("div");
@@ -651,7 +651,6 @@ function reset(params = lab.params, { deferUI = false } = {}) {
     fieldKey: null,
     vectorProgress: 1,
     magnetInputAt: null,
-    magnetFlash: 0,
   });
   $$("[data-preset]").forEach((b) => b.setAttribute("aria-pressed", "false"));
   sample();
@@ -704,10 +703,7 @@ function changeInductionSetup(patch) {
   syncInputs();
 }
 function setInductionCircuit(circuit) {
-  if (lab.params.circuit !== circuit) {
-    lab.magnetFlash = 0;
-    changeInductionSetup({ circuit });
-  }
+  if (lab.params.circuit !== circuit) changeInductionSetup({ circuit });
 }
 function flipMagnet() {
   stopManualMagnet();
@@ -735,19 +731,13 @@ function moveManualMagnet(position) {
   const previous = lab.state.manualDistance;
   const change = distance - previous;
   lab.magnetInputAt = now;
-  if (!change) return;
+  if (!change) {
+    stopManualMagnet();
+    return;
+  }
   lab.state.manualDistance = distance;
   lab.state.manualSpeed = change/elapsed;
   lab.magnetMovedAt = now;
-  if (lab.params.circuit) {
-    // At constant speed the dipole model's pulse peaks at x = ±radius/2.
-    // Include crossed peaks in the visual flash when one input event spans them.
-    for (const x of [distance, -lab.params.radius/2, lab.params.radius/2]) {
-      if (x < Math.min(previous,distance) || x > Math.max(previous,distance)) continue;
-      const {loadPower} = lab.definition.sample({...lab.state, manualDistance:x}, lab.params);
-      lab.magnetFlash = Math.max(lab.magnetFlash, magnetLampLevel(loadPower,true));
-    }
-  }
   sample();
   presentationStudio?.update(lab);
 }
@@ -1730,11 +1720,8 @@ function frame(now) {
   if (lab) {
     if (lab.magnetManual && !document.hidden) {
       lab.state.t += dt;
-      const idleMs = now - lab.magnetMovedAt;
-      if (idleMs > 90) stopManualMagnet();
-      // Hold the peak briefly so a fast swipe is visible even at low frame rates.
-      if (idleMs > 72) lab.magnetFlash *= Math.exp(-Math.min(dt,(idleMs-72)/1000)/.064);
-      if (lab.magnetFlash < .015) lab.magnetFlash = 0;
+      // Pointer events stop arriving while the magnet is held still.
+      if (now - lab.magnetMovedAt > 65) stopManualMagnet();
       if (lab.state.t >= lab.nextSample) {
         sample();
         lab.nextSample = lab.state.t + .04;

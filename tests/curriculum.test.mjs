@@ -123,7 +123,10 @@ test("manual magnet motion powers the lamp in either direction, and rest or an o
   close(inward.loadPower,outward.loadPower);
   close(at(.4).loadPower,4*outward.loadPower);
   assert.ok(P.magnetLampLevel(outward.loadPower)>0);
-  assert.ok(P.magnetLampLevel(outward.loadPower,true)>P.magnetLampLevel(outward.loadPower));
+  const brightness = speed => P.magnetLampLevel(at(speed).loadPower,true);
+  assert.ok(brightness(.04)<brightness(.2) && brightness(.2)<brightness(.4));
+  assert.ok(brightness(.4)-brightness(.2)>.1);
+  assert.equal(brightness(0),0);
   const across = P.sampleCurriculum("magnet-coil",{t:2,manualDistance:-.03,manualSpeed:-.2},p);
   close(across.loadCurrent,-inward.loadCurrent);
   assert.equal(at(0).loadPower,0);

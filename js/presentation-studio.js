@@ -143,7 +143,7 @@ function addMachineConsole(stage, motor, {runMotorSetup, seekInductionPhase, set
 }
 
 function addMagnetConsole(stage, {seekInductionPhase, setInductionCircuit, flipMagnet,
-  setMagnetManual, beginManualMagnet, moveManualMagnet}) {
+  setMagnetManual, beginManualMagnet, moveManualMagnet, stopManualMagnet}) {
   const panel = document.createElement('section');
   panel.className = 'machine-console';
   panel.setAttribute('aria-label','Inspect magnet movement and induced current');
@@ -152,6 +152,7 @@ function addMagnetConsole(stage, {seekInductionPhase, setInductionCircuit, flipM
       <span class="machine-caption">INDUCED CURRENT · VIEWED FROM THE RIGHT END</span>
       <output class="machine-value" aria-live="off"></output>
       <small class="machine-voltage"></small>
+      <small class="machine-voltage magnet-speed"></small>
       <div class="magnet-bulb-reading">
         <span class="magnet-bulb-icon" aria-hidden="true">✦</span>
         <small class="magnet-bulb-power"></small>
@@ -165,7 +166,7 @@ function addMagnetConsole(stage, {seekInductionPhase, setInductionCircuit, flipM
       <div class="magnet-manual-control" hidden>
         <label for="magnet-position">Magnet position · <span></span></label>
         <input type="range" id="magnet-position" min="${-MAGNET_STROKE_METRES*1000}" max="${MAGNET_STROKE_METRES*1000}" step="1" value="${MAGNET_STROKE_METRES*1000}">
-        <small>Drag the magnet through the coil or use the slider. Try a faster pass for a brighter flash.</small>
+        <small>Compare slow and fast passes through the same position. Hold still to turn the bulb off.</small>
       </div>
       <div>
         <button type="button" data-magnet-angle="77">Push in</button>
@@ -182,6 +183,7 @@ function addMagnetConsole(stage, {seekInductionPhase, setInductionCircuit, flipM
   const toggle = panel.querySelector('.magnet-circuit');
   const value = panel.querySelector('.machine-value');
   const voltage = panel.querySelector('.machine-voltage');
+  const speed = panel.querySelector('.magnet-speed');
   const note = panel.querySelector('.machine-phase-note');
   const modes = [...panel.querySelectorAll('[data-magnet-mode]')];
   const positionControl = panel.querySelector('.magnet-manual-control');
@@ -192,6 +194,9 @@ function addMagnetConsole(stage, {seekInductionPhase, setInductionCircuit, flipM
   for (const button of modes)
     button.onclick = () => setMagnetManual(button.dataset.magnetMode === 'manual');
   position.onpointerdown = beginManualMagnet;
+  position.onpointerup = stopManualMagnet;
+  position.onpointercancel = stopManualMagnet;
+  position.onblur = stopManualMagnet;
   position.onkeydown = event => { if (!event.repeat) beginManualMagnet(); };
   position.oninput = () => moveManualMagnet(position.valueAsNumber/1000);
   for (const button of buttons)
@@ -216,9 +221,10 @@ function addMagnetConsole(stage, {seekInductionPhase, setInductionCircuit, flipM
       positionLabel.textContent = distance === '0.0' ? 'at the centre' : `${distance} cm ${side} of centre`;
       position.setAttribute('aria-valuetext', positionLabel.textContent);
     }
-    const glow = q.circuit ? Math.max(magnetLampLevel(q.loadPower,manual),lab.magnetFlash || 0) : 0;
+    const glow = magnetLampLevel(q.loadPower,manual);
     bulb.style.setProperty('--bulb-glow',glow);
     power.textContent = `Demo bulb · ${calculationNumber(q.loadPower*1e6)} µW · amplified glow`;
+    speed.textContent = `Magnet speed ${calculationNumber(Math.abs(q.speed))} m/s`;
     value.textContent = direction
       ? `${calculationNumber(Math.abs(q.loadCurrent)*1000)} mA · ${direction > 0 ? 'clockwise' : 'anticlockwise'}`
       : '0 mA · no current';
@@ -231,7 +237,7 @@ function addMagnetConsole(stage, {seekInductionPhase, setInductionCircuit, flipM
     }
     note.textContent = `${lab.params.pole > 0 ? 'North' : 'South'} at the magnet’s left end · ${motion}. ${!q.circuit
       ? 'The open circuit stops current.' : !q.speed
-      ? 'The flux is momentarily steady.' : direction
+      ? 'Steady magnetic flux means no induced current.' : direction
       ? `The coil’s right face becomes ${direction > 0 ? 'south' : 'north'}.`
       : 'The linked flux is momentarily steady.'}`;
   };

@@ -1259,7 +1259,7 @@ export function drawCurriculum(canvas, lab) {
         c.strokeStyle="#ae6b33"; c.lineWidth=3; c.stroke();
       }
       const lampX = 128, lampY = 289;
-      const glow = q.circuit ? Math.max(P.magnetLampLevel(q.loadPower,lab.magnetManual),lab.magnetFlash || 0) : 0;
+      const glow = P.magnetLampLevel(q.loadPower,lab.magnetManual);
       line([[coilX-65,y+66],[coilX-65,365],[lampX+18,365],[lampX+18,lampY+22]],"#5e7c8c",2);
       line([[coilX-65,y-66],[192,y-66]],"#5e7c8c",2);
       line([[168,y-66],[lampX-18,y-66],[lampX-18,lampY-5]],"#5e7c8c",2);

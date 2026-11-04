@@ -226,9 +226,12 @@ const MOTOR_VISCOUS_LOAD = 0.14; // N m per rad/s
 const MOTOR_QUADRATIC_LOAD = 0.035; // N m per (rad/s)²
 export const GENERATOR_LOAD_OHMS = 10;
 export const MAGNET_STROKE_METRES = 0.18;
-// Manual mode boosts the visual response to short pulses. Power stays in SI.
-export const magnetLampLevel = (power, manual = false) =>
-  -Math.expm1(-power / (manual ? .6e-6 : 8e-6));
+// Compress the lamp's visual range without flattening stronger drag pulses.
+export function magnetLampLevel(power, manual = false) {
+  if (!manual) return -Math.expm1(-power / 8e-6);
+  const amplitude = Math.sqrt(power / 12e-6);
+  return amplitude / (1 + amplitude);
+}
 const COMMUTATION_EPSILON = 1e-10;
 const motorPeakTorque = p => p.turns * p.field * p.area * p.current;
 function motorTorque(phase, p) {

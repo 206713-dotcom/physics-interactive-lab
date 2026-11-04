@@ -108,6 +108,21 @@ test("moving a magnet changes linked flux with the expected current and Lenz-law
   close(inward.emf, -P.DEFAULTS["magnet-coil"].turns*fluxChange, 1e-7);
 });
 
+test("manual magnet motion powers the lamp in either direction, and rest or an open circuit darkens it", () => {
+  const p = P.DEFAULTS["magnet-coil"];
+  const at = (speed, circuit = 1) => P.sampleCurriculum("magnet-coil",
+    {t:2, manualDistance:.03, manualSpeed:speed}, {...p,circuit});
+  const inward = at(-.2), outward = at(.2);
+  assert.equal(inward.distance,.03);
+  assert.equal(inward.phase,null);
+  close(inward.loadCurrent,-outward.loadCurrent);
+  close(inward.loadPower,outward.loadPower);
+  close(at(.4).loadPower,4*outward.loadPower);
+  assert.ok(P.magnetLampLevel(outward.loadPower)>0);
+  assert.equal(at(0).loadPower,0);
+  assert.equal(at(.2,0).loadPower,0);
+});
+
 test("all 46 scientific instruments expose real calculations, lessons, valid presets and diagram embeds", () => {
   assert.equal(P.CURRICULUM_IDS.length, 46);
   for (const [id, d] of Object.entries(LABS)) {

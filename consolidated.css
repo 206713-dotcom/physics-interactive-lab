@@ -775,6 +775,29 @@ body:has(.model-screen[open]) { overflow: hidden; }
 .machine-actions { display: grid; gap: 5px; }
 .machine-actions > div { display: flex; flex-wrap: wrap; gap: 5px; }
 .machine-actions a { align-self: center; padding: 4px 6px; color: #a1efe4; font-size: 12px; }
+.machine-actions .magnet-manual-control {
+  display: grid;
+  gap: 3px;
+  max-width: 430px;
+  margin: 4px 0;
+}
+.magnet-manual-control label { color: #e2f6fa; font-size: 13px; }
+.magnet-manual-control small, .magnet-bulb-power { color: #bcdae5; font-size: 11px; }
+.machine-actions .magnet-manual-control[hidden],
+.machine-actions button[hidden] { display: none; }
+.magnet-bulb-reading { display: flex; gap: 8px; align-items: center; }
+.magnet-bulb-icon {
+  --bulb-glow: 0;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid #627d8e;
+  color: rgb(255 199 96 / calc(.35 + .65 * var(--bulb-glow)));
+  background: rgb(255 188 70 / calc(.75 * var(--bulb-glow)));
+  box-shadow: 0 0 12px rgb(255 178 53 / var(--bulb-glow));
+}
 .machine-actions button {
   padding: 5px 10px;
   min-height: 30px;

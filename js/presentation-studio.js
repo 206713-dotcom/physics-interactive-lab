@@ -7,7 +7,7 @@ import { calculationNumber } from './calculations.js';
 import { getProfile } from './learning-paths.js';
 import { installMotorCommutator } from './motor-commutator.js';
 import { installGeneratorSlipRings } from './generator-slip-rings.js';
-import { GENERATOR_LOAD_OHMS } from './curriculum-physics.js';
+import { GENERATOR_LOAD_OHMS, MAGNET_STROKE_METRES, magnetLampLevel } from './curriculum-physics.js';
 
 function addHandRule(stage, motor) {
   const guide = document.createElement('section');
@@ -142,7 +142,8 @@ function addMachineConsole(stage, motor, {runMotorSetup, seekInductionPhase, set
   };
 }
 
-function addMagnetConsole(stage, {seekInductionPhase, setInductionCircuit, flipMagnet}) {
+function addMagnetConsole(stage, {seekInductionPhase, setInductionCircuit, flipMagnet,
+  setMagnetManual, beginManualMagnet, moveManualMagnet}) {
   const panel = document.createElement('section');
   panel.className = 'machine-console';
   panel.setAttribute('aria-label','Inspect magnet movement and induced current');
@@ -151,9 +152,21 @@ function addMagnetConsole(stage, {seekInductionPhase, setInductionCircuit, flipM
       <span class="machine-caption">INDUCED CURRENT · COIL VIEWED FROM THE MAGNET</span>
       <output class="machine-value" aria-live="off"></output>
       <small class="machine-voltage"></small>
+      <div class="magnet-bulb-reading">
+        <span class="magnet-bulb-icon" aria-hidden="true">✦</span>
+        <small class="magnet-bulb-power"></small>
+      </div>
     </div>
     <div class="machine-actions">
-      <span class="machine-caption">PAUSE AT A POINT IN THE MOTION</span>
+      <div class="magnet-mode" role="group" aria-label="Magnet motion">
+        <button type="button" data-magnet-mode="auto" aria-pressed="true">Automatic</button>
+        <button type="button" data-magnet-mode="manual" aria-pressed="false">Move it yourself</button>
+      </div>
+      <div class="magnet-manual-control" hidden>
+        <label for="magnet-position">Magnet position · <span></span></label>
+        <input type="range" id="magnet-position" min="0" max="${MAGNET_STROKE_METRES*1000}" step="1" value="${MAGNET_STROKE_METRES*1000}">
+        <small>Drag the magnet along the track or move the slider.</small>
+      </div>
       <div>
         <button type="button" data-magnet-angle="135">Push in</button>
         <button type="button" data-magnet-angle="180">Hold at centre</button>
@@ -170,6 +183,17 @@ function addMagnetConsole(stage, {seekInductionPhase, setInductionCircuit, flipM
   const value = panel.querySelector('.machine-value');
   const voltage = panel.querySelector('.machine-voltage');
   const note = panel.querySelector('.machine-phase-note');
+  const modes = [...panel.querySelectorAll('[data-magnet-mode]')];
+  const positionControl = panel.querySelector('.magnet-manual-control');
+  const position = panel.querySelector('#magnet-position');
+  const positionLabel = positionControl.querySelector('span');
+  const bulb = panel.querySelector('.magnet-bulb-icon');
+  const power = panel.querySelector('.magnet-bulb-power');
+  for (const button of modes)
+    button.onclick = () => setMagnetManual(button.dataset.magnetMode === 'manual');
+  position.onpointerdown = beginManualMagnet;
+  position.onkeydown = event => { if (!event.repeat) beginManualMagnet(); };
+  position.oninput = () => moveManualMagnet(position.valueAsNumber/1000);
   for (const button of buttons)
     button.onclick = () => seekInductionPhase(Number(button.dataset.magnetAngle));
   panel.querySelector('.magnet-flip').onclick = flipMagnet;
@@ -179,14 +203,26 @@ function addMagnetConsole(stage, {seekInductionPhase, setInductionCircuit, flipM
     const direction = Math.sign(q.loadCurrent);
     const motion = q.speed < 0 ? 'Approaching' : q.speed > 0 ? 'Withdrawing' : 'Momentarily stationary';
     const degrees = q.phase * 180/Math.PI % 360;
+    const manual = Boolean(lab.magnetManual);
+    for (const button of modes)
+      button.setAttribute('aria-pressed',String((button.dataset.magnetMode === 'manual') === manual));
+    positionControl.hidden = !manual;
+    if (manual) {
+      position.value = Math.round(q.distance*1000);
+      positionLabel.textContent = `${(q.distance*100).toFixed(1)} cm from centre`;
+    }
+    bulb.style.setProperty('--bulb-glow',magnetLampLevel(q.loadPower));
+    power.textContent = `Demo bulb · ${calculationNumber(q.loadPower*1e6)} µW · amplified glow`;
     value.textContent = direction
       ? `${calculationNumber(Math.abs(q.loadCurrent)*1000)} mA · ${direction > 0 ? 'clockwise' : 'anticlockwise'}`
       : '0 mA · no current';
     voltage.textContent = `Induced voltage ${calculationNumber(q.emf)} V`;
     toggle.textContent = q.circuit ? 'Circuit closed' : 'Circuit open';
     toggle.setAttribute('aria-pressed',String(Boolean(q.circuit)));
-    for (const button of buttons)
+    for (const button of buttons) {
+      button.hidden = manual;
       button.setAttribute('aria-pressed',String(!lab.running && Math.abs(degrees-Number(button.dataset.magnetAngle))<1e-8));
+    }
     note.textContent = `${lab.params.pole > 0 ? 'North' : 'South'} pole first · ${motion}. ${!q.circuit
       ? 'The open circuit stops current.' : !q.speed
       ? 'The flux is momentarily steady.' : direction

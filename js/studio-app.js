@@ -8,7 +8,8 @@ import { EXTRA_LESSONS } from "./content-extra.js";
 import { ADVANCED_LESSONS } from "./content-advanced.js";
 import { ADVANCED_IDS } from "./physics-advanced.js";
 import { CURRICULUM_LESSONS } from "./content-curriculum.js";
-import { curriculumThumbnail } from "./render-curriculum.js";
+import { curriculumThumbnail, magnetDiagramPoint, MAGNET_DIAGRAM } from "./render-curriculum.js";
+import { MAGNET_STROKE_METRES } from "./curriculum-physics.js";
 import { renderCourse, relatedLessons } from "./course.js";
 import { renderTextbookLibrary } from "./textbook-library.js";
 import { draw2D } from "./render2d.js";
@@ -302,6 +303,7 @@ function labPage(type, query) {
     syllabusCycle,
     definition: d,
     ...d.create(params),
+    magnetManual: false,
     running: type !== "vectors" && !embedded && !reduced(),
     speed: 1,
     accumulator: 0,
@@ -432,7 +434,9 @@ function labPage(type, query) {
   // The course focus replaces the duplicated three-step walkthrough.
 
   presentationStudio = installPresentationStudio($("#stage"), $(".controls"), type, d.short,
-    () => setView("3d"), { runMotorSetup, seekInductionPhase, setInductionCircuit, flipMagnet });
+    () => setView("3d"), { runMotorSetup, seekInductionPhase, setInductionCircuit, flipMagnet,
+      setMagnetManual, beginManualMagnet, moveManualMagnet });
+  if (type === "magnet-coil") bindMagnetDiagram($("#simulation"));
   if(["spring","pendulum"].includes(type) && studyMode !== "igcse") {
     const tools=document.createElement("div");
     tools.className="oscillation-tools";tools.setAttribute("aria-label","Oscillation indicators");
@@ -630,6 +634,10 @@ function loadLearningSetup() {
 function reset(params = lab.params, { deferUI = false } = {}) {
   params = studyParams(lab.type,lab.studyMode,lab.definition,params);
   const model = lab.definition.create(params);
+  if (lab.magnetManual) {
+    model.state.manualDistance = lab.state.manualDistance ?? MAGNET_STROKE_METRES;
+    model.state.manualSpeed = 0;
+  }
   Object.assign(lab, model, {
     accumulator: 0,
     previousState: null,
@@ -642,6 +650,7 @@ function reset(params = lab.params, { deferUI = false } = {}) {
     initialEnergy: undefined,
     fieldKey: null,
     vectorProgress: 1,
+    magnetInputAt: null,
   });
   $$("[data-preset]").forEach((b) => b.setAttribute("aria-pressed", "false"));
   sample();
@@ -697,7 +706,68 @@ function setInductionCircuit(circuit) {
   if (lab.params.circuit !== circuit) changeInductionSetup({ circuit });
 }
 function flipMagnet() {
+  stopManualMagnet();
   changeInductionSetup({ pole: -lab.params.pole });
+}
+function setMagnetManual(manual) {
+  if (lab.magnetManual === manual) return;
+  const {distance} = lab.definition.sample(lab.state, lab.params);
+  lab.magnetManual = manual;
+  lab.running = !manual;
+  $("#camera-hint").textContent = manual
+    ? "DRAG THE MAGNET · DRAG THE BACKGROUND TO ROTATE"
+    : "DRAG TO ROTATE · SCROLL TO ZOOM";
+  if (manual) lab.state = {t:0, manualDistance:distance, manualSpeed:0};
+  reset();
+}
+function beginManualMagnet() {
+  if (lab?.magnetManual) lab.magnetInputAt = performance.now();
+}
+function moveManualMagnet(position) {
+  if (!lab?.magnetManual || !Number.isFinite(position)) return;
+  const now = performance.now();
+  const elapsed = Math.max(1/60, (now - (lab.magnetInputAt ?? now))/1000);
+  const distance = Math.max(0, Math.min(MAGNET_STROKE_METRES, position));
+  const change = distance - lab.state.manualDistance;
+  lab.magnetInputAt = now;
+  if (!change) return;
+  lab.state.manualDistance = distance;
+  lab.state.manualSpeed = change/elapsed;
+  lab.magnetMovedAt = now;
+  sample();
+  presentationStudio?.update(lab);
+}
+function stopManualMagnet() {
+  if (!lab?.magnetManual || !lab.state.manualSpeed) return;
+  lab.state.manualSpeed = 0;
+  lab.magnetInputAt = null;
+  sample();
+  presentationStudio?.update(lab);
+}
+function bindMagnetDiagram(canvas) {
+  let drag;
+  canvas.addEventListener("pointerdown", event => {
+    if (!lab?.magnetManual || event.button !== 0 || drag) return;
+    const {x, y} = magnetDiagramPoint(canvas,event.clientX,event.clientY);
+    const centre = MAGNET_DIAGRAM.coilX + MAGNET_DIAGRAM.travel*lab.state.manualDistance/MAGNET_STROKE_METRES;
+    if (Math.abs(x-centre)>71 || Math.abs(y-MAGNET_DIAGRAM.y)>36) return;
+    event.preventDefault();
+    drag = {pointerId:event.pointerId, offset:x-centre};
+    canvas.setPointerCapture(event.pointerId);
+    beginManualMagnet();
+  });
+  canvas.addEventListener("pointermove", event => {
+    if (!lab?.magnetManual || drag?.pointerId !== event.pointerId) return;
+    const {x} = magnetDiagramPoint(canvas,event.clientX,event.clientY);
+    moveManualMagnet((x-drag.offset-MAGNET_DIAGRAM.coilX)/MAGNET_DIAGRAM.travel*MAGNET_STROKE_METRES);
+  });
+  function end(event) {
+    if (drag?.pointerId !== event.pointerId) return;
+    drag = null;
+    stopManualMagnet();
+  }
+  for (const name of ["pointerup","pointercancel","lostpointercapture"])
+    canvas.addEventListener(name, end);
 }
 function seekInductionPhase(degrees) {
   const {definition, params} = lab;
@@ -722,7 +792,7 @@ function loadPreset(index) {
     },
   );
   syncInputs();
-  lab.running = lab.type !== "vectors" && !reduced();
+  lab.running = !lab.magnetManual && lab.type !== "vectors" && !reduced();
   $$("[data-preset]").forEach((b) =>
     b.setAttribute("aria-pressed", String(Number(b.dataset.preset) === index)),
   );
@@ -768,6 +838,10 @@ function bindControls() {
     };
   }
   $("#play").onclick = () => {
+    if (lab.magnetManual) {
+      setMagnetManual(false);
+      return;
+    }
     if (lab.type === "vectors") {
       if (!lab.running && lab.vectorProgress >= 1) lab.vectorProgress = 0;
       lab.running = !lab.running;
@@ -779,6 +853,7 @@ function bindControls() {
     syncPlay();
   };
   $("#reset").onclick = () => {
+    if (lab.magnetManual) lab.state.manualDistance = MAGNET_STROKE_METRES;
     reset();
     toast("Run reset to its initial conditions.");
   };
@@ -969,9 +1044,10 @@ async function setView(mode) {
       const nextCanvas = previousCanvas.cloneNode(false);
       previousCanvas.replaceWith(nextCanvas);
       view = new SceneView(nextCanvas);
-      view.onParameterEdit = editVector;
-      view.onEditStart = beginVectorEdit;
-      view.onEditEnd = finishVectorEdit;
+      const magnet = lab.type === "magnet-coil";
+      view.onParameterEdit = magnet ? ({distance}) => moveManualMagnet(distance) : editVector;
+      view.onEditStart = magnet ? beginManualMagnet : beginVectorEdit;
+      view.onEditEnd = magnet ? stopManualMagnet : finishVectorEdit;
       view.homeRadius =
         lab.type === "gravity"
           ? 10.8
@@ -1024,6 +1100,11 @@ function syncPlay() {
     $("#run-status").textContent = lab.running
       ? "CONSTRUCTION DEMO"
       : "READY TO EXPLORE";
+  }
+  $("#step").disabled = Boolean(lab.magnetManual);
+  if (lab.magnetManual) {
+    $("#play").innerHTML = icon("play") + " Start automatic";
+    $("#run-status").textContent = "MANUAL CONTROL";
   }
   calculationView?.refresh();
 }
@@ -1633,7 +1714,14 @@ function frame(now) {
     heroView?.update(hero);
   }
   if (lab) {
-    if (lab.type === "vectors" && lab.running && !document.hidden) {
+    if (lab.magnetManual && !document.hidden) {
+      lab.state.t += dt;
+      if (now - lab.magnetMovedAt > 90) stopManualMagnet();
+      if (lab.state.t >= lab.nextSample) {
+        sample();
+        lab.nextSample = lab.state.t + .04;
+      }
+    } else if (lab.type === "vectors" && lab.running && !document.hidden) {
       lab.vectorProgress = Math.min(
         1,
         lab.vectorProgress + (dt * lab.speed) / 5,

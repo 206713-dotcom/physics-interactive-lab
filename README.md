@@ -10,6 +10,10 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 ## What is in the laboratory?
 
+### Version 20.7: drag the magnet and power a lamp
+
+The moving-magnet lab keeps the automatic animation and offers direct dragging in 2D and 3D, with a keyboard-accessible position slider. Manual motion estimates velocity from positions and times. The demo bulb shows the power dissipated in the 10 Ω load, with amplified glow to make the small changes visible.
+
 ### Version 20.6: induced current and a moving bar magnet
 
 The AC generator puts current and its waveform first, with voltage shown alongside. The separate moving-magnet lab lets you inspect approach, rest and withdrawal, flip the pole and open the circuit. It uses an axial dipole approximation for flux through a circular coil, Faraday’s law for voltage, and a 10 Ω load for current. The motion is prescribed and the diagrams enlarge the apparatus for clarity.

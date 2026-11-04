@@ -226,6 +226,8 @@ const MOTOR_VISCOUS_LOAD = 0.14; // N m per rad/s
 const MOTOR_QUADRATIC_LOAD = 0.035; // N m per (rad/s)²
 export const GENERATOR_LOAD_OHMS = 10;
 export const MAGNET_STROKE_METRES = 0.18;
+// The demonstrator amplifies the glow. The electrical power stays in SI.
+export const magnetLampLevel = power => -Math.expm1(-power / 8e-6);
 const COMMUTATION_EPSILON = 1e-10;
 const motorPeakTorque = p => p.turns * p.field * p.area * p.current;
 function motorTorque(phase, p) {
@@ -665,9 +667,9 @@ export function sampleCurriculum(id, s, p) {
     case "magnet-coil": {
       const omega = 2 * Math.PI * p.frequency;
       const phase = omega * t;
-      const distance = MAGNET_STROKE_METRES * (1 + Math.cos(phase)) / 2;
+      const distance = s.manualDistance ?? MAGNET_STROKE_METRES * (1 + Math.cos(phase)) / 2;
       const sine = Math.sin(phase);
-      const speed = Math.abs(sine) < COMMUTATION_EPSILON ? 0 : -MAGNET_STROKE_METRES * omega * sine / 2;
+      const speed = s.manualSpeed ?? (Math.abs(sine) < COMMUTATION_EPSILON ? 0 : -MAGNET_STROKE_METRES * omega * sine / 2);
       // Axial magnetic dipole, circular coil. Integrating the dipole vector
       // potential along a turn gives the flux; differentiate it analytically.
       const radiusSquared = p.radius ** 2;
@@ -675,9 +677,11 @@ export function sampleCurriculum(id, s, p) {
       const dipoleFactor = 2e-7 * Math.PI * p.pole * p.moment * radiusSquared;
       const flux = dipoleFactor / denominator ** 1.5;
       const emf = speed === 0 ? 0 : 3 * p.turns * flux * distance * speed / denominator;
+      const loadCurrent = p.circuit ? emf / GENERATOR_LOAD_OHMS : 0;
       Object.assign(q, {
-        phase, distance, speed, flux, emf,
-        loadCurrent: p.circuit ? emf / GENERATOR_LOAD_OHMS : 0,
+        phase: s.manualDistance === undefined ? phase : null,
+        distance, speed, flux, emf, loadCurrent,
+        loadPower: loadCurrent ** 2 * GENERATOR_LOAD_OHMS,
         circuit: p.circuit,
       });
       break;

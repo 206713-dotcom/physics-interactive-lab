@@ -9,6 +9,15 @@ import { chamberParticle, convectionPosition, EXPANSION_MAGNIFICATION, particleC
 import { drawMotionDiagram } from "./render-motion.js";
 import { lunarLitInterval, solarDisplayRadius } from "./space-display.js";
 const chargedViews = new WeakMap();
+export const MAGNET_DIAGRAM = {coilX:307, y:235, travel:320};
+export function magnetDiagramPoint(canvas, clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  const scale = Math.min(rect.width/840, rect.height/470);
+  return {
+    x: (clientX - rect.left - (rect.width - 840*scale)/2)/scale,
+    y: (clientY - rect.top - (rect.height - 470*scale)/2)/scale,
+  };
+}
 const TAU = Math.PI * 2,
   CYAN = "#168e87",
   GOLD = "#b37c32",
@@ -1234,8 +1243,8 @@ export function drawCurriculum(canvas, lab) {
     }
     case "magnet-coil": {
       title("Moving magnet and fixed coil", "");
-      const coilX=307, y=235;
-      const magnetX=coilX+320*q.distance/P.MAGNET_STROKE_METRES;
+      const {coilX,y,travel}=MAGNET_DIAGRAM;
+      const magnetX=coilX+travel*q.distance/P.MAGNET_STROKE_METRES;
       const nearPole=p.pole>0 ? "N" : "S";
       const farPole=p.pole>0 ? "S" : "N";
       line([[72,y],[766,y]],"#9db3c5",1,[5,5]);
@@ -1247,6 +1256,25 @@ export function drawCurriculum(canvas, lab) {
         c.beginPath(); c.ellipse(coilX-65+i*16,y,14,66,0,0,TAU);
         c.strokeStyle="#ae6b33"; c.lineWidth=3; c.stroke();
       }
+      const lampX = 128, lampY = 289;
+      const glow = P.magnetLampLevel(q.loadPower);
+      line([[coilX-65,y+66],[coilX-65,365],[lampX+18,365],[lampX+18,lampY+22]],"#5e7c8c",2);
+      line([[coilX-65,y-66],[192,y-66]],"#5e7c8c",2);
+      line([[168,y-66],[lampX-18,y-66],[lampX-18,lampY-5]],"#5e7c8c",2);
+      line([[192,y-66],[168,y-66-(q.circuit ? 0 : 12)]],"#5e7c8c",3);
+      if (glow > 0) {
+        const light=c.createRadialGradient(lampX,lampY,10,lampX,lampY,54);
+        light.addColorStop(0,`rgba(255,174,54,${glow*.78})`);
+        light.addColorStop(1,"rgba(255,174,54,0)");
+        c.fillStyle=light;
+        c.fillRect(lampX-54,lampY-54,108,108);
+      }
+      rect(lampX-13,lampY+15,26,13,"#7d91a2","#526c7f",3);
+      c.beginPath(); c.arc(lampX,lampY,22,0,TAU);
+      c.fillStyle="#edf5fa"; c.fill(); c.strokeStyle="#547385"; c.lineWidth=2; c.stroke();
+      if (glow > 0) { c.fillStyle=`rgba(255,190,63,${glow})`; c.fill(); }
+      line([[lampX-8,lampY+9],[lampX-5,lampY-4],[lampX+5,lampY-4],[lampX+8,lampY+9]],glow>.2?"#a05a0e":"#71869a",2);
+      text(q.circuit ? "Demo bulb" : "Circuit open",lampX,340,WHITE,16,"center");
       text("Fixed coil",coilX,153,WHITE,21,"center");
       if(lab.vectors!==false && q.speed) arrow(magnetX,y-52,65*Math.sign(q.speed),0,GOLD,3);
       const cx=660, cy=341, direction=Math.sign(q.loadCurrent);

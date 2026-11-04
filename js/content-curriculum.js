@@ -197,7 +197,7 @@ const NOTES = {
     "A moving magnet can make a current flow in a fixed coil.",
     "A changing magnetic flux induces an emf. In a closed circuit, this drives a current through the load.",
     "A north pole moving towards the coil makes the coil's near face north, repelling the approaching pole. Withdrawal reverses the current and makes the near face south. A stationary magnet gives zero induced emf.",
-    "The bar magnet is an ideal axial magnetic dipole and the winding is represented by a circular coil. The prescribed stroke and 10 Ω load omit coil self-inductance and mechanical feedback. Clockwise current is positive when viewed from the magnet.",
+    "The magnet is an ideal axial dipole in a circular coil. Automatic mode uses a prescribed stroke. Manual mode estimates velocity from successive positions and times. The demo bulb is a 10 Ω resistive load with amplified glow. Clockwise current is positive when viewed from the magnet.",
     "Pickup coils, motion sensors and electromagnetic induction demonstrations.",
     "Does a stronger field produce current while the magnet is stationary?",
     "No. The flux may be larger, but current requires a changing flux and a closed circuit.",

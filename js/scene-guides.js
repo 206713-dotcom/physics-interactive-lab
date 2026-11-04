@@ -220,8 +220,8 @@ export const SCENE_GUIDES = {
   "magnet-coil": [
     "The coil stays fixed. The gold arrow shows the magnet’s motion, and purple shows current around the coil.",
     "The coil’s induced field opposes the change in flux. A north pole approaching gives anticlockwise conventional current as seen from the magnet.",
-    "Compare Push in, Hold at centre and Pull out. Flip the magnet and predict which way current flows.",
-    "Magnet and winding sizes are illustrative. The model uses an axial dipole, a circular coil and a 10 Ω resistive load. Motion is prescribed.",
+    "Choose Move it yourself. Drag slowly, then quickly through the same position. Watch the lamp and compare the current.",
+    "The model uses an axial dipole and circular coil. The demo lamp is a 10 Ω resistor and its glow is amplified to make small powers visible.",
   ],
   motor: [
     "Purple shows conventional current. Gold shows the force on each side of the coil.",

@@ -34,7 +34,7 @@ const GRAPHS = {
   devices: ['reading-0'], rectifier: ['waveforms'], filament: ['current'],
   magnetism: [], charged: ['trajectory'], radiation: ['alpha','beta','gamma'],
   induction: ['emf','load-current'], motor: ['rpm'], transformer: ['reading-0'], atom: [],
-  'magnet-coil': ['load-current','emf'],
+  'magnet-coil': ['load-current','emf','lamp-power'],
   radioactivity: ['decay'], earthmoon: [], solarsystem: [], stars: [],
   universe: ['reading-0'], pendulum: ['angle'], collisions: ['momentum'], fields: [],
 };

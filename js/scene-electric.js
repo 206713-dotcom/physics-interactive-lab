@@ -5,7 +5,7 @@ import { PALETTE as C, clamp, setPath } from "./scene-kit.js";
 import { createParticleChamber } from "./scene-particle-chamber.js";
 import { createMagnetismApparatus } from "./scene-magnetism.js";
 import { createDCBench } from './scene-dc-bench.js';
-import { machineSide, MAGNET_STROKE_METRES } from "./curriculum-physics.js";
+import { machineSide, MAGNET_STROKE_METRES, magnetLampLevel } from "./curriculum-physics.js";
 import {
   radiationReferences,
   particlePosition,
@@ -237,16 +237,39 @@ export const ELECTRIC_SCENES = {
     for (const lead of [rearLead,frontLead])
       for (let i=1; i<lead.length; i++) k.rod(lead[i-1],lead[i],0x657d96,.028);
     k.rod([loadX,.72,-.31],[loadX,.72,p.circuit ? .31 : .1],0xcca365,.034);
-    k.label(p.circuit ? "10 Ω load" : "Open switch",[loadX,1.03,0],"#d4e8f2",1.1);
+    k.cylinder(.2,.24,0x7e96a5,[loadX,.74,0],{metalness:.6,roughness:.35});
+    const bulb = k.ball(.32,0xf4e6c8,[loadX,1.14,0],{
+      transparent:true,opacity:.46,roughness:.23,emissive:0xffa53c,emissiveIntensity:0,
+    });
+    const filament = k.rod([loadX-.11,1.14,0],[loadX+.11,1.14,0],0x9a6e37,.028);
+    filament.material.emissive.setHex(0xff961d);
+    const lampLight = k.add(new T.PointLight(0xffb150,0,4),[loadX,1.15,0]);
+    const haloSize = 32, pixels = new Uint8Array(haloSize*haloSize*4);
+    for (let y=0; y<haloSize; y++) {
+      for (let x=0; x<haloSize; x++) {
+        const radius = Math.hypot(2*(x+.5)/haloSize-1,2*(y+.5)/haloSize-1);
+        pixels.set([255,177,66,Math.round(180*Math.max(0,1-radius)**2)],4*(y*haloSize+x));
+      }
+    }
+    const haloTexture = new T.DataTexture(pixels,haloSize,haloSize);
+    haloTexture.needsUpdate = true;
+    haloTexture.magFilter = T.LinearFilter;
+    const halo = k.add(new T.Sprite(new T.SpriteMaterial({
+      map:haloTexture,transparent:true,opacity:0,depthWrite:false,blending:T.AdditiveBlending,
+    })),[loadX,1.14,.05]);
+    halo.scale.set(1.5,1.5,1);
+    k.label(p.circuit ? "Demo bulb" : "Open switch",[loadX,1.76,0],"#d4e8f2",1.18);
     for (let i=0; i<=6; i++)
       k.rod([i*.54,.19,.57],[i*.54,.19,.71],0x7295a9,.016);
     const magnet = new T.Group();
+    const handles = [];
     magnet.userData.role = "moving-magnet";
     k.add(magnet,[3.24,0,0]);
     for (const side of [-1,1]) {
       const north = side === -1 ? northFirst : !northFirst;
       const block = k.box(.59,.44,.48,north ? C.red : C.blue,[side*.294,height,0]);
       magnet.add(block);
+      handles.push(block);
       const pole = k.label(north ? "N" : "S",[side*.294,height+.32,0],"#f2f8ff",.46);
       if (pole) magnet.add(pole);
     }
@@ -255,10 +278,40 @@ export const ELECTRIC_SCENES = {
     const current = k.arrow([0,0,0],[0,0,0],C.purple);
     const arc = k.line([],C.purple,.85);
     let shownDirection;
+    let manual = false, grabOffset = 0;
+    const raycaster = new T.Raycaster(), closest = new T.Vector3();
+    const trackStart = new T.Vector3(-3,height,0), trackEnd = new T.Vector3(7,height,0);
+    const trackPosition = () => {
+      raycaster.ray.distanceSqToSegment(trackStart,trackEnd,undefined,closest);
+      return closest.x;
+    };
     return {
       camera: {target:[1.15,1.35,0],radius:10,polar:1.08,azimuth:.58,fitAspect:1.42},
-      update(_state, q) {
+      interaction: {
+        pick(pointer,camera) {
+          if (!manual) return null;
+          raycaster.setFromCamera(pointer,camera);
+          magnet.updateWorldMatrix(true,true);
+          return raycaster.intersectObjects(handles,false).length
+            ? {offset:magnet.position.x-trackPosition()} : null;
+        },
+        begin(handle) { grabOffset = handle.offset; },
+        move(pointer,camera) {
+          if (!manual) return null;
+          raycaster.setFromCamera(pointer,camera);
+          return {distance:(trackPosition()+grabOffset)*MAGNET_STROKE_METRES/3.24};
+        },
+        end() {},
+      },
+      update(_state, q, lab) {
+        manual = Boolean(lab.magnetManual);
         magnet.position.x = 3.24*q.distance/MAGNET_STROKE_METRES;
+        const glow = magnetLampLevel(q.loadPower);
+        bulb.material.emissiveIntensity = glow*3.8;
+        bulb.material.opacity = .46+glow*.42;
+        filament.material.emissiveIntensity = glow*5;
+        lampLight.intensity = glow*11;
+        halo.material.opacity = glow;
         const moving = Math.sign(q.speed);
         k.setArrow(motion,[magnet.position.x,height+.8,0],[.82*moving,0,0]);
         const direction = -Math.sign(q.loadCurrent);

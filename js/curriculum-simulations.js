@@ -1063,8 +1063,11 @@ export const WORK = {
       (p,q,n) => `3 × ${p.turns} × ${n(q.flux)} × ${n(q.distance)} × ${n(q.speed)} / (${n(p.radius)}² + ${n(q.distance)}²)`),
     W("flux", "Flux per turn", "Wb", "Φ = μ₀ma² / [2(a² + x²)^(3/2)]",
       (p,q,n) => `2π × 10⁻⁷ × ${n(p.pole*p.moment)} × ${n(p.radius)}² / (${n(p.radius)}² + ${n(q.distance)}²)^(3/2)`),
-    W("speed", "Signed magnet velocity", "m/s", "v = −πLf sin(2πft)",
-      (p,q,n) => `−π × ${P.MAGNET_STROKE_METRES} × ${n(p.frequency)} × sin(${n(q.phase)})`),
+    W("speed", "Signed magnet velocity", "m/s", "v = dx/dt",
+      (p,q,n) => q.phase === null ? `From successive positions and times: ${n(q.speed)} m/s`
+        : `−π × ${P.MAGNET_STROKE_METRES} × ${n(p.frequency)} × sin(${n(q.phase)})`),
+    W("loadPower", "Power in the lamp", "W", "P = I²R",
+      (p,q,n) => `${n(q.loadCurrent)}² × ${P.GENERATOR_LOAD_OHMS} Ω`),
   ],
   motor: [
     W(
@@ -1842,6 +1845,7 @@ Object.assign(CURRICULUM_SIMULATIONS["magnet-coil"], {
     dynamicGraph("load-current", "Induced current", ["loadCurrent"], "A"),
     dynamicGraph("emf", "Induced emf", ["emf"], "V"),
     dynamicGraph("flux", "Flux per turn", ["flux"], "Wb"),
+    dynamicGraph("lamp-power", "Power in the lamp", ["loadPower"], "W"),
   ],
 });
 Object.assign(CURRICULUM_SIMULATIONS.motor, {
@@ -2038,7 +2042,7 @@ const SAMPLE_UNITS = {
     frequency: "Hz",
   },
   motor: { phase: "rad", omega: "rad_s", torque: "N_m", loadTorque: "N_m", peakTorque: "N_m", sideForce: "N", rpm: "rpm" },
-  "magnet-coil": { phase: "rad", distance: "m", speed: "m_s", flux: "Wb", emf: "V", loadCurrent: "A", circuit: "dimensionless" },
+  "magnet-coil": { phase: "rad", distance: "m", speed: "m_s", flux: "Wb", emf: "V", loadCurrent: "A", loadPower: "W", circuit: "dimensionless" },
   transformer: {
     vs: "V",
     is: "A",

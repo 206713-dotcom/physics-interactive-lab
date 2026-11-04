@@ -7,6 +7,7 @@ import { calculationNumber } from './calculations.js';
 import { getProfile } from './learning-paths.js';
 import { installMotorCommutator } from './motor-commutator.js';
 import { installGeneratorSlipRings } from './generator-slip-rings.js';
+import { installGalvanometer } from './galvanometer.js';
 import { GENERATOR_LOAD_OHMS, MAGNET_STROKE_METRES, magnetLampLevel } from './curriculum-physics.js';
 
 function addHandRule(stage, motor) {
@@ -260,6 +261,7 @@ export function installPresentationStudio(stage, controls, id, title, show3D, ma
   const values = panel.querySelector('.instrument-values'), context = panel.querySelector('.instrument-context');
   const toolbar = stage.querySelector('.stage-views');
   const scene = stage.querySelector('.scene-container');
+  const renderGalvanometer = id === 'magnet-coil' ? installGalvanometer(scene) : null;
   const drawer = document.createElement('div');
   drawer.className = 'model-variables';
   const drawerToggle = document.createElement('button');
@@ -315,13 +317,14 @@ export function installPresentationStudio(stage, controls, id, title, show3D, ma
   dialog.onclose = () => { if (!dialog.open) restore(); };
   let signature = '', nodes = [];
   return {
-    render: commutator ? lab => commutator.render(lab.state.phase) : slipRings?.render,
+    render: commutator ? lab => commutator.render(lab.state.phase) : (slipRings?.render || renderGalvanometer),
     dispose() {
       if (dialog.open) dialog.close();
       restore(false);
     },
     update(lab) {
       updateMachine?.(lab);
+      if (lab.magnetManual) renderGalvanometer?.(lab);
       const readings = studyReadings(id,lab.state,lab.params,lab.studyMode,lab.definition),
         next = readings.map(x => x.title + x.unit).join('|');
       if (signature !== next) {
@@ -351,7 +354,7 @@ export function installPresentationStudio(stage, controls, id, title, show3D, ma
       if (id === 'induction')
         context.textContent = 'Cyan shows the field and gold shows conductor motion. Purple shows induced conventional current for a closed resistive circuit.';
       if (id === 'magnet-coil')
-        context.textContent = 'Gold shows the magnet’s motion. Purple shows the induced current in the coil. Compare the same pole moving in and out.';
+        context.textContent = 'Watch the galvanometer needle reverse as the magnet passes through the coil. The bulb shows power and the needle shows the direction and size of the current.';
       if(id==='waves' && lab.studyMode==='igcse')
         context.textContent='The marked particle moves up and down. The wave pattern travels to the right.';
       if(id==='refraction' && lab.studyMode==='igcse')

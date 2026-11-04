@@ -1261,7 +1261,11 @@ export function drawCurriculum(canvas, lab) {
       const lampX = 128, lampY = 289;
       const glow = P.magnetLampLevel(q.loadPower,lab.magnetManual);
       line([[coilX-65,y+66],[coilX-65,365],[lampX+18,365],[lampX+18,lampY+22]],"#5e7c8c",2);
-      line([[coilX-65,y-66],[192,y-66]],"#5e7c8c",2);
+      line([[coilX-65,y-66],[285,y-66]],"#5e7c8c",2);
+      line([[261,y-66],[192,y-66]],"#5e7c8c",2);
+      c.beginPath(); c.arc(273,y-66,12,0,TAU);
+      c.fillStyle="#f4fafc"; c.fill(); c.strokeStyle="#547385"; c.lineWidth=2; c.stroke();
+      text("G",273,y-61,WHITE,15,"center");
       line([[168,y-66],[lampX-18,y-66],[lampX-18,lampY-5]],"#5e7c8c",2);
       line([[192,y-66],[168,y-66-(q.circuit ? 0 : 12)]],"#5e7c8c",3);
       if (glow > 0) {

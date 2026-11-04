@@ -798,6 +798,54 @@ body:has(.model-screen[open]) { overflow: hidden; }
   background: rgb(255 188 70 / calc(.75 * var(--bulb-glow)));
   box-shadow: 0 0 12px rgb(255 178 53 / var(--bulb-glow));
 }
+.galvanometer {
+  position: absolute;
+  z-index: 2;
+  right: 14px;
+  bottom: 14px;
+  width: 208px;
+  padding: 9px 10px 8px;
+  border: 1px solid #567786;
+  border-radius: 12px;
+  background: #0d2838f5;
+  color: #eaf7fa;
+  box-shadow: 0 7px 16px #030e2544;
+  pointer-events: none;
+}
+.galvanometer-heading, .galvanometer-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 5px;
+}
+.galvanometer-heading { font-size: 12px; }
+.galvanometer-heading span { color: #a6d9e1; font-size: 10px; }
+.galvanometer svg { display: block; width: 100%; height: auto; }
+.galvanometer svg text { fill: #d4edf1; font: 700 12px Manrope,sans-serif; text-anchor: middle; }
+.galvanometer-arc, .galvanometer-tick { fill: none; stroke: #6d939e; stroke-width: 1.5; }
+.galvanometer-zero { stroke: #bce7e7; stroke-width: 2; }
+.galvanometer-needle { stroke: #ffca76; stroke-width: 2.8; stroke-linecap: round; }
+.galvanometer-pivot { fill: #234658; stroke: #a9ccd2; }
+.galvanometer-reading { font-size: 13px; font-weight: 750; font-variant-numeric: tabular-nums; }
+.galvanometer-footer label { color: #b9dbe2; font-size: 10px; white-space: nowrap; }
+.galvanometer-footer select {
+  min-height: 24px;
+  border: 1px solid #567786;
+  border-radius: 4px;
+  background: #1b394a;
+  color: #eaf7fa;
+  font: inherit;
+  pointer-events: auto;
+}
+.galvanometer-limit { display: block; color: #ffcf86; font-size: 10px; }
+.galvanometer-limit[hidden] { display: none; }
+@container (max-width: 580px) {
+  .galvanometer { right: 10px; bottom: 10px; width: 153px; padding: 6px 7px; }
+  .galvanometer-heading { font-size: 11px; }
+  .galvanometer-reading { font-size: 11px; }
+  .galvanometer-footer label { font-size: 0; }
+  .galvanometer-footer select { font-size: 10px; }
+}
 .machine-actions button {
   padding: 5px 10px;
   min-height: 30px;

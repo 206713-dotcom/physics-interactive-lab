@@ -32,7 +32,7 @@ const GRAPHS = {
   refraction: ['angles'], dc: ['reading-1'], sensors: ['reading-1'],
   devices: ['reading-0'], rectifier: ['waveforms'], filament: ['current'],
   magnetism: [], charged: ['trajectory'], radiation: ['alpha','beta','gamma'],
-  induction: ['emf'], transformer: ['reading-0'], atom: [],
+  induction: ['emf'], motor: ['rpm'], transformer: ['reading-0'], atom: [],
   radioactivity: ['decay'], earthmoon: [], solarsystem: [], stars: [],
   universe: ['reading-0'], pendulum: ['angle'], collisions: ['momentum'], fields: [],
 };

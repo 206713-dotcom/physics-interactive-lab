@@ -1240,8 +1240,9 @@ export function drawCurriculum(canvas, lab) {
       rect(640, 150, 115, 200, "#e5f0fd", BLUE, 8);
       text("N", 142, 262, GOLD, 44, "center");
       text("S", 698, 262, BLUE, 44, "center");
-      for (const y of [170, 210, 250, 290, 330])
-        arrow(215,y,408,0,"#73a9aa67",1.3);
+      const fieldLines=2+Math.round(5*Math.sqrt(p.field));
+      for (let i=0; i<fieldLines; i++)
+        arrow(215,170+i*160/(fieldLines-1),408,0,"#73a9aa67",1.3);
       const cx=420, cy=250, radius=100;
       c.save(); c.setLineDash([5,7]);
       c.beginPath(); c.arc(cx,cy,radius,0,TAU);
@@ -1250,7 +1251,7 @@ export function drawCurriculum(canvas, lab) {
       const position = side => [cx+radius*side.x,cy+radius*side.z];
       line(sides.map(position),"#bf7839",8);
       circle(cx,cy,7,MUTED);
-      for (const side of sides) {
+      for (const [index,side] of sides.entries()) {
         const [x,y]=position(side);
         c.beginPath(); c.arc(x,y,16,0,TAU);
         c.fillStyle="#f8f4fc"; c.fill();
@@ -1264,6 +1265,7 @@ export function drawCurriculum(canvas, lab) {
           if (motor && side.force) arrow(x,y,0,50*side.force,GOLD,3);
           if (!motor) arrow(x,y,56*side.motion[0],56*side.motion[2],GOLD,3);
         }
+        if (index===1) text("A",x+24,y+5,WHITE,15);
       }
       text("⊙ current towards you    ⊗ current away from you",420,398,PURPLE,19,"center");
       foot(motor ? "Split ring · DC input" : "Slip rings · AC output",

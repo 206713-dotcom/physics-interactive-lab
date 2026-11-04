@@ -197,7 +197,7 @@ const NOTES = {
     "A magnetic force couple turns the coil.",
     "A DC supply sends conventional current through opposite sides of the coil. The uniform field makes the forces point in opposite directions.",
     "Use Fleming’s left-hand rule to find each force. A split-ring commutator reverses the coil current every half-turn, so the torque keeps the same sense.",
-    "The speed is imposed for the demonstration. The model assumes ideal instantaneous commutation and omits friction, back emf and starting dynamics.",
+    "The current is held constant. The coil starts from rest at 30° and accelerates against a fixed load with linear and quadratic drag. The model uses ideal instantaneous commutation. A voltage-driven motor can respond differently as its back emf changes.",
     "Electric fans, pumps and power tools.",
     "What does the split-ring commutator do?",
     "It swaps which brush is connected to each end of the coil every half-turn.",
@@ -290,7 +290,7 @@ export const CURRICULUM_LESSONS = Object.fromEntries(
     const questionTime =
       PRACTICAL_LABS[id]?.questionTime ??
       (id === "sound" ? 0.001 : id === "charged" ? 1e-9 : 10);
-    if (id === "filament")
+    if (id === "filament" || id === "motor")
       while (s.t < questionTime - 1e-12)
         s = d.step(s, p, Math.min(d.h, questionTime - s.t));
     else s.t = questionTime;

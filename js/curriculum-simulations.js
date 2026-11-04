@@ -252,7 +252,6 @@ export const PARAMETERS = {
     number("area", "Coil area", "m²"),
     number("turns", "Coil turns"),
     number("current", "Coil current", "A"),
-    number("frequency", "Demonstration rotation", "Hz"),
   ],
   transformer: [
     number("vp", "Primary RMS voltage", "V"),
@@ -1058,8 +1057,8 @@ export const WORK = {
       (p, q, n) => `${p.turns} × ${n(p.field)} × ${n(p.current)} × √${n(p.area)}`),
     W("peakTorque", "Peak torque", "N m", "τₘₐₓ = NBIA",
       (p, q, n) => `${p.turns} × ${n(p.field)} × ${n(p.current)} × ${n(p.area)}`),
-    W("period", "Demonstration period", "s", "T = 1/f",
-      (p, q, n) => `1 / ${n(p.frequency)}`),
+    W("rpm", "Shaft speed", "rpm", "RPM = ω × 60/(2π)",
+      (p, q, n) => `${n(q.omega)} × 60/(2π)`),
   ],
   transformer: [
     W(
@@ -1793,13 +1792,20 @@ Object.assign(CURRICULUM_SIMULATIONS.sound, {
   ],
 });
 Object.assign(CURRICULUM_SIMULATIONS.induction, {
+  hFor: p => 1 / Math.max(120, p.frequency * 96),
+  sampleEvery: p => 1 / (p.frequency * 48),
+  window: p => 3 / p.frequency,
   graphs: [
     dynamicGraph("emf", "Generated emf", ["emf"], "V"),
     dynamicGraph("flux", "Flux per turn", ["flux"], "Wb"),
   ],
 });
 Object.assign(CURRICULUM_SIMULATIONS.motor, {
+  h: 1 / 240,
+  sampleEvery: 1 / 120,
+  window: 8,
   graphs: [
+    dynamicGraph("rpm", "Shaft speed", ["rpm"], "rpm"),
     dynamicGraph("torque", "Motor torque", ["torque"], "N m"),
   ],
 });
@@ -1985,7 +1991,7 @@ const SAMPLE_UNITS = {
     linkage: "Wb",
     frequency: "Hz",
   },
-  motor: { phase: "rad", torque: "N_m", peakTorque: "N_m", sideForce: "N", period: "s", frequency: "Hz" },
+  motor: { phase: "rad", omega: "rad_s", torque: "N_m", peakTorque: "N_m", sideForce: "N", rpm: "rpm" },
   transformer: {
     vs: "V",
     is: "A",

@@ -228,7 +228,9 @@ export const ELECTRIC_SCENES = {
     }
     k.label("N", [-2.8, 3.7, 0], "#ff9d91", 0.65);
     k.label("S", [2.8, 3.7, 0], "#89baff", 0.65);
-    for (const y of [1.05, 2.5]) k.arrow([-2.1, y, -0.8], [4.2, 0, 0], C.cyan);
+    const fieldLines = 2 + Math.round(5 * Math.sqrt(p.field));
+    for (let i = 0; i < fieldLines; i++)
+      k.arrow([-2.1, .87 + i * 1.92/(fieldLines-1), -.96], [4.2, 0, 0], C.cyan);
     const rotor = new T.Group();
     k.add(rotor, [0, 1.8, 0]);
     // Visible turns are a schematic bundle; N is taken from the calculation.
@@ -270,6 +272,7 @@ export const ELECTRIC_SCENES = {
       side, current: k.arrow([0,0,0],[0,0,0],C.purple),
       action: k.arrow([0,0,0],[0,0,0],C.gold),
     }));
+    const markedSide = k.label("A", [0, 0, 0], "#e5f2fa", .42);
     const normal = !motor && k.arrow([0, 1.8, 0], [1.5, 0, 0], C.blue);
     return (s, q) => {
       rotor.rotation.y = q.phase;
@@ -277,6 +280,7 @@ export const ELECTRIC_SCENES = {
       for (const {side,current,action} of sides) {
         const direction = machineSide(q.phase, side, motor);
         const x = .8*direction.x, z = .8*direction.z;
+        if (side === 1) markedSide?.position.set(x, .62, z);
         k.setArrow(current,[x,1.8-direction.current*.52,z],[0,direction.current*1.04,0]);
         k.setArrow(action,[x,2.27,z],motor ? [0,0,1.1*direction.force]
           : direction.motion.map(component => component*1.05));

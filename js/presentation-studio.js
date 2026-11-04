@@ -31,12 +31,93 @@ function addHandRule(stage, motor) {
         <div><dt class="rule-current">Middle finger</dt><dd>${middle}</dd></div>
       </dl>
       <p>Hold the three fingers at right angles. The dot means the middle finger points towards you. ${motor ? 'Use the field and current to predict the force.' : 'Use the field and motion to predict the current in a closed circuit.'}</p>
-      <a href="#/${motor ? 'induction' : 'motor'}">${motor ? 'Open the AC generator' : 'Open the DC motor'} →</a>
+      <a href="#/${motor ? 'generator' : 'motor'}">${motor ? 'Open the AC generator' : 'Open the DC motor'} →</a>
     </div>`;
   stage.append(guide);
 }
 
-export function installPresentationStudio(stage, controls, id, title, show3D) {
+function addMachineConsole(stage, motor, {runMotorField, seekGeneratorPhase}) {
+  const consolePanel = document.createElement('section');
+  consolePanel.className = 'machine-console';
+  consolePanel.setAttribute('aria-label', motor ? 'Compare motor speeds' : 'Inspect the generator phase');
+  consolePanel.innerHTML = motor ? `
+    <div class="machine-console-reading">
+      <span class="machine-caption">LIVE SHAFT SPEED</span>
+      <output class="machine-value" aria-live="off">0.0 rpm</output>
+      <meter min="0" max="100" value="0" aria-label="Shaft speed up to 100 rpm"></meter>
+      <span class="machine-meter-scale"><span>0</span><span>100+ rpm</span></span>
+    </div>
+    <div class="machine-actions">
+      <span class="machine-caption">COMPARE FIELD STRENGTH AT THE SAME CURRENT</span>
+      <div><button type="button" data-field=".2">Run at 0.20 T</button>
+      <button type="button" data-field=".5">Run at 0.50 T</button></div>
+      <p class="machine-phase-note"></p>
+    </div>` : `
+    <div class="machine-console-reading">
+      <span class="machine-caption">GENERATED VOLTAGE</span>
+      <output class="machine-value" aria-live="off">0° · 0 V</output>
+      <svg viewBox="0 0 220 48" aria-hidden="true" class="machine-wave">
+        <path d="M6 24H214" class="wave-axis"/>
+        <path class="wave-curve"/>
+        <circle cx="6" cy="24" r="4"/>
+      </svg>
+    </div>
+    <div class="machine-actions">
+      <label class="machine-caption" for="generator-angle">PAUSE AND INSPECT COIL ANGLE</label>
+      <input type="range" id="generator-angle" min="0" max="360" step="1" value="0">
+      <div><button type="button" data-angle="0">0°</button>
+      <button type="button" data-angle="90">90°</button>
+      <button type="button" data-angle="180">180°</button>
+      <button type="button" data-angle="270">270°</button></div>
+      <p class="machine-phase-note"></p>
+    </div>`;
+  stage.querySelector('.transport').before(consolePanel);
+  const value = consolePanel.querySelector('.machine-value');
+  const note = consolePanel.querySelector('.machine-phase-note');
+  const buttons = [...consolePanel.querySelectorAll('button')];
+  if (motor) {
+    const meter = consolePanel.querySelector('meter');
+    buttons.forEach(button => button.onclick = () => runMotorField(Number(button.dataset.field)));
+    return lab => {
+      const {rpm} = lab.definition.sample(lab.state, lab.params);
+      value.textContent = `${rpm.toFixed(1)} rpm`;
+      meter.value = rpm;
+      buttons.forEach(button => button.setAttribute('aria-pressed', String(Number(button.dataset.field) === lab.params.field)));
+      note.textContent = `Field ${lab.params.field.toFixed(2)} T · Current ${lab.params.current.toFixed(2)} A · Each run starts from rest.`;
+    };
+  }
+  const slider = consolePanel.querySelector('input');
+  const curve = consolePanel.querySelector('.wave-curve');
+  const marker = consolePanel.querySelector('circle');
+  let waveDrawn = false;
+  buttons.forEach(button => button.onclick = () => seekGeneratorPhase(Number(button.dataset.angle)));
+  slider.oninput = () => seekGeneratorPhase(slider.valueAsNumber);
+  return lab => {
+    const {emf, peak} = lab.definition.sample(lab.state, lab.params);
+    if (!waveDrawn) {
+      const points = Array.from({length:65}, (_,i) => {
+        const fraction = i / 64;
+        const row = lab.definition.sample({t:fraction/lab.params.frequency}, lab.params);
+        return `${i ? 'L' : 'M'}${6+208*fraction},${24-18*row.emf/peak}`;
+      });
+      curve.setAttribute('d',points.join(' '));
+      waveDrawn = true;
+    }
+    const turns = lab.state.t * lab.params.frequency;
+    const degrees = Math.round(360*(turns < 1.00000001 ? Math.min(turns,1) : turns % 1));
+    const voltage = Math.abs(emf) < 1e-10 ? 0 : emf;
+    slider.value = degrees;
+    marker.setAttribute('cx',6+208*degrees/360);
+    marker.setAttribute('cy',24-18*voltage/peak);
+    value.textContent = `${degrees}° · ${calculationNumber(voltage)} V`;
+    buttons.forEach(button => button.setAttribute('aria-pressed', String(!lab.running && degrees === Number(button.dataset.angle))));
+    note.textContent = voltage === 0
+      ? 'Zero output. The long coil sides move along the field.'
+      : `${voltage > 0 ? 'Positive' : 'Negative'} output. Compare the purple current arrows with the previous half-turn.`;
+  };
+}
+
+export function installPresentationStudio(stage, controls, id, title, show3D, machineActions) {
   stage.classList.add('presentation-stage');
   const panel = document.createElement('section');
   panel.className = 'instrument-hud';
@@ -45,6 +126,8 @@ export function installPresentationStudio(stage, controls, id, title, show3D) {
   panel.innerHTML = '<div class="instrument-values"></div><div class="instrument-observe"><strong>What to watch</strong><span class="instrument-context"></span></div>';
   stage.querySelector('.transport').after(panel);
   if (id === 'motor' || id === 'induction') addHandRule(stage, id === 'motor');
+  const updateMachine = id === 'motor' || id === 'induction'
+    ? addMachineConsole(stage, id === 'motor', machineActions) : null;
   const values = panel.querySelector('.instrument-values'), context = panel.querySelector('.instrument-context');
   const toolbar = stage.querySelector('.stage-views');
   const scene = stage.querySelector('.scene-container');
@@ -108,6 +191,7 @@ export function installPresentationStudio(stage, controls, id, title, show3D) {
       restore(false);
     },
     update(lab) {
+      updateMachine?.(lab);
       const readings = studyReadings(id,lab.state,lab.params,lab.studyMode,lab.definition),
         next = readings.map(x => x.title + x.unit).join('|');
       if (signature !== next) {

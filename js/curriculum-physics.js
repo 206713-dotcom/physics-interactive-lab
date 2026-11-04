@@ -166,7 +166,6 @@ export const RANGES = {
     field: [0.2, 0.02, 1],
     area: [0.02, 0.005, 0.1],
     turns: [100, 10, 300],
-    frequency: [0.5, 0.2, 5],
     current: [2, 0.2, 5],
   },
   transformer: {
@@ -212,6 +211,30 @@ export const RANGES = {
   },
 };
 export const CURRICULUM_IDS = Object.keys(RANGES);
+const MOTOR_INERTIA = 0.12; // kg m²
+const MOTOR_VISCOUS_LOAD = 0.14; // N m per rad/s
+const MOTOR_QUADRATIC_LOAD = 0.035; // N m per (rad/s)²
+const motorPeakTorque = p => p.turns * p.field * p.area * p.current;
+const motorTorque = (phase, p) => motorPeakTorque(p) * Math.abs(Math.sin(phase));
+const motorAcceleration = (phase, omega, p) =>
+  (motorTorque(phase,p) - MOTOR_VISCOUS_LOAD*omega
+    - MOTOR_QUADRATIC_LOAD*omega*Math.abs(omega)) / MOTOR_INERTIA;
+
+function stepMotor(state, p, dt) {
+  const {phase, omega, t} = state;
+  const a1 = motorAcceleration(phase, omega, p);
+  const w2 = omega + a1*dt/2;
+  const a2 = motorAcceleration(phase + omega*dt/2, w2, p);
+  const w3 = omega + a2*dt/2;
+  const a3 = motorAcceleration(phase + w2*dt/2, w3, p);
+  const w4 = omega + a3*dt;
+  const a4 = motorAcceleration(phase + w3*dt, w4, p);
+  return {
+    t: t + dt,
+    phase: phase + (omega + 2*w2 + 2*w3 + w4)*dt/6,
+    omega: Math.max(0, omega + (a1 + 2*a2 + 2*a3 + a4)*dt/6),
+  };
+}
 /** End-on view: the magnetic field is +x and the shaft is +y.
  * Each long side lies at ±(sin θ, 0, cos θ) around the shaft. */
 export function machineSide(phase, side, motor) {
@@ -284,6 +307,7 @@ export function createCurriculum(id, p = { ...DEFAULTS[id] }) {
   validate(id, p);
   const params = { ...p },
     state = { t: 0 };
+  if (id === "motor") return { params, state: { ...state, phase: Math.PI/6, omega: 0 } };
   if (PRACTICAL_IDS.includes(id)) return { params, state: createPractical(id) };
   if (id === "buoyancy") return { params, state: createBuoyancy(p) };
   if (id === "moments") return { params, state: createMoments() };
@@ -300,6 +324,12 @@ export function stepCurriculum(id, s, p, h) {
   if (!Number.isFinite(h) || h <= 0 || h > 60)
     throw new RangeError("Invalid time step.");
   if (PRACTICAL_IDS.includes(id)) return stepPractical(id, s, p, h);
+  if (id === "motor") {
+    // Bound substeps for callers that advance longer than the animation tick.
+    const count = Math.ceil(h * 240);
+    for (let i = 0; i < count; i++) s = stepMotor(s, p, h/count);
+    return s;
+  }
   if (id === "buoyancy") return stepBuoyancy(s, p, h);
   if (id === "moments") return stepMoments(s, p, h);
   return { ...s, t: s.t + h };
@@ -608,15 +638,14 @@ export function sampleCurriculum(id, s, p) {
       break;
     }
     case "motor": {
-      const phase = 2 * Math.PI * p.frequency * t;
-      const peakTorque = p.turns * p.field * p.area * p.current;
+      const {phase, omega} = s;
       Object.assign(q, {
         phase,
-        torque: peakTorque * Math.abs(Math.sin(phase)),
-        peakTorque,
+        omega,
+        torque: motorTorque(phase,p),
+        peakTorque: motorPeakTorque(p),
         sideForce: p.turns * p.field * p.current * Math.sqrt(p.area),
-        period: 1 / p.frequency,
-        frequency: p.frequency,
+        rpm: omega * 30 / Math.PI,
       });
       break;
     }

@@ -220,8 +220,8 @@ export const SCENE_GUIDES = {
   motor: [
     "Purple shows conventional current. Gold shows the force on each side of the coil.",
     "The opposite forces form a couple. The split ring reverses current every half-turn so torque keeps its direction.",
-    "Track one coil side before and after it passes the zero-torque position.",
-    "Coil and commutator are schematic. The rotation speed is imposed and the arrows show direction.",
+    "Track side A through the zero-torque position. Use the two field buttons to compare acceleration at the same current.",
+    "Coil and commutator are schematic. Denser cyan arrows represent a stronger field. Shaft speed comes from the torque, rotor inertia and fixed load model.",
   ],
   transformer: [
     "Gold is the primary coil; cyan is the secondary; both share the core.",

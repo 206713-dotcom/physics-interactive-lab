@@ -431,7 +431,8 @@ function labPage(type, query) {
   }
   // The course focus replaces the duplicated three-step walkthrough.
 
-  presentationStudio=installPresentationStudio($("#stage"),$(".controls"),type,d.short,() => setView("3d"));
+  presentationStudio = installPresentationStudio($("#stage"), $(".controls"), type, d.short,
+    () => setView("3d"), { runMotorField, seekGeneratorPhase });
   if(["spring","pendulum"].includes(type) && studyMode !== "igcse") {
     const tools=document.createElement("div");
     tools.className="oscillation-tools";tools.setAttribute("aria-label","Oscillation indicators");
@@ -678,6 +679,27 @@ function seekVector(progress) {
   lab.running = false;
   lab.vectorProgress = progress;
   lab.lastUI = -1;
+  syncPlay();
+}
+function runMotorField(field) {
+  lab.running = true;
+  reset({ ...lab.params, field });
+  syncInputs();
+}
+function seekGeneratorPhase(degrees) {
+  const {definition, params} = lab;
+  const t = degrees / (360 * params.frequency);
+  const interval = definition.sampleEvery(params);
+  const history = [];
+  for (let i = 0; i * interval < t; i++)
+    history.push(definition.sample({t: i * interval}, params));
+  Object.assign(lab, {
+    running: false, accumulator: 0, previousState: null, state: {t},
+    history, nextSample: t + interval, lastUI: -1,
+  });
+  sample();
+  updateReadouts();
+  updateCharts();
   syncPlay();
 }
 function loadPreset(index) {

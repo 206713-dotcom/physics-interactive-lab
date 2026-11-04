@@ -16,6 +16,7 @@ const continuous = new Set([
   "theta",
   "theta1",
   "theta2",
+  "phase",
   "omega",
   "omega1",
   "omega2",

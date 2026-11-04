@@ -55,8 +55,25 @@ test("motor commutation preserves torque direction while generator current follo
   }
   assert.equal(P.machineSide(Math.PI,1,true).current, 0);
   assert.equal(P.machineSide(Math.PI,1,false).current, 0);
-  const {frequency} = P.DEFAULTS.motor;
-  close(sample("motor",{},1/(4*frequency)).torque, sample("motor",{},3/(4*frequency)).torque);
+  const params = P.DEFAULTS.motor;
+  const read = phase => P.sampleCurriculum("motor", {t:0, phase, omega:0}, params);
+  close(read(Math.PI/2).torque, read(3*Math.PI/2).torque);
+});
+
+test("the current-driven motor starts from rest and accelerates more in the stronger field", () => {
+  function run(overrides, duration) {
+    const params = { ...P.DEFAULTS.motor, ...overrides };
+    let {state} = P.createCurriculum("motor", params);
+    assert.equal(state.omega, 0);
+    for (let i = 0; i < duration*240; i++)
+      state = P.stepCurriculum("motor", state, params, 1/240);
+    return P.sampleCurriculum("motor", state, params);
+  }
+  const weak = run({field:.2}, .5);
+  const strong = run({field:.5}, .5);
+  assert.ok(weak.rpm > 0 && strong.rpm > weak.rpm && strong.phase > weak.phase);
+  const max = run({field:1, turns:300, area:.1, current:5}, 10);
+  assert.ok(Number.isFinite(max.phase) && max.omega > 0 && max.omega < 66);
 });
 
 test("all 45 scientific instruments expose real calculations, lessons, valid presets and diagram embeds", () => {

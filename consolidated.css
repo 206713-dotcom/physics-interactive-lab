@@ -959,6 +959,44 @@ body:has(.model-screen[open]) { overflow: hidden; }
 .machine-wave .wave-axis { stroke: #7ca2b6; stroke-dasharray: 3 4; }
 .machine-wave .wave-curve { stroke: #8cebd9; stroke-width: 2; }
 .machine-wave circle { fill: #ffd293; stroke: #142d43; }
+.rectifier-console {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  border-top: 1px solid #416277;
+  color: #d9effa;
+  background: #142f43;
+}
+.rectifier-live { display: grid; gap: 5px; flex: 1 1 210px; }
+.rectifier-live strong { color: #a3f1e4; font-size: 16px; }
+.rectifier-live span { font-size: 12px; }
+.rectifier-phase > span { display: block; margin-bottom: 5px; color: #a5ccdf; font-size: 11px; }
+.rectifier-phase > div { display: flex; flex-wrap: wrap; gap: 5px; }
+.rectifier-phase button {
+  min-height: 36px;
+  padding: 6px 9px;
+  border: 1px solid #67899a;
+  border-radius: 7px;
+  font: 650 12px var(--font-sans, system-ui, sans-serif);
+  color: #d9effa;
+  background: #1b4054;
+  cursor: pointer;
+}
+.rectifier-phase button:hover, .rectifier-phase button[aria-pressed="true"] { color: #102d3b; background: #a1efe4; }
+.rectifier-wave { width: 180px; max-width: 100%; flex: 0 1 180px; overflow: visible; }
+.rectifier-wave path { fill: none; stroke-width: 2; }
+.rectifier-axis { stroke: #668a9e; stroke-dasharray: 3 4; }
+.rectifier-input { stroke: #bf9cea; stroke-dasharray: 4 3; }
+.rectifier-output { stroke: #83edda; }
+.rectifier-cursor { stroke: #e6f4fa; stroke-width: 1; }
+.rectifier-now { fill: #ffc87f; }
+.rectifier-wave text { fill: #a4c9dc; font: 9px system-ui, sans-serif; }
+.rectifier-wave .rectifier-legend-input { fill: #d7b2ff; }
+.rectifier-wave .rectifier-legend-output { fill: #a1f2e4; }
 .model-screen .commutator-panel,
 .model-screen .commutator-jump { display: none; }
 .commutator-panel {

@@ -9,6 +9,7 @@ import { installMotorCommutator } from './motor-commutator.js';
 import { installGeneratorSlipRings } from './generator-slip-rings.js';
 import { installGalvanometer } from './galvanometer.js';
 import { installReadingComparison } from './reading-comparison.js';
+import { installRectifierConsole } from './rectifier-console.js';
 import { GENERATOR_LOAD_OHMS, MAGNET_STROKE_METRES, magnetLampLevel } from './curriculum-physics.js';
 
 function addHandRule(stage, motor) {
@@ -254,6 +255,7 @@ export function installPresentationStudio(stage, controls, id, title, machineAct
   panel.innerHTML = '<div class="instrument-values"></div><div class="instrument-observe"><strong>What to watch</strong><span class="instrument-context"></span></div>';
   stage.querySelector('.transport').after(panel);
   const compareReadings = installReadingComparison(panel);
+  const updateRectifier = id === 'rectifier' ? installRectifierConsole(stage, machineActions) : null;
   if (id === 'motor' || id === 'induction') addHandRule(stage, id === 'motor');
   const commutator = id === 'motor' ? installMotorCommutator(stage) : null;
   const slipRings = id === 'induction' ? installGeneratorSlipRings(stage, machineActions) : null;
@@ -339,6 +341,7 @@ export function installPresentationStudio(stage, controls, id, title, machineAct
     },
     update(lab) {
       updateMachine?.(lab);
+      updateRectifier?.(lab);
       if (lab.magnetManual) renderGalvanometer?.(lab);
       const readings = studyReadings(id,lab.state,lab.params,lab.studyMode,lab.definition),
         next = readings.map(x => x.title + x.unit).join('|');

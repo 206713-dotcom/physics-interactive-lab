@@ -642,7 +642,7 @@ export const LEARNING_PATHS = {
       "Why is sensor orientation important for a comparator threshold?",
       "It determines whether the divider voltage rises or falls as the stimulus increases.",
       "output-1,resistance-0",
-      "mode,orientation,fixed,threshold",
+      "mode,orientation,lux,temperature,fixed,threshold",
       {},
       "The thermistor beta relation and empirical LDR power law are assumed device models, not required recall equations.",
     ),

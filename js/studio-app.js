@@ -776,7 +776,8 @@ function bindMagnetDiagram(canvas) {
 function seekInductionPhase(degrees, held = false) {
   const {definition, params} = lab;
   const t = degrees / (360 * params.frequency);
-  const interval = definition.sampleEvery(params);
+  const interval = typeof definition.sampleEvery === "function"
+    ? definition.sampleEvery(params) : definition.sampleEvery;
   const history = [];
   for (let i = 0; i * interval < t; i++)
     history.push(definition.sample({t: i * interval}, params));

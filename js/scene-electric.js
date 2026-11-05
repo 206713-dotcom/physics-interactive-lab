@@ -5,6 +5,8 @@ import { PALETTE as C, clamp, setPath } from "./scene-kit.js";
 import { createParticleChamber } from "./scene-particle-chamber.js";
 import { createMagnetismApparatus } from "./scene-magnetism.js";
 import { createDCBench } from './scene-dc-bench.js';
+import { createRectifierBench } from './scene-rectifier.js';
+import { createSensorBench } from './scene-sensors.js';
 import { machineSide, MAGNET_STROKE_METRES, magnetLampLevel } from "./curriculum-physics.js";
 import {
   radiationReferences,
@@ -87,87 +89,10 @@ export const ELECTRIC_SCENES = {
     };
   },
   sensors(p, k) {
-    board(k);
-    source(k);
-    wire(k, [
-      [-3.3, 0.7, 0],
-      [1.8, 0.7, 0],
-      [1.8, 3, 0],
-      [-3.3, 3, 0],
-      [-3.3, 0.7, 0],
-    ]);
-    k.resistor(1.8, p.orientation ? 1.2 : 2.7, 0);
-    const sensor = k.ball(0.35, C.purple, [1.8, p.orientation ? 2.7 : 1.2, 0]);
-    k.rod([1.8, 1.9, 0], [3.3, 1.9, 0], C.gold);
-    const led = k.ball(0.2, C.cyan, [3.3, 1.9, 0], {
-      emissive: C.cyan,
-      emissiveIntensity: 0,
-    });
-    k.label("Vout", [3.2, 2.6, 0], "#ffc584", 1.3);
-    k.label(
-      p.mode ? "Thermistor" : "Light-dependent resistor",
-      [0.8, 0.35, 1.4],
-      "#c3a6ff",
-      3.8,
-    );
-    k.label("Sensor changes resistance", [0, 4.1, 0], "#cfe6ef", 4);
-    return (s, q) => {
-      led.material.emissiveIntensity = q.on ? 1.5 : 0;
-      sensor.scale.setScalar(0.85 + 0.15 * Math.tanh(q.resistance / 1e4));
-    };
+    return createSensorBench(p, k);
   },
   rectifier(p, k) {
-    board(k);
-    const diode = (a, b) => {
-      wire(k, [a, b]);
-      const center = a.map((v, i) => (v + b[i]) / 2),
-        g = new T.Group();
-      k.add(g, center);
-      g.rotation.z = Math.atan2(b[1] - a[1], b[0] - a[0]);
-      g.add(
-        k.box(0.45, 0.25, 0.4, C.blue),
-        k.box(0.045, 0.31, 0.45, C.white, [0.15, 0, 0]),
-      );
-    };
-    if (p.mode) {
-      const left = [-2, 1.7, 0],
-        right = [2, 1.7, 0],
-        top = [0, 3, 0],
-        bottom = [0, 0.4, 0];
-      for (const [a, b] of [
-        [left, top],
-        [right, top],
-        [bottom, left],
-        [bottom, right],
-      ])
-        diode(a, b);
-      k.box(0.5, 1, 0.5, C.blue, [-3.5, 1.7, 0]);
-      wire(k, [[-3.5, 1.2, 0], left]);
-      wire(k, [[-3.5, 2.2, 0], [-3.5, 2.2, -1.5], [2, 2.2, -1.5], right]);
-      wire(k, [top, [4, 3, 0], [4, 0.4, 0], bottom]);
-      k.resistor(2.7, 3, 0);
-      k.label("+", [0.4, 3.45, 0], "#ffc584", 0.45);
-      k.label("−", [0.4, 0.1, 0], "#89baff", 0.45);
-    } else {
-      source(k);
-      wire(k, [
-        [-3.3, 0.7, 0],
-        [3, 0.7, 0],
-        [3, 2, 0],
-        [-3.3, 2, 0],
-        [-3.3, 0.7, 0],
-      ]);
-      diode([-1, 2, 0], [1, 2, 0]);
-      k.resistor(2.5, 0.7, 0);
-    }
-    const input = k.arrow([-3, 3, 0], [0, 1, 0], C.purple),
-      output = k.arrow([3.8, 1.4, 0], [0, 1, 0], C.gold);
-    k.label("AC in", [-3, 4.4, 0], "#c3a6ff", 1.5);
-    k.label("Pulsed DC out", [2.3, 4.4, 0], "#ffc584", 2.5);
-    return (s, q) => {
-      k.setArrow(input, [-3, 3, 0], [0, q.input / p.peak, 0]);
-      k.setArrow(output, [3.8, 1.4, 0], [0, q.output / p.peak, 0]);
-    };
+    return createRectifierBench(p, k);
   },
   magnetism(p, k) {
     return createMagnetismApparatus(p, k);

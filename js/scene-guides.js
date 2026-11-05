@@ -176,16 +176,16 @@ export const SCENE_GUIDES = {
     "The device body is schematic. The cut-out is an ideal instantaneous model; heating and reset hysteresis are excluded.",
   ],
   sensors: [
-    "Identify the fixed resistor, sensor and output tap.",
+    "Change the light level or temperature and watch the sensor resistance, output voltage and threshold indicator together.",
     "Changing sensor resistance changes the fraction of supply voltage at the divider output.",
     "Swap the divider orientation and compare whether the same sensor change raises or lowers Vout.",
-    "The output LED indicates the ideal threshold result, not an added load. Sensor size is illustrative.",
+    "The divider is unloaded. Its display and threshold indicator draw no current in this ideal model. The voltage bar shares a scale with the threshold mark. Current markers are schematic and slowed.",
   ],
   rectifier: [
-    "Compare the purple input arrow with the gold output arrow.",
+    "Follow the gold conventional-current markers through the active diodes. The teal load arrow always points down when current flows.",
     "A half-wave rectifier blocks negative half-cycles; a full-wave rectifier reverses them.",
-    "Compare ripple frequency, mean voltage and rms voltage in both modes.",
-    "Arrows share a voltage scale. Diodes are ideal and no smoothing capacitor is included.",
+    "Pause at the positive and negative peaks. In bridge mode, compare D1 + D4 with D2 + D3 and check that load current keeps its direction.",
+    "Diodes have zero forward drop and block reverse current. Cathode bands identify their orientation. The raised source wire crosses the load return without joining it. Markers show conventional-current direction at an illustrative speed. Output is pulsating and unsmoothed.",
   ],
   magnetism: [
     "White markers follow conventional current around the copper coil. Cyan arrows show the magnetic field: through the coil from S to N and back around the outside.",

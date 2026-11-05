@@ -995,7 +995,7 @@ export const PRACTICAL_LABS = {
       "How do two springs share a load?",
       "In series, each spring carries the same force and extensions add. In parallel, both have the same extension and their forces add.",
       "The area under a linear load–extension graph is ½Fx. It is the work done storing elastic energy. The system is loaded smoothly over four seconds to compare quasistatic states.",
-      "Massless ideal Hookean springs under quasistatic axial load; no oscillation or gravitational mass is solved. The final load is prescribed, without exceeding a real-material limit because no material-specific limit is claimed. The diagram automatically fits long extensions. Support and coil sizes are illustrative; extensions and energies use the equations.",
+      "Massless ideal Hookean springs under quasistatic axial load. The final load is prescribed. Extension uses the same compressed visual scale across setups; use the readings for exact metres. Support and coil sizes are illustrative. Numerical extensions and energies use the ideal linear equations.",
       "Spring balances, suspension systems and elastic energy storage.",
       "Why are parallel springs stiffer than either spring alone?",
       "Each carries part of the total force at the same extension, so the forces add: kₑq = k₁ + k₂.",

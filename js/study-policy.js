@@ -101,8 +101,14 @@ export function studyParams(id, mode, definition, requested = {}) {
     if (d.options && !d.options.some(([v]) => Number(v) === value))
       throw new Error('Choose one of the available IGCSE settings.');
     const display = value / (d.factor || 1);
-    if (!d.options && !d.log && (display < d.min || display > d.max))
-      throw new Error(`${d.label} must be between ${d.min} and ${d.max} ${d.unit || ''}.`);
+    // SI/display conversions can move a valid endpoint by a few ulps. Compare
+    // relative to each boundary so tiny SI quantities do not get a large
+    // absolute tolerance. Genuine out-of-range entries still fail here.
+    const roundoff = bound => 8 * Number.EPSILON * Math.max(Math.abs(display), Math.abs(bound), Number.MIN_VALUE);
+    if (!d.options && !d.log &&
+      ((display < d.min && d.min - display > roundoff(d.min)) ||
+       (display > d.max && display - d.max > roundoff(d.max))))
+      throw new Error(`${d.label} must be between ${Number(d.min.toPrecision(12))} and ${Number(d.max.toPrecision(12))} ${d.unit || ''}.`);
     const bounds = definition.limits?.[key];
     // Display-unit conversion can land one machine epsilon outside an SI
     // endpoint. Correct round-off only; genuinely invalid input still fails.
@@ -170,6 +176,15 @@ export function heatPowerCalculationId(mode) {
 }
 export function studyReadings(id, state, params, mode, definition) {
   const sheet = calculationSheet(id,state,params);
+  if (id === 'polarisation') {
+    const q = definition.sample(state, params), unit = 'W/m²';
+    return params.mode
+      ? [{ title:'After first polariser',value:q.first,unit },
+        { title:'After middle filter',value:q.second,unit },
+        { title:'Final transmitted intensity',value:q.output,unit }]
+      : [{ title:'Polarised input to analyser',value:q.first,unit },
+        { title:'After analyser',value:q.output,unit }];
+  }
   if (id === 'gases' && mode === 'igcse' && params.state === 2) {
     const q = definition.sample(state,params);
     return [{title:'Gas pressure',value:q.pressure/1000,unit:'kPa'},

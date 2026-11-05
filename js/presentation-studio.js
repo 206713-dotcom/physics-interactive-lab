@@ -394,6 +394,22 @@ export function installPresentationStudio(stage, controls, id, title, machineAct
         context.textContent='The marked particle moves up and down. The wave pattern travels to the right.';
       if(id==='refraction' && lab.studyMode==='igcse')
         context.textContent='Measure angles from the dashed normal. Compare the direction of each ray.';
+      if (id === 'mirror')
+        context.textContent = (lab.params.angle === 0
+          ? 'Left: at normal incidence the reflected ray retraces the incident path. '
+          : `Left: both angles are ${lab.params.angle.toFixed(0)}° from the normal. `) +
+          `Right: the object and virtual image are each ${lab.params.distance.toFixed(2)} m from the mirror. Dashed lines are back projections.`;
+      if (id === 'dispersion')
+        context.textContent = 'Follow one wavefront through the boundary. Its spacing and speed decrease together, keeping frequency unchanged. Compare the reference angles for violet and red.';
+      if (id === 'polarisation') {
+        const q = lab.definition.sample(lab.state, lab.params);
+        controls.querySelector('#thirdAngle-number').closest('.control').hidden = !lab.params.mode;
+        context.textContent = q.output === 0
+          ? 'Crossed transmission axes block the light completely. Insert a middle filter at 45° between the crossed outer filters to restore some light.'
+          : lab.params.mode
+            ? 'Read the output after each filter. The next projection uses the angle between neighbouring axes. The first and last filters stay in place when the middle filter is inserted.'
+            : 'Rotate the analyser towards 90° and watch the field shrink and screen darken. The displayed intensities are calculated values; screen glow is a visual cue.';
+      }
       if(id==='dc')context.textContent=lab.params.mode===1
         ? 'Current splits between the branches, then recombines. Both branches have the same potential difference.'
         : 'One path · the current is the same through both components.';

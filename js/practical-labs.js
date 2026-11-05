@@ -239,7 +239,7 @@ export const PRACTICAL_LABS = {
     parameters: [
       O("mode", "Filter stack", [
         [0, "Two filters"],
-        [1, "Three filters"],
+        [1, "Three filters · extension"],
       ]),
       N("intensity", "Incident unpolarised intensity", "W/m²"),
       N("angle", "Second filter angle", "°"),
@@ -290,7 +290,7 @@ export const PRACTICAL_LABS = {
       "Light has a transverse electric field.",
       "The first ideal polariser transmits half of unpolarised incident intensity. An analyser transmits the squared component along its own axis.",
       "A middle filter at 45° can allow light through a stack whose first and last filters are crossed. Every filter changes the polarisation of the transmitted light.",
-      "Ideal absorbing linear polarisers with unpolarised input, no reflections and no wavelength dependence. Filter widths and beam brightness are illustrative. All angles are measured from the first polariser axis.",
+      "Ideal absorbing linear polarisers with unpolarised input, no reflections and no wavelength dependence. All angles are measured from the first polariser axis. The field drawing is normalised to incident intensity and uses signed projections; screen glow is qualitative and responds to actual output intensity. Optical oscillation is slowed. The two-filter Malus-law calculation is the Cambridge AS focus; input halving and the three-filter demonstration are clearly labelled extensions.",
       "Polarising sunglasses, stress analysis and liquid-crystal displays.",
       "Why can adding a filter increase transmission through crossed outer filters?",
       "A middle filter rotates the transmitted polarisation by projection. Two successive nonzero projections can transmit light even when a direct 90° projection is zero.",

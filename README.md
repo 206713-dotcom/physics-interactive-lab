@@ -4,11 +4,23 @@
 
 [Open the live laboratory](https://206713-dotcom.github.io/physics-interactive-lab/) · [Browse the source](https://github.com/206713-dotcom/physics-interactive-lab) · [Automated checks](https://github.com/206713-dotcom/physics-interactive-lab/actions)
 
-A browser-only laboratory for IGCSE, A Level and extension exploration. The [IGCSE course navigator](https://206713-dotcom.github.io/physics-interactive-lab/#/course) maps 78 FocusPhysics lesson pages to interactive experiments. All **57 laboratories have WebGL 3D apparatus and a 2D diagram**. Each lab includes guided investigations, learning objectives, equations, assumptions and applications. The [A Level practice section](https://206713-dotcom.github.io/physics-interactive-lab/#/textbook) offers 1,000 questions built from 45 problem types mapped to the Extended tenth edition of Fundamentals of Physics.
+A browser-only laboratory for IGCSE, A Level and extension exploration. The [IGCSE course navigator](https://206713-dotcom.github.io/physics-interactive-lab/#/course) maps 78 FocusPhysics lesson pages to interactive experiments. All **59 laboratories have WebGL 3D apparatus and a 2D diagram**. Each lab includes guided investigations, learning objectives, equations, assumptions and applications. The [A Level practice section](https://206713-dotcom.github.io/physics-interactive-lab/#/textbook) offers 1,000 questions built from 45 problem types mapped to the Extended tenth edition of Fundamentals of Physics.
 
 This is an independent student prototype and a proposed contribution to [FocusPhysics](https://focusphysics.com), not an official or endorsed FocusPhysics integration.
 
 ## What is in the laboratory?
+
+### Version 20.12: optics you can follow
+
+- **Plane mirrors** have separate reflection-law and virtual-image constructions. The object-distance control now moves the object and image by equal amounts on a fixed scale. Two real reflected rays back-project to the upright virtual image. All ray angles and distance ratios are calculated.
+- **Dispersion** shows a selected-colour Snell ray, moving wavefronts and side-by-side 400/550/700 nm reference angles. Wavefront spacing and travel speed both decrease by the calculated refractive index, preserving frequency and phase continuity across the single interface. Angles are not magnified.
+- **Polarisation** has rotating mounted transmission axes, signed transverse field projections, live intensity labels and a screen that responds to actual output intensity. Exactly crossed ideal filters give exactly zero output. Adding a 45° middle filter between crossed outer filters transmits one eighth of the original unpolarised intensity. The outer filters remain in place during this demonstration.
+
+The three labs have matching Canvas diagrams. Controls remain inside the stage, with worked calculations below. Filter rotation reuses the same GPU geometry. Optical oscillations are slowed and wavelengths enlarged. Screen glow, varied unpolarised input marks and apparatus dimensions are qualitative. The 2D polarisation field is an oblique projection, with separate face-on transmission-axis insets.
+
+**314 automated tests pass.** New checks independently verify mirror reflection and virtual-image construction, true Snell angles, constant frequency, wavefront speed/spacing and boundary phase, exact crossed-filter extinction, three-filter transmission, phase through a 180° rotation, final-output instruments, and stable meshes during parameter edits. Display-unit boundaries accept conversion round-off while still rejecting invalid input, including the 700 nm wavelength endpoint.
+
+Teaching scope follows [Cambridge IGCSE 0625 (2026–2028)](https://www.cambridgeinternational.org/Images/697209-2026-2028-syllabus.pdf) and [AS & A Level 9702 (2025–2027)](https://www.cambridgeinternational.org/Images/664565-2025-2027-syllabus.pdf). The examined AS polarisation focus is Malus’s law for polarised input. Input halving and the three-filter demonstration are marked as extensions. Physical constructions were cross-checked with [OpenStax plane mirrors](https://openstax.org/books/university-physics-volume-3/pages/2-1-images-formed-by-plane-mirrors) and [polarisation](https://openstax.org/books/university-physics-volume-3/pages/1-7-polarization).
 
 ### Version 20.7: drag the magnet and power a lamp
 

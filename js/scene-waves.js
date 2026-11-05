@@ -3,16 +3,13 @@
 import { PALETTE as C, clamp, setPath } from "./scene-kit.js";
 import { createLensApparatus } from "./scene-optical-bench.js";
 import { createSoundApparatus } from "./scene-sound.js";
+import { createMirrorBench, createDispersionBench, createPolarisationBench } from "./scene-optics-labs.js";
 import { rippleFronts, RIPPLE_HALF_LENGTH as tankX, RIPPLE_HALF_WIDTH as tankZ } from "./ripple-geometry.js";
 const TAU = 2 * Math.PI,
   rad = (x) => (x * Math.PI) / 180;
 function bench(k) {
   k.stand(10, 4);
   k.rod([-4.5, 0.25, 0], [4.5, 0.25, 0], C.muted, 0.06);
-}
-function plate(k, x, color = C.blue) {
-  k.glass(0.09, 3, 2.4, [x, 1.8, 0], color);
-  k.cylinder(0.05, 1, C.muted, [x, 0.5, 0]);
 }
 function animatedWave(k, color = C.cyan) {
   return k.line(
@@ -118,120 +115,10 @@ export const WAVE_SCENES = {
       );
     };
   },
-  mirror(p, k) {
-    bench(k);
-    k.box(0.14, 3.3, 3, C.blue, [0, 1.8, 0], {
-      metalness: 0.9,
-      roughness: 0.08,
-    });
-    const a = rad(p.angle),
-      d = 3.2,
-      hit = [-0.09, 1.8, 0];
-    k.line(
-      [
-        [-d * Math.cos(a), 1.8 + d * Math.sin(a), 0],
-        hit,
-        [-d * Math.cos(a), 1.8 - d * Math.sin(a), 0],
-      ],
-      C.gold,
-    );
-    k.line(
-      [
-        [-3.5, 1.8, 0],
-        [3.5, 1.8, 0],
-      ],
-      C.muted,
-      0.5,
-    );
-    k.label("Normal", [2, 2.3, 0], "#b7cedc", 1.6);
-    k.label("Angle in = angle out", [-1, 4.2, 0], "#ffc584", 3.8);
-    return () => {};
-  },
+  mirror: createMirrorBench,
   lenses: createLensApparatus,
-  dispersion(p, k) {
-    bench(k);
-    k.glass(4.3, 3.2, 2.6, [2.2, 1.6, 0]);
-    k.label("Air", [-2.5, 3.5, 0]);
-    k.label("Glass", [2.5, 3.5, 0]);
-    k.line(
-      [
-        [-4, 1.6, 0],
-        [4, 1.6, 0],
-      ],
-      C.muted,
-      0.4,
-    );
-    let built = false;
-    return (s, q) => {
-      if (built) return;
-      built = true;
-      const a = rad(p.angle),
-        r = rad(q.refraction);
-      k.line(
-        [
-          [-3 * Math.cos(a), 1.6 + 3 * Math.sin(a), 0],
-          [0, 1.6, 0],
-          [3.6 * Math.cos(r), 1.6 - 3.6 * Math.sin(r), 0],
-        ],
-        C.gold,
-      );
-      k.label("Slower in glass → bends to normal", [0, 4.3, 0], "#ffc584", 5.2);
-    };
-  },
-  polarisation(p, k) {
-    bench(k);
-    const xs = p.mode ? [-2.7, 0, 2.7] : [-2, 2],
-      angles = p.mode ? [0, p.angle, p.thirdAngle] : [0, p.angle];
-    xs.forEach((x, i) => {
-      plate(k, x);
-      const a = rad(angles[i]);
-      for (let j = -2; j <= 2; j++)
-        k.rod(
-          [
-            x,
-            1.7 - 0.9 * Math.cos(a) + j * 0.12 * Math.sin(a),
-            -0.9 * Math.sin(a) - j * 0.12 * Math.cos(a),
-          ],
-          [
-            x,
-            1.7 + 0.9 * Math.cos(a) + j * 0.12 * Math.sin(a),
-            0.9 * Math.sin(a) - j * 0.12 * Math.cos(a),
-          ],
-          C.blue,
-          0.012,
-        );
-    });
-    const lines = Array.from({ length: xs.length }, () => animatedWave(k));
-    k.label(
-      "Filters transmit one field direction",
-      [0, 4.2, 0],
-      "#89baff",
-      4.8,
-    );
-    return (s, q) => {
-      const intensities = p.mode
-        ? [q.first, q.second, q.output]
-        : [q.first, q.output];
-      lines.forEach((line, i) => {
-        const start = xs[i] + 0.13,
-          end = xs[i + 1] ?? 4.4,
-          a = rad(angles[i]),
-          amp = 0.6 * Math.sqrt(Math.max(0, intensities[i]) / p.intensity);
-        setPath(
-          line,
-          Array.from({ length: 81 }, (_, j) => {
-            const u = j / 80,
-              e = amp * Math.sin(u * TAU * 2 - s.t * 4);
-            return [
-              start + u * (end - start),
-              1.7 + e * Math.cos(a),
-              e * Math.sin(a),
-            ];
-          }),
-        );
-      });
-    };
-  },
+  dispersion: createDispersionBench,
+  polarisation: createPolarisationBench,
   bragg(p, k) {
     bench(k);
     for (let row = 0; row < 3; row++) {

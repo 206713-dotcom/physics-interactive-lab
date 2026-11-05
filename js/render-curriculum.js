@@ -8,6 +8,7 @@ import { chargedLayout, soundLayout } from "./field-geometry.js";
 import { EXPANSION_MAGNIFICATION, phaseInventory } from "./thermal-geometry.js";
 import { drawMotionDiagram } from "./render-motion.js";
 import { drawTransformerBench, drawDeviceBench } from "./render-circuit-benches.js";
+import { drawMirrorBench, drawDispersionBench } from "./render-optics-labs.js";
 import { drawParticleBench, drawHeatTransferBench } from "./render-thermal-labs.js";
 import { rippleFronts, RIPPLE_HALF_LENGTH as tankX, RIPPLE_HALF_WIDTH as tankZ } from "./ripple-geometry.js";
 import { lunarLitInterval, solarDisplayRadius } from "./space-display.js";
@@ -604,57 +605,7 @@ export function drawCurriculum(canvas, lab) {
       break;
     }
     case "mirror": {
-      title("Plane mirror ray bench", "Angles measured from the normal");
-      line(
-        [
-          [420, 80],
-          [420, 380],
-        ],
-        WHITE,
-        7,
-      );
-      for (let y = 90; y < 380; y += 22)
-        line(
-          [
-            [425, y],
-            [440, y - 12],
-          ],
-          MUTED,
-          1,
-        );
-      line(
-        [
-          [90, 235],
-          [730, 235],
-        ],
-        "#8faec266",
-        1,
-        [5, 5],
-      );
-      const dx = Math.cos(p.angle * P.DEG) * 240,
-        dy = Math.sin(p.angle * P.DEG) * 240;
-      arrow(420 - dx, 235 - dy, dx, dy, GOLD);
-      arrow(420, 235, -dx, dy, CYAN);
-      line(
-        [
-          [420, 235],
-          [420 + dx, 235 - dy],
-        ],
-        BLUE,
-        2,
-        [6, 5],
-      );
-      circle(420 - dx, 235 - dy, 8, GOLD);
-      circle(420 + dx, 235 - dy, 8, BLUE);
-      text("Object", 420 - dx, 205 - dy, GOLD, 19, "center");
-      text("Virtual image", 420 + dx, 205 - dy, BLUE, 19, "center");
-      text("normal", 90, 221, MUTED, 16);
-      arc(420, 235, 50, Math.PI, Math.PI + p.angle * P.DEG, GOLD);
-      arc(420, 235, 55, Math.PI - p.angle * P.DEG, Math.PI, CYAN);
-      foot(
-        `i = ${p.angle}°   ·   r = ${p.angle}°`,
-        "Image same distance behind mirror",
-      );
+      drawMirrorBench({ c, p, q, t, text, line, arrow, rect, arc, title, foot, vectors: lab.vectors });
       break;
     }
     case "lenses": {
@@ -775,54 +726,7 @@ export function drawCurriculum(canvas, lab) {
       break;
     }
     case "dispersion": {
-      title(
-        "Dispersive optical interface",
-        "Air → Cauchy material · one interface",
-      );
-      rect(420, 65, 390, 330, "#507d9517", null, 0);
-      line(
-        [
-          [420, 65],
-          [420, 395],
-        ],
-        WHITE,
-        2,
-      );
-      line(
-        [
-          [80, 235],
-          [790, 235],
-        ],
-        MUTED,
-        1,
-        [4, 5],
-      );
-      const dx = Math.min(
-          320,
-          p.angle > 0 ? 155 / Math.tan(p.angle * P.DEG) : 320,
-        ),
-        dy = dx * Math.tan(p.angle * P.DEG);
-      arrow(420 - dx, 235 - dy, dx, dy, WHITE, 4);
-      for (let i = 0; i < 7; i++) {
-        const wave = (400 + i * 50) * 1e-9,
-          n = p.a + p.b / (wave * 1e6) ** 2,
-          r = Math.asin(Math.sin(p.angle * P.DEG) / n),
-          col = `hsl(${270 - i * 45} 90% 72%)`;
-        line(
-          [
-            [420, 235],
-            [790, 235 + 370 * Math.tan(r)],
-          ],
-          col,
-          2,
-        );
-      }
-      text(`n = ${fmt(q.index, 4)}`, 630, 100, WHITE, 28, "center");
-      text(`r = ${fmt(q.refraction)}°`, 630, 139, CYAN, 23, "center");
-      foot(
-        `Selected vacuum wavelength ${fmt(p.wavelength * 1e9, 0)} nm`,
-        "Frequency unchanged at boundary",
-      );
+      drawDispersionBench({ c, p, q, t, text, line, arrow, rect, arc, title, foot });
       break;
     }
     case "spectrum": {

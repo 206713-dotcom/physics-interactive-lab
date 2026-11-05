@@ -4,6 +4,7 @@ import {
   particlePosition,
   LAMP_AMBIENT,
 } from "./practical-physics.js";
+import { drawPolarisationBench } from "./render-optics-labs.js";
 import { temperatureHeight } from "./thermal-geometry.js";
 import { springTravel, wireTravel } from "./apparatus-scales.js";
 import { drawRectifierBench, drawSensorBench } from "./render-circuit-benches.js";
@@ -14,6 +15,7 @@ const C = "#168e87",
   W = "#294e64",
   M = "#5e7c8c";
 export function drawPractical(lab, kit) {
+  if (lab.type === "polarisation") return drawPolarisationBench(kit);
   const {
     c,
     p,
@@ -605,38 +607,6 @@ function drawAdvancedInstrument(lab, kit) {
     );
     text("CRYSTAL PLANES · spacing enlarged", 470, 385, M, 16, "center");
     foot(`Electron wavelength ${fmt(q.wavelength * 1e12)} pm`, `2d sin θ = nλ`);
-  } else if (lab.type === "polarisation") {
-    const centers = [180, 420, 660],
-      angles = [0, p.angle, p.thirdAngle],
-      count = p.mode ? 3 : 2;
-    line(
-      [
-        [60, 235],
-        [790, 235],
-      ],
-      "#c4a3ff44",
-      14,
-    );
-    for (let i = 0; i < count; i++) {
-      const x = centers[i],
-        a = (angles[i] * Math.PI) / 180;
-      rect(x - 42, 110, 84, 250, "#91baff12", B, 30);
-      for (let j = -3; j <= 3; j++)
-        line(
-          [
-            [x + j * 9 - 25 * Math.sin(a), 235 - 90 * Math.cos(a)],
-            [x + j * 9 + 25 * Math.sin(a), 235 + 90 * Math.cos(a)],
-          ],
-          i ? C : G,
-          1,
-        );
-      text(i ? "ANALYSER" : "POLARISER", x, 390, M, 15, "center");
-    }
-    text(`${fmt(q.output)} W/m²`, 640, 75, W, 30, "center");
-    foot(
-      `After first polariser: ${fmt(q.first)} W/m²`,
-      `Final transmission ${fmt(q.transmission * 100)}%`,
-    );
   } else if (lab.type === "selector") {
     rect(140, 110, 560, 18, "#6be5d466", C, 3);
     rect(140, 335, 560, 18, "#ffc58066", G, 3);

@@ -1,5 +1,11 @@
 /** Additional practical models: analytic where possible, with an energy-accounted
  * RK4 thermal lamp model. No rendering or experimental measurements live here. */
+/** Exact crossed axes transmit no field. Keep other projections signed so
+ * rotating an axis through 180° leaves the physical field unchanged. */
+export function polarisationProjection(degrees) {
+  return Math.abs(degrees % 180) === 90 ? 0 : Math.cos(degrees * Math.PI / 180);
+}
+
 export const PRACTICAL_RANGES = {
   hydraulics: {
     inputArea: [5e-4, 1e-4, 2e-3],
@@ -402,9 +408,9 @@ export function samplePractical(id, s, p) {
     }
     case "polarisation": {
       const first = p.intensity / 2,
-        second = first * Math.cos((p.angle * Math.PI) / 180) ** 2,
+        second = first * polarisationProjection(p.angle) ** 2,
         output = p.mode
-          ? second * Math.cos(((p.thirdAngle - p.angle) * Math.PI) / 180) ** 2
+          ? second * polarisationProjection(p.thirdAngle - p.angle) ** 2
           : second;
       return {
         ...q,

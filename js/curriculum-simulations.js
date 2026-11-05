@@ -170,8 +170,8 @@ export const PARAMETERS = {
     number("gap", "Gap width", "m"),
   ],
   mirror: [
-    number("angle", "Angle to the normal", "°"),
-    number("distance", "Object distance", "m"),
+    number("angle", "Angle to the normal", "°", 1, "Rotate the ray in the reflection-law diagram. Measure both angles from the dashed normal."),
+    number("distance", "Object distance", "m", 1, "Move the object in the virtual-image diagram. Its image stays the same distance behind the mirror."),
   ],
   lenses: [
     choice("kind", "Lens type", [
@@ -183,8 +183,8 @@ export const PARAMETERS = {
     number("height", "Object height", "cm", 0.01),
   ],
   dispersion: [
-    number("wavelength", "Vacuum wavelength", "nm", 1e-9),
-    number("angle", "Incident angle", "°"),
+    number("wavelength", "Vacuum wavelength", "nm", 1e-9, "Compare red and violet. Watch the ray colour, refraction angle and spacing between wavefronts."),
+    number("angle", "Incident angle", "°", 1, "Measured from the dashed normal. Keep this angle fixed when comparing colours."),
     number("a", "Cauchy coefficient A"),
     number("b", "Cauchy coefficient B", "μm²"),
   ],
@@ -1524,8 +1524,10 @@ export const CURRICULUM_SIMULATIONS = Object.fromEntries(
           factor = c.factor || 1;
         return {
           ...c,
-          min: min / factor,
-          max: max / factor,
+          // Human-facing units should not expose division round-off such as
+          // 699.9999999999999 nm. The SI limits remain authoritative.
+          min: Number((min / factor).toPrecision(14)),
+          max: Number((max / factor).toPrecision(14)),
           step: [
             "count",
             "day",

@@ -33,7 +33,7 @@ export function circuitResistor(k, a, b, color = 0xd1b681) {
   return body;
 }
 
-export function circuitSource(k, a, b, ac) {
+export function circuitSource(k, a, b, ac, reversed = false) {
   const center = a.map((value, i) => (value + b[i]) / 2);
   circuitWire(k, [a, [a[0], center[1] + 0.48, a[2]]]);
   circuitWire(k, [[b[0], center[1] - 0.48, b[2]], b]);
@@ -47,8 +47,8 @@ export function circuitSource(k, a, b, ac) {
       circuitWire(k, [[center[0] - 0.12, y, center[2] + 0.12], [center[0] + 0.12, y, center[2] + 0.12]], 0xd4f6ff, 0.018);
       if (vertical) circuitWire(k, [[center[0], y - 0.12, center[2] + 0.12], [center[0], y + 0.12, center[2] + 0.12]], 0xd4f6ff, 0.018);
     };
-    mark(center[1] + 0.18, true);
-    mark(center[1] - 0.18, false);
+    mark(center[1] + 0.18, !reversed);
+    mark(center[1] - 0.18, reversed);
   }
 }
 

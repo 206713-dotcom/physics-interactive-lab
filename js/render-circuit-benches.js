@@ -1,4 +1,5 @@
 /** Circuit symbols and paths read the same instantaneous sample as the graphs. */
+import { transformerVisual } from "./transformer-visual.js";
 function flatDisk(c, x, y, radius, fill, stroke) {
   c.beginPath();
   c.arc(x, y, radius, 0, 2 * Math.PI);
@@ -143,4 +144,101 @@ export function drawSensorBench({c, p, q, text, line, arrow, rect, circle, fmt, 
   rect(763, 299 - level, 12, level, teal, null, 3);
   line([[754, threshold], [785, threshold]], gold, 2.5);
   foot("Sensor " + fmt(q.resistance / 1000) + " kΩ", "Divider current " + fmt(q.current * 1000, 3) + " mA");
+}
+
+export function drawTransformerBench({c, p, q, t, text, line, arrow, rect, fmt, title, foot}) {
+  title("Ideal AC transformer", "RMS readouts · illustrative AC phase");
+  const gold = "#aa7329", teal = "#117f77", purple = "#8664af", steel = "#638093",
+    visual = transformerVisual(t), sign = Math.sign(visual.voltage);
+  rect(220, 104, 400, 278, "#b8ccd7", steel, 9);
+  rect(296, 163, 248, 159, "#eff6fa", steel, 6);
+  for (let y = 109; y < 131; y += 5) line([[228, y], [612, y]], "#819cab", 1);
+  for (let y = 355; y < 377; y += 5) line([[228, y], [612, y]], "#819cab", 1);
+  function coil(x, turns, color, angle0) {
+    const n = Math.max(4, Math.min(24, Math.round(turns / 50))), samples = n * 20;
+    const points = Array.from({ length: samples + 1 }, (_, i) => {
+      const u = i / samples, angle = angle0 + u * n * 2 * Math.PI;
+      return [x + 45 * Math.cos(angle), 337 - u * 200 + 6 * Math.sin(angle)];
+    });
+    line(points, color, 3.5);
+    return { bottom: points[0], top: points.at(-1) };
+  }
+  const primary = coil(258, p.np, gold, Math.PI), secondary = coil(582, p.ns, teal, 0);
+  line([primary.top, [80, 137], [80, 208]], gold, 2.5);
+  line([[80, 272], [80, 337], primary.bottom], gold, 2.5);
+  flatDisk(c, 80, 240, 32, "#fbfdff", gold);
+  text("~", 80, 253, gold, 35, "center");
+  line([secondary.top, [754, 137], [754, 212]], teal, 2.5);
+  line([[754, 272], [754, 337], secondary.bottom], teal, 2.5);
+  rect(743, 212, 22, 60, "#c7e6df", teal, 3);
+  text("Primary · " + p.np + " turns", 182, 85, gold, 19, "center");
+  text("Secondary · " + p.ns + " turns", 658, 85, teal, 19, "center");
+  text(fmt(p.vp) + " V a.c.", 109, 174, gold, 20, "center");
+  text(fmt(q.ip) + " A a.c.", 109, 374, gold, 18, "center");
+  text(fmt(q.vs) + " V a.c.", 711, 174, teal, 20, "center");
+  text(fmt(q.is) + " A a.c.", 711, 374, teal, 18, "center");
+  text(fmt(p.load) + " Ω", 754, 307, teal, 17, "center");
+  line([[330, 134], [510, 134]], purple, 1.4, [5, 5]);
+  line([[510, 352], [330, 352]], purple, 1.4, [5, 5]);
+  arrow(420 - 45 * visual.flux, 134, 90 * visual.flux, 0, purple, 3);
+  arrow(420 + 45 * visual.flux, 352, -90 * visual.flux, 0, purple, 3);
+  text("Shared changing flux", 420, 209, purple, 18, "center");
+  text("Nₛ / Nₚ = " + fmt(q.ratio), 420, 247, "#365c74", 24, "center");
+  text("Separate circuits", 420, 286, "#56768a", 17, "center");
+  if (sign) {
+    arrow(145 - 20 * sign, 137, 40 * sign, 0, gold, 3);
+    arrow(692 - 20 * sign, 137, 40 * sign, 0, teal, 3);
+  }
+  foot("Ideal power " + fmt(q.input) + " W in = " + fmt(q.output) + " W out",
+    "Line-loss estimate " + fmt(q.loss) + " W · separate comparison");
+}
+
+export function drawDeviceBench({c, p, q, text, line, arrow, rect, fmt, title, foot}) {
+  const teal = "#168e87", purple = "#795b9d", gold = "#b37c32",
+    conducting = Math.abs(q.current) > 1e-12, closed = Boolean(q.on), sign = Math.sign(q.current);
+  title(["Diode + resistor", "Ideal voltage-operated relay", "Ideal overcurrent cut-out"][p.mode],
+    p.mode === 0 ? "0.7 V forward-drop model" : "Instantaneous switching model");
+  rect(40, 78, 760, 322, "#e7f0f6", "#bfd2de", 12);
+  line([[105, 193], [105, 130], [330, 130]], gold, 3);
+  line([[485, 130], [682, 130], [682, 198]], teal, 3);
+  line([[682, 264], [682, 349], [105, 349], [105, 257]], teal, 3);
+  flatDisk(c, 105, 225, 32, "#fbfdff", "#58758b");
+  text(p.voltage < 0 ? "−" : "+", 105, 218, "#416980", 22, "center");
+  text(p.voltage < 0 ? "+" : "−", 105, 244, "#416980", 22, "center");
+  text(fmt(Math.abs(p.voltage)) + " V", 105, 303, "#416980", 21, "center");
+  rect(670, 198, 24, 66, "#cbe6df", teal, 3);
+  text(fmt(p.resistance) + " Ω", 730, 237, teal, 18, "center");
+  text(fmt(q.current * 1000) + " mA", 674, 99, teal, 22, "center");
+  text(fmt(q.current ** 2 * p.resistance) + " W in load", 661, 383, teal, 17, "center");
+  if (conducting) {
+    arrow(609, 231 - sign * 25, 0, sign * 50, teal, 3);
+    arrow(218 - sign * 22, 130, sign * 44, 0, gold, 3);
+  }
+  if (p.mode === 0) {
+    const color = conducting ? teal : "#7a8d9f";
+    line([[330, 130], [392, 130]], color, 3);
+    line([[392, 112], [392, 148], [421, 130], [392, 112]], color, 2.5);
+    line([[424, 109], [424, 151]], color, 3);
+    line([[424, 130], [485, 130]], color, 3);
+    text("Anode", 340, 172, "#627b8e", 16, "center");
+    text("Cathode", 477, 172, "#627b8e", 16, "center");
+  } else {
+    line([[330, 130], [356, 130], [454, closed ? 130 : 93]], closed ? teal : gold, 4);
+    line([[460, 130], [485, 130]], teal, 3);
+    flatDisk(c, 356, 130, 4, "#f9fcfe", "#58758b");
+    flatDisk(c, 460, 130, 4, "#f9fcfe", "#58758b");
+    line([[408, 195], [408, 145]], purple, 1.5, [4, 4]);
+  }
+  rect(249, 204, 310, 115, "#f8fcfe", "#bfd2de", 10);
+  const state = p.mode === 0 ? conducting ? "Forward biased · current flows"
+    : p.voltage < 0 ? "Reverse biased · blocked" : "Below forward drop · blocked"
+    : closed ? conducting ? "Contact closed · current flows" : "Contact closed · no current"
+    : p.mode === 2 ? "Contact open · overcurrent" : "Contact open · below pick-up";
+  text(state, 404, 240, conducting ? teal : "#936c38", 18, "center", 300);
+  text(p.mode === 0 ? "Diode voltage " + (conducting ? "0.7" : fmt(p.voltage)) + " V"
+    : p.mode === 1 ? fmt(p.voltage) + " V control / " + fmt(p.threshold) + " V pick-up"
+    : "|Demand| " + fmt(Math.abs(p.voltage / p.resistance) * 1000) + " mA / " + fmt(p.rating * 1000) + " mA rating",
+    404, 284, purple, 17, "center", 300);
+  foot("Supply power " + fmt(q.power) + " W", p.mode === 2
+    ? "Ideal cut-out recloses below its current limit" : p.mode === 1 ? "Positive-voltage control · coil current omitted" : "Reverse breakdown is omitted");
 }

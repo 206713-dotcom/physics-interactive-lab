@@ -7,6 +7,8 @@ import { createMagnetismApparatus } from "./scene-magnetism.js";
 import { createDCBench } from './scene-dc-bench.js';
 import { createRectifierBench } from './scene-rectifier.js';
 import { createSensorBench } from './scene-sensors.js';
+import { createTransformerBench } from './scene-transformer.js';
+import { createDeviceBench } from './scene-devices.js';
 import { machineSide, MAGNET_STROKE_METRES, magnetLampLevel } from "./curriculum-physics.js";
 import {
   radiationReferences,
@@ -17,33 +19,8 @@ const TAU = Math.PI * 2;
 function board(k) {
   k.stand(9, 5);
 }
-function source(k) {
-  k.box(0.7, 1.3, 0.7, C.blue, [-3.3, 1.3, 0]);
-  k.label("Source", [-3.3, 2.5, 0], "#89baff", 1.5);
-}
 function wire(k, points, color = C.cyan) {
   return k.line(points, color);
-}
-function carrierLoop(k, points) {
-  const dots = k.instances(18, 0.045, C.gold);
-  return (t, current) => {
-    dots.visible = Math.abs(current) > 1e-14;
-    for (let i = 0; i < 18; i++) {
-      const u =
-          ((((i / 18 + t * 0.2 * Math.sign(current)) % 1) + 1) % 1) *
-          points.length,
-        j = Math.floor(u),
-        f = u - j,
-        a = points[j],
-        b = points[(j + 1) % points.length];
-      k.instance(
-        dots,
-        i,
-        a.map((x, d) => x + (b[d] - x) * f),
-      );
-    }
-    k.finishInstances(dots);
-  };
 }
 function chamber(k, direction = -1) {
   board(k);
@@ -57,36 +34,7 @@ export const ELECTRIC_SCENES = {
     return createDCBench(p,k);
   },
   devices(p, k) {
-    board(k);
-    source(k);
-    wire(k, [
-      [-3.3, 0.7, 0],
-      [3, 0.7, 0],
-      [3, 2, 0],
-      [-3.3, 2, 0],
-      [-3.3, 0.7, 0],
-    ]);
-    k.resistor(-1, 2, 0);
-    const device = k.box(0.7, 0.45, 0.65, C.muted, [1, 2, 0], {
-      emissive: C.cyan,
-      emissiveIntensity: 0,
-    });
-    k.label(
-      ["Diode threshold", "Relay switching", "Ideal current cut-out"][p.mode],
-      [0, 3.7, 0],
-      "#cfe6ef",
-      3.8,
-    );
-    const flow = carrierLoop(k, [
-      [-3.3, 0.7, 0],
-      [3, 0.7, 0],
-      [3, 2, 0],
-      [-3.3, 2, 0],
-    ]);
-    return (s, q) => {
-      device.material.emissiveIntensity = q.on ? 0.65 : 0;
-      flow(s.t, q.current);
-    };
+    return createDeviceBench(p, k);
   },
   sensors(p, k) {
     return createSensorBench(p, k);
@@ -344,42 +292,7 @@ export const ELECTRIC_SCENES = {
     };
   },
   transformer(p, k) {
-    board(k);
-    for (const x of [-2, 2]) k.box(0.5, 3, 1, C.muted, [x, 1.7, 0]);
-    for (const y of [0.3, 3.1]) k.box(4.5, 0.5, 1, C.muted, [0, y, 0]);
-    k.spring(-2, 0.7, 0, 2, C.gold, 0.55, 12);
-    k.spring(
-      2,
-      0.7,
-      0,
-      2,
-      C.cyan,
-      0.55,
-      Math.round(clamp((12 * p.ns) / p.np, 3, 24)),
-    );
-    k.label("Primary", [-2, 4, 0], "#ffc584", 1.9);
-    k.label("Secondary", [2, 4, 0], "#64e8d1", 2.1);
-    const flux = k.instances(24, 0.045, C.purple);
-    const loop = [
-      [-2, 0.6, 0],
-      [2, 0.6, 0],
-      [2, 2.8, 0],
-      [-2, 2.8, 0],
-    ];
-    return (s) => {
-      for (let i = 0; i < 24; i++) {
-        const u = ((i / 24 + s.t * 0.15) % 1) * 4,
-          j = Math.floor(u),
-          a = loop[j],
-          b = loop[(j + 1) % 4];
-        k.instance(
-          flux,
-          i,
-          a.map((x, d) => x + (b[d] - x) * (u - j)),
-        );
-      }
-      k.finishInstances(flux);
-    };
+    return createTransformerBench(p, k);
   },
   selector(p, k) {
     chamber(k);

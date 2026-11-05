@@ -10,6 +10,7 @@ import { installGeneratorSlipRings } from './generator-slip-rings.js';
 import { installGalvanometer } from './galvanometer.js';
 import { installReadingComparison } from './reading-comparison.js';
 import { installRectifierConsole } from './rectifier-console.js';
+import { installTransformerConsole } from './transformer-console.js';
 import { GENERATOR_LOAD_OHMS, MAGNET_STROKE_METRES, magnetLampLevel } from './curriculum-physics.js';
 
 function addHandRule(stage, motor) {
@@ -256,6 +257,7 @@ export function installPresentationStudio(stage, controls, id, title, machineAct
   stage.querySelector('.transport').after(panel);
   const compareReadings = installReadingComparison(panel);
   const updateRectifier = id === 'rectifier' ? installRectifierConsole(stage, machineActions) : null;
+  const updateTransformer = id === 'transformer' ? installTransformerConsole(stage, machineActions) : null;
   if (id === 'motor' || id === 'induction') addHandRule(stage, id === 'motor');
   const commutator = id === 'motor' ? installMotorCommutator(stage) : null;
   const slipRings = id === 'induction' ? installGeneratorSlipRings(stage, machineActions) : null;
@@ -342,6 +344,7 @@ export function installPresentationStudio(stage, controls, id, title, machineAct
     update(lab) {
       updateMachine?.(lab);
       updateRectifier?.(lab);
+      updateTransformer?.(lab);
       if (lab.magnetManual) renderGalvanometer?.(lab);
       const readings = studyReadings(id,lab.state,lab.params,lab.studyMode,lab.definition),
         next = readings.map(x => x.title + x.unit).join('|');

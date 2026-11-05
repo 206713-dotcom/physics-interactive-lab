@@ -7,6 +7,7 @@ import { BUOYANCY_STATUS } from "./buoyancy-physics.js";
 import { chargedLayout, soundLayout } from "./field-geometry.js";
 import { chamberParticle, convectionPosition, EXPANSION_MAGNIFICATION, particleChamberWidth, phaseInventory } from "./thermal-geometry.js";
 import { drawMotionDiagram } from "./render-motion.js";
+import { drawTransformerBench, drawDeviceBench } from "./render-circuit-benches.js";
 import { rippleFronts, RIPPLE_HALF_LENGTH as tankX, RIPPLE_HALF_WIDTH as tankZ } from "./ripple-geometry.js";
 import { lunarLitInterval, solarDisplayRadius } from "./space-display.js";
 const chargedViews = new WeakMap();
@@ -1044,72 +1045,7 @@ export function drawCurriculum(canvas, lab) {
       break;
     }
     case "devices": {
-      title(
-        [
-          "Diode characteristic",
-          "Ideal relay switch",
-          "Ideal overcurrent cut-out",
-        ][p.mode],
-        "Teaching thresholds · no component heating / time-response model",
-      );
-      line(
-        [
-          [110, 235],
-          [720, 235],
-        ],
-        CYAN,
-        3,
-      );
-      rect(245, 218, 100, 34, "#ffc58022", GOLD, 2);
-      text(`${p.resistance} Ω`, 295, 190, GOLD, 18, "center");
-      if (p.mode === 0) {
-        line(
-          [
-            [440, 202],
-            [440, 268],
-            [490, 235],
-            [440, 202],
-          ],
-          BLUE,
-          3,
-        );
-        line(
-          [
-            [492, 200],
-            [492, 270],
-          ],
-          BLUE,
-          3,
-        );
-        text("0.7 V forward-drop model", 470, 319, BLUE, 21, "center");
-      } else {
-        line(
-          [
-            [420, 235],
-            [445, 235],
-            [492, q.on ? 235 : 190],
-          ],
-          q.on ? CYAN : GOLD,
-          4,
-        );
-        circle(500, 235, 5, WHITE);
-        text(
-          q.on ? "CLOSED / CONDUCTING" : "OPEN / NOT CONDUCTING",
-          480,
-          319,
-          q.on ? CYAN : GOLD,
-          21,
-          "center",
-        );
-      }
-      circle(660, 235, 24, q.on ? GOLD : "#607387", q.on > 0);
-      text(`${p.voltage} V supply`, 175, 365, WHITE, 22);
-      foot(
-        `Load current = ${fmt(q.current, 4)} A`,
-        p.mode === 2
-          ? "Simplified protection; not a wiring guide"
-          : "Conventional current",
-      );
+      drawDeviceBench({c, p, q, t, text, line, arrow, rect, fmt, title, foot});
       break;
     }
     case "magnetism": {
@@ -1295,45 +1231,7 @@ export function drawCurriculum(canvas, lab) {
       break;
     }
     case "transformer": {
-      title(
-        "Ideal AC transformer",
-        "RMS values · leakage and core loss omitted",
-      );
-      rect(245, 105, 350, 260, "#91baff12", MUTED, 8);
-      rect(315, 160, 210, 150, "#f8fbfd", MUTED, 8);
-      const drawCoil = (x, n, col) => {
-        const count = Math.max(3, Math.min(20, Math.round(n / 70)));
-        for (let i = 0; i < count; i++) {
-          c.beginPath();
-          c.ellipse(x, 140 + (i * 180) / (count - 1), 55, 7, 0, 0, TAU);
-          c.strokeStyle = col;
-          c.lineWidth = 3;
-          c.stroke();
-        }
-      };
-      drawCoil(280, p.np, GOLD);
-      drawCoil(560, p.ns, CYAN);
-      text(`${p.np} turns`, 130, 95, GOLD, 22, "center");
-      text(`${p.vp} V`, 130, 236, GOLD, 30, "center");
-      text(`${fmt(q.ip)} A`, 130, 279, MUTED, 22, "center");
-      text(`${p.ns} turns`, 710, 95, CYAN, 22, "center");
-      text(`${fmt(q.vs)} V`, 710, 236, CYAN, 30, "center");
-      text(`${fmt(q.is)} A`, 710, 279, MUTED, 22, "center");
-      const flux = Math.sin(t * TAU);
-      line(
-        [
-          [350, 132],
-          [490, 132],
-          [560, 132],
-        ],
-        "#c4a3ff77",
-        3,
-      );
-      arrow(flux > 0 ? 355 : 490, 132, flux > 0 ? 120 : -120, 0, PURPLE, 3);
-      foot(
-        `Ideal power: ${fmt(q.input)} W in = ${fmt(q.output)} W out`,
-        `Separate line loss ${fmt(q.loss)} W`,
-      );
+      drawTransformerBench({c, p, q, t, text, line, arrow, rect, fmt, title, foot});
       break;
     }
     case "atom": {

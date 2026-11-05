@@ -10,6 +10,7 @@ import { ADVANCED_IDS } from "./physics-advanced.js";
 import { CURRICULUM_LESSONS } from "./content-curriculum.js";
 import { curriculumThumbnail, magnetDiagramPoint, MAGNET_DIAGRAM } from "./render-curriculum.js";
 import { MAGNET_STROKE_METRES } from "./curriculum-physics.js";
+import { TRANSFORMER_DISPLAY_PERIOD } from "./transformer-visual.js";
 import { renderCourse, relatedLessons } from "./course.js";
 import { renderTextbookLibrary } from "./textbook-library.js";
 import { draw2D } from "./render2d.js";
@@ -434,7 +435,7 @@ function labPage(type, query) {
   // The course focus replaces the duplicated three-step walkthrough.
 
   presentationStudio = installPresentationStudio($("#stage"), $(".controls"), type, d.short,
-    { runMotorSetup, seekInductionPhase, setInductionCircuit, flipMagnet,
+    { runMotorSetup, seekInductionPhase, seekTransformerPhase, setInductionCircuit, flipMagnet,
       setMagnetManual, beginManualMagnet, moveManualMagnet, stopManualMagnet });
   if (type === "magnet-coil") bindMagnetDiagram($("#simulation"));
   if(["spring","pendulum"].includes(type) && studyMode !== "igcse") {
@@ -774,8 +775,13 @@ function bindMagnetDiagram(canvas) {
     canvas.addEventListener(name, end);
 }
 function seekInductionPhase(degrees, held = false) {
+  seekSimulationTime(degrees / (360 * lab.params.frequency), held);
+}
+function seekTransformerPhase(degrees) {
+  seekSimulationTime(degrees * TRANSFORMER_DISPLAY_PERIOD / 360);
+}
+function seekSimulationTime(t, held = false) {
   const {definition, params} = lab;
-  const t = degrees / (360 * params.frequency);
   const interval = typeof definition.sampleEvery === "function"
     ? definition.sampleEvery(params) : definition.sampleEvery;
   const history = [];

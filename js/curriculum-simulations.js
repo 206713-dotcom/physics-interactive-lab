@@ -220,8 +220,8 @@ export const PARAMETERS = {
     ]),
     number("voltage", "Supply voltage", "V"),
     number("resistance", "Load resistance", "Ω"),
-    number("threshold", "Relay pick-up voltage", "V"),
-    number("rating", "Cut-out current rating", "A"),
+    number("threshold", "Relay pick-up voltage", "V", 1, "Used in relay mode. This ideal switch responds to a positive control voltage."),
+    number("rating", "Cut-out current rating", "mA", 0.001, "Used in cut-out mode. Compare the magnitude of prospective current with this limit."),
   ],
   magnetism: [
     choice("mode", "Magnetic source", [

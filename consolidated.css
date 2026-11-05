@@ -997,6 +997,9 @@ body:has(.model-screen[open]) { overflow: hidden; }
 .rectifier-wave text { fill: #a4c9dc; font: 9px system-ui, sans-serif; }
 .rectifier-wave .rectifier-legend-input { fill: #d7b2ff; }
 .rectifier-wave .rectifier-legend-output { fill: #a1f2e4; }
+.transformer-console .rectifier-input { stroke: #ffd08c; }
+.transformer-console .rectifier-legend-input { fill: #ffd08c; }
+.transformer-console small { color: #a5ccdf; font-size: 11px; }
 .model-screen .commutator-panel,
 .model-screen .commutator-jump { display: none; }
 .commutator-panel {

@@ -170,10 +170,10 @@ export const SCENE_GUIDES = {
     "The board shows the actual series or parallel network. Gold marks total conventional current; teal and purple mark parallel branch currents. Within one setup, marker speeds are proportional to the calculated currents and use path length, so unequal branch lengths cannot change the ratio. Marker counts are not amounts of charge, and these are not electron drift speeds. Supply, wire and component dimensions are schematic. Resistor bodies have no fixed colour-code bands; labels give the selected resistance. Divider output is unloaded and measured across R₂.",
   ],
   devices: [
-    "The device indicator lights when the selected ideal switching condition is met.",
-    "Diodes, relays and cut-outs impose different current or voltage conditions.",
-    "Move voltage across the threshold and compare the current before and after switching.",
-    "The device body is schematic. The cut-out is an ideal instantaneous model; heating and reset hysteresis are excluded.",
+    "Follow the conventional-current markers through the load. An open contact or a blocked diode stops them; a closed contact at zero voltage also has no current.",
+    "The diode uses a fixed 0.7 V forward drop. The ideal relay closes above a positive pick-up voltage. The cut-out opens when the magnitude of prospective current exceeds its rating.",
+    "Reverse the supply in diode mode, then compare a relay just above and below its threshold. In cut-out mode, increase load resistance until prospective current is within the rating.",
+    "Switching is instantaneous. The relay uses a positive-voltage control rule; coil current and mechanics are omitted. The cut-out automatically recloses within its rating. Reverse diode breakdown, heating and contact hysteresis are omitted. Marker speed is illustrative.",
   ],
   sensors: [
     "Change the light level or temperature and watch the sensor resistance, output voltage and threshold indicator together.",
@@ -230,10 +230,10 @@ export const SCENE_GUIDES = {
     "Coil and commutator are schematic. Denser cyan arrows represent a stronger field. Shaft speed comes from the torque, rotor inertia and the chosen load.",
   ],
   transformer: [
-    "Gold is the primary coil; cyan is the secondary; both share the core.",
-    "An ideal transformer has Vₛ/Vₚ = Nₛ/Nₚ and conserves power between windings.",
-    "Double secondary turns and compare voltage and current for the same load.",
-    "Core flux markers illustrate coupling, not a specified AC frequency or field calculation. Displayed winding count is simplified; readouts use selected turns.",
+    "The gold primary and teal secondary form separate electrical loops. Purple core-flux arrows reverse during the AC cycle, while winding currents reverse together.",
+    "The turns ratio sets the voltage ratio. For the ideal transformer, input and output powers match within each setup. With the same resistive load, increasing secondary voltage also increases load current and delivered power.",
+    "Pause at maximum flux and at a voltage peak. Then compare step-up and step-down setups. Check both RMS currents and the equal input/output powers.",
+    "RMS readouts use the selected turns and resistive load. AC phase is illustrative and slowed, with no specified physical frequency. Flux arrows show relative phase and direction on the front of the core; they are not calibrated in teslas or webers. Visible turns are simplified. Magnetising current and internal losses are omitted. Line loss is a separate I²R comparison.",
   ],
   atom: [
     "Gold and blue spheres represent protons and neutrons in the nucleus.",

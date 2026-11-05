@@ -38,7 +38,7 @@ export function installTransformerConsole(stage, { seekTransformerPhase }) {
     const { phase, voltage, flux } = transformerVisual(lab.state.t);
     status.textContent = !voltage ? "Maximum flux · voltage is zero"
       : !flux ? "Flux passes through zero · voltage is at a peak" : "Changing core flux induces the secondary voltage";
-    reading.textContent = "Ideal input " + number(q.input) + " W = output " + number(q.output) + " W";
+    reading.textContent = "Mean input " + number(q.input) + " W = mean output " + number(q.output) + " W";
     const next = p.vp + "|" + q.vs;
     if (next !== signature) {
       const path = amplitude => Array.from({ length: 101 }, (_, i) => (i ? "L" : "M") +

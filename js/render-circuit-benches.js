@@ -189,7 +189,7 @@ export function drawTransformerBench({c, p, q, t, text, line, arrow, rect, fmt, 
     arrow(145 - 20 * sign, 137, 40 * sign, 0, gold, 3);
     arrow(692 - 20 * sign, 137, 40 * sign, 0, teal, 3);
   }
-  foot("Ideal power " + fmt(q.input) + " W in = " + fmt(q.output) + " W out",
+  foot("Mean power " + fmt(q.input) + " W in = " + fmt(q.output) + " W out",
     "Line-loss estimate " + fmt(q.loss) + " W · separate comparison");
 }
 

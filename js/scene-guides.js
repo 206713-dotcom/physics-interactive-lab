@@ -62,10 +62,10 @@ export const SCENE_GUIDES = {
     "Displacement is enlarged using a fixed scale for each setup. The model shows steady state after transients have died away.",
   ],
   gases: [
-    "Compare the solid lattice, the liquid layer and the gas filling the chamber. Change volume to move the gold end wall.",
+    "Track the gold gas particle and its velocity arrow as it rebounds from the chamber walls. Solids vibrate around fixed neighbours; liquids rearrange.",
     "Gas pressure follows pV = nRT. Higher temperature also increases the calculated rms molecular speed.",
-    "Double gas temperature at fixed volume and compare pressure.",
-    "The chamber has a fixed cross-section, so its width follows the selected volume. Particle paths and dot count are illustrative. Gas pressure is calculated from pV = nRT.",
+    "Halve gas volume at fixed temperature. The particles keep the same speed but hit the closer walls more often. Then double kelvin temperature: pressure doubles and particle speed rises by √2.",
+    "The chamber has a fixed cross-section, so gas width follows volume. Enlarged particles reflect analytically at the walls. Their speed follows √T on one slowed display scale and is independent of volume. Dot count is a rounded illustration of amount, not a molecular count. Pressure comes independently from the ideal-gas equation. The solid and liquid views are conceptual and use a fixed chamber.",
   ],
   expansion: [
     "Compare the blue original bar with the gold heated bar.",
@@ -80,10 +80,10 @@ export const SCENE_GUIDES = {
     "The ideal water path is at 1 atm with no heat losses, stopping at 120 °C steam; the custom constant-c sample stops at 200 °C. Ice-volume fraction uses cube-root shrinking; bulk phase volumes and vapour dots are schematic inventories, not gas density or fluid motion. The thermometer has a fixed −30 to 200 °C scale. Vapour dot count is a rounded illustration of mass fraction, not molecules.",
   ],
   heat: [
-    "Gold is the hot side; blue is the cooler side.",
+    "In conduction, the particles vibrate in place. In convection, warm fluid rises and cool fluid sinks. In radiation, watch both emitted energy and absorbed background radiation.",
     "Thermal energy flows down a temperature gradient. Conduction, convection and radiation use different ideal rate laws.",
-    "Change thickness in conduction mode, then compare the radiation mode.",
-    "Dots trace the illustrative convection loop: warm fluid rises on the hot side and cooler fluid sinks on the cool side. The wattage comes from the selected heat-transfer equation.",
+    "Compare all three mechanisms. In conduction, change slab thickness and area. In radiation, compare emitted power with absorbed background power and their net difference.",
+    "Reservoir temperatures are held fixed. The solid has a steady linear temperature profile, ideal thermal contacts, and independently enlarged length and cross-section scales. Fluid parcels follow an illustrative convection loop; no flow speed or density field is solved. Radiation is a surface exchanging with black surroundings with unit view factor; the absorbed background includes the surface absorptivity. Infrared waves, lattice vibrations and energy-marker speeds are schematic. All wattage and transferred energy use the model equations.",
   ],
   cooling: [
     "The object temperature falls towards the cyan ambient marker. The shrinking gold arrows show less heat-loss power, while the stacked bar transfers initial excess energy from remaining to released.",
@@ -98,10 +98,10 @@ export const SCENE_GUIDES = {
     "Volume is prescribed over six simulated seconds, then playback stops. Cylinder height is V/V₀ on one fixed scale per setup; V₀ itself is fitted. The gauge maximum is labelled and fitted once per setup, as is the common signed energy scale. Particles remain inside the piston but illustrate motion only: no molecular collisions, moving-wall kinetics, friction or force-driven piston dynamics are solved. γ = 5/3.",
   ],
   filament: [
-    "Follow the coil inside the glass envelope as it heats and glows.",
+    "Watch the filament warm and glow while its resistance rises and its current falls. Gold current markers slow as less charge passes each second.",
     "Heating raises resistance; electrical power and thermal losses approach a balance.",
     "Lower voltage and compare the equilibrium temperature and resistance.",
-    "Filament thickness, glow and heat arrows are illustrative. Temperature and both energy integrals use the RK4 thermal model.",
+    "The enlarged cutaway bulb and its glow are illustrative. Current-marker progress follows integrated electrical energy divided by the constant supply voltage. Heat-arrow length shows loss power relative to input power. Temperature and both energy integrals use the RK4 thermal model; the energy account remains visible below.",
   ],
   wavefronts: [
     "View the ripple pattern from Above to see the barrier and gap.",

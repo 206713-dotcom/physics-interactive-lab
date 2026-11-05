@@ -328,28 +328,37 @@ export function drawPractical(lab, kit) {
       c.shadowBlur = heat * 28;
       line(pts, col, 3 + heat * 2);
       c.shadowBlur = 0;
+      if (lab.vectors !== false && q.current > 0) {
+        const charge = p.voltage > 0 ? q.input / p.voltage : 0;
+        for (let i = 0; i < 3; i++) {
+          const fraction = (i / 3 + charge * 0.05) % 1;
+          circle(265, 315 - fraction * 85, 3.2, G);
+          circle(315, 230 + fraction * 85, 3.2, G);
+        }
+      }
+      text("Supply " + fmt(p.voltage) + " V DC", 290, 392, W, 18, "center");
       text(`${fmt(q.temperature, 0)} K`, 540, 130, W, 43);
-      text(`${fmt(q.current, 3)} A`, 540, 180, C, 29);
-      text(`${fmt(q.resistance, 3)} Ω`, 690, 180, G, 24);
+      text(`${fmt(q.current, 3)} A`, 500, 180, C, 29, "left", 135);
+      text(`${fmt(q.resistance, 3)} Ω`, 665, 180, G, 24, "left", 135);
       const total = Math.max(q.input, 1e-20);
       for (const [i, label, key, color] of [
         [0, "Stored thermal energy", "thermal", C],
-        [1, "Transferred to surroundings", "loss", G],
+        [1, "Energy to surroundings", "loss", G],
       ]) {
-        text(label, 500, 240 + i * 65, M, 16);
-        rect(500, 252 + i * 65, 280, 13, "#ffffff0b", null, 6);
+        text(label, 500, 234 + i * 80, M, 16, "left", 280);
+        rect(500, 247 + i * 80, 280, 12, "#ffffff0b", null, 6);
         rect(
           500,
-          252 + i * 65,
+          247 + i * 80,
           280 * Math.min(1, q[key] / total),
-          13,
+          12,
           color,
           null,
           6,
         );
-        text(`${fmt(q[key])} J`, 780, 240 + i * 65, color, 18, "right");
+        text(`${fmt(q[key])} J`, 780, 277 + i * 80, color, 18, "right", 280);
       }
-      text(`Electrical input ${fmt(q.input)} J`, 500, 385, W, 19);
+      text(`Electrical input ${fmt(q.input)} J`, 500, 392, W, 19, "left", 280);
       foot(
         `P in ${fmt(q.power)} W · P out ${fmt(q.lossPower)} W`,
         `Energy residual ${fmt(q.balance)} J`,

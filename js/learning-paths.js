@@ -348,7 +348,7 @@ export const LEARNING_PATHS = {
       "Why can radiation transfer energy across a vacuum?",
       "Electromagnetic waves do not require particles of a material medium.",
       "energy-3",
-      "mode,hot,cold",
+      "mode,hot,cold,thickness,conductivity",
       {},
       "Conductivity, convection coefficients and the Stefan–Boltzmann calculation are model extensions; the IGCSE emphasis is explanation and comparison.",
     ),

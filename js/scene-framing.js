@@ -5,7 +5,7 @@ import * as T from '../vendor/three.module.min.js';
 export function diagramLabelVisible(text='',width=2.25) {
   // Keep names, scale ticks and short ray labels on the apparatus. Paragraphs
   // and detached numerical banners belong in the HTML explanation/instruments.
-  return text.length<=45 && !(width>3.5 && /[=≈]|\d.*(?:Pa|Hz|J|N|V|s)\b/.test(text));
+  return text.length<=45 && !(width>3.5 && /[=≈]|\d.*\b(?:Pa|Hz|J|N|V|s)\b/.test(text));
 }
 
 export function apparatusBounds(root) {

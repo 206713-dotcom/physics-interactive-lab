@@ -5,9 +5,10 @@ import { drawPractical, practicalThumbnail } from "./render-practical.js";
 import { drawVectorDiagram } from "./render-vectors.js";
 import { BUOYANCY_STATUS } from "./buoyancy-physics.js";
 import { chargedLayout, soundLayout } from "./field-geometry.js";
-import { chamberParticle, convectionPosition, EXPANSION_MAGNIFICATION, particleChamberWidth, phaseInventory } from "./thermal-geometry.js";
+import { EXPANSION_MAGNIFICATION, phaseInventory } from "./thermal-geometry.js";
 import { drawMotionDiagram } from "./render-motion.js";
 import { drawTransformerBench, drawDeviceBench } from "./render-circuit-benches.js";
+import { drawParticleBench, drawHeatTransferBench } from "./render-thermal-labs.js";
 import { rippleFronts, RIPPLE_HALF_LENGTH as tankX, RIPPLE_HALF_WIDTH as tankZ } from "./ripple-geometry.js";
 import { lunarLitInterval, solarDisplayRadius } from "./space-display.js";
 const chargedViews = new WeakMap();
@@ -494,37 +495,7 @@ export function drawCurriculum(canvas, lab) {
       break;
     }
     case "gases": {
-      title(
-        "Particle model",
-        p.state === 2
-          ? "Ideal gas · illustrative particle speeds"
-          : "Conceptual arrangement · no gas-law pressure",
-      );
-      const boxw = particleChamberWidth(p.volume) * 84,
-        x = 120,
-        y = 90,
-        h = 275;
-      rect(x, y, boxw, h, "#ffffff06", MUTED, 2);
-      line(
-        [
-          [x + boxw, y],
-          [x + boxw, y + h],
-        ],
-        GOLD,
-        8,
-      );
-      for (let i = 0; i < 72; i++) {
-        const [px, py] = chamberParticle(i, t, p.temperature, p.state);
-        circle(x + 8 + px * (boxw - 16), y + h - 10 - py * (h - 20), 3.7, p.state === 0 ? BLUE : CYAN);
-      }
-      text(`${p.temperature} K`, 700, 150, GOLD, 29, "center");
-      text(`${fmt(p.temperature - 273.15)} °C`, 700, 185, MUTED, 18, "center");
-      foot(
-        p.state === 2
-          ? `pV = nRT · p = ${fmt(q.pressure)} Pa`
-          : "Particles are not to scale; solid vibrations / liquid motion are schematic.",
-        `V = ${fmt(p.volume * 1000)} L`,
-      );
+      drawParticleBench({c, p, q, t, text, line, arrow, rect, circle, fmt, title, foot, vectors: lab.vectors !== false});
       break;
     }
     case "expansion": {
@@ -606,62 +577,7 @@ export function drawCurriculum(canvas, lab) {
       break;
     }
     case "heat": {
-      title(
-        ["Conduction bridge", "Convection cell", "Thermal radiation"][p.mode],
-        "Reservoir temperatures held constant",
-      );
-      rect(80, 110, 150, 250, "#ffc58033", GOLD);
-      rect(610, 110, 150, 250, "#91baff33", BLUE);
-      text(`${p.hot} °C`, 155, 95, GOLD, 23, "center");
-      text(`${p.cold} °C`, 685, 95, BLUE, 23, "center");
-      if (p.mode === 0) {
-        const grad = c.createLinearGradient(235, 0, 605, 0);
-        grad.addColorStop(0, "#ffc580");
-        grad.addColorStop(1, "#91baff");
-        rect(235, 205, 370, 60, grad, null, 2);
-        for (let i = 0; i < 15; i++)
-          circle(
-            245 + i * 24 + Math.sin(t * 15 + i) * 2,
-            235 + Math.cos(i) * 10,
-            5,
-            WHITE,
-          );
-        arrow(300, 170, 225, 0, CYAN);
-        text(
-          "Energy by particle interactions / electrons",
-          420,
-          315,
-          MUTED,
-          17,
-          "center",
-        );
-      }
-      if (p.mode === 1) {
-        rect(260, 100, 320, 265, "#91baff16", BLUE);
-        for (let i = 0; i < 35; i++) {
-          const [x, y] = convectionPosition(i / 35 + t * 0.08);
-          circle(420 + 115 * x, 232 - 90 * y, 5, x < 0 ? GOLD : BLUE);
-        }
-        arrow(300, 285, 0, -100, GOLD);
-        arrow(540, 180, 0, 100, BLUE);
-        text("Warm rises · cool sinks", 420, 390, WHITE, 19, "center");
-      }
-      if (p.mode === 2) {
-        for (let i = 0; i < 6; i++)
-          sine(240, 150 + i * 32, 360, 9, 4, t * 3 - i, GOLD);
-        text(
-          "Infrared radiation crosses a vacuum",
-          420,
-          390,
-          MUTED,
-          18,
-          "center",
-        );
-      }
-      foot(
-        `Selected transfer power = ${fmt(q.power)} W`,
-        `Q = ${fmt(q.energy)} J`,
-      );
+      drawHeatTransferBench({c, p, q, t, text, line, arrow, rect, circle, fmt, title, foot, vectors: lab.vectors !== false});
       break;
     }
     case "wavefronts": {

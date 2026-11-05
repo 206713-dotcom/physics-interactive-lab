@@ -4,7 +4,7 @@ import { buoyancySample } from './buoyancy-physics.js';
  * solver state; this presentation component never advances the simulation. */
 import { studyReadings } from './study-policy.js';
 import { calculationNumber } from './calculations.js';
-import { getProfile } from './learning-paths.js';
+import { getProfile, sceneRelationship } from './learning-paths.js';
 import { installMotorCommutator } from './motor-commutator.js';
 import { installGeneratorSlipRings } from './generator-slip-rings.js';
 import { installGalvanometer } from './galvanometer.js';
@@ -342,6 +342,19 @@ export function installPresentationStudio(stage, controls, id, title, machineAct
       restore(false);
     },
     update(lab) {
+      if (id === 'gases') {
+        const gas = lab.params.state === 2;
+        const relationship = gas ? sceneRelationship(id, lab.studyMode)
+          : lab.params.state === 0 ? 'Solid particles vibrate around fixed positions'
+          : 'Liquid particles move past their neighbours';
+        const content = equation.querySelector('.scene-equation-content');
+        if (content.textContent !== relationship) content.textContent = relationship;
+        equation.querySelector('.scene-equation-label').textContent = gas ? 'Key formula' : 'Key idea';
+      }
+      if (id === 'heat' && lab.studyMode === 'igcse') {
+        controls.querySelector('#thickness-number').closest('.control').hidden = lab.params.mode !== 0;
+        controls.querySelector('#conductivity-select').closest('.control').hidden = lab.params.mode !== 0;
+      }
       updateMachine?.(lab);
       updateRectifier?.(lab);
       updateTransformer?.(lab);

@@ -508,6 +508,8 @@ export function sampleCurriculum(id, s, p) {
         conduction,
         radiation,
         convection,
+        hotEmission: p.emissivity * SIGMA * p.area * (p.hot + 273.15) ** 4,
+        backgroundAbsorption: p.emissivity * SIGMA * p.area * (p.cold + 273.15) ** 4,
         power,
         energy: power * t,
       });

@@ -811,9 +811,11 @@ function loadPreset(index) {
   syncPlay();
 }
 function bindControls() {
+  const controlLab = lab;
   for (const raw of lab.definition.controls) {
     const d = studyControl(lab.type,lab.studyMode,raw);
     const commit = (raw, slider = false) => {
+      if (lab !== controlLab) return;
       const value = d.options ? raw : d.log ? (slider ? 10 ** raw : raw) : raw * (d.factor || 1);
       try {
         if (["induction","magnet-coil"].includes(lab.type) && d.key === "circuit") setInductionCircuit(value);
@@ -834,6 +836,8 @@ function bindControls() {
     let numericEdited = false;
     number.oninput = () => { numericEdited = true; };
     const numeric = () => {
+      // Removing a focused input during navigation can dispatch a late blur.
+      if (lab !== controlLab) return;
       const raw = number.value === "" ? NaN : Number(number.value);
       if (raw * (d.factor || 1) !== lab.params[d.key]) commit(raw);
       else if (numericEdited) $("#control-error").textContent = "";

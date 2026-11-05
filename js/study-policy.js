@@ -117,6 +117,10 @@ export function studyControl(id, mode, control) {
   if (mode !== 'igcse') return control;
   const key = `${id}.${control.key}`;
   const overrides = {
+    'heat.thickness': {label:'Solid thickness',unit:'cm',factor:0.01,min:1,max:20,
+      hint:'Compare slabs at the same temperatures. A thicker slab transfers less energy per second.'},
+    'heat.conductivity': {label:'Solid material',options:[[0.08,'Insulating solid'],[0.8,'Poor conductor'],[200,'Good conductor']],
+      hint:'Representative conductivity values for comparing materials. Reservoir temperatures stay fixed.'},
     'waves.amplitude': {label:'Amplitude',hint:'Maximum displacement from the equilibrium line. The vertical scale is enlarged to make the motion clear.'},
     'dc.mode': {options:[[0,'Series resistors'],[1,'Parallel resistors'],[2,'Unloaded potential divider']],hint:'Compare one current path with two branches. The divider output is measured without a load.'},
     'motion.drag': { label: 'Air resistance', options: [[0,'Negligible'],[0.5,'Some resistance'],[2,'Greater resistance']], hint: 'Resistance grows with speed in this model. Compare the velocity–time graphs.' },
@@ -166,6 +170,17 @@ export function heatPowerCalculationId(mode) {
 }
 export function studyReadings(id, state, params, mode, definition) {
   const sheet = calculationSheet(id,state,params);
+  if (id === 'gases' && mode === 'igcse' && params.state === 2) {
+    const q = definition.sample(state,params);
+    return [{title:'Gas pressure',value:q.pressure/1000,unit:'kPa'},
+      {title:'Volume',value:params.volume*1000,unit:'L'},
+      {title:'Absolute temperature',value:params.temperature,unit:'K'}];
+  }
+  if (id === 'heat' && mode === 'igcse') {
+    const q = definition.sample(state,params);
+    return [{title:'Net thermal transfer',value:q.power,unit:'W'},
+      {title:'Energy transferred',value:q.energy,unit:'J'}];
+  }
   if (id === 'moments') {
     const q=definition.sample(state,params);
     return [{title:'Left moment ↺',value:q.left,unit:'N m'},

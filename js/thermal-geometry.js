@@ -35,6 +35,54 @@ export function chamberParticle(index, time, temperature, state) {
   ];
 }
 
+export const PARTICLE_CHAMBER = { height: 2.85, depth: 1.8, margin: 0.09 };
+
+export function gasParticleCount(amount) {
+  return Math.max(8, Math.min(144, Math.round(72 * amount)));
+}
+
+/** Analytic wall reflections. Scene velocity depends on temperature, never on
+ * box size. The enlarged display particles do not supply the ideal-gas pressure. */
+export function gasParticleMotion(index, time, temperature, volume) {
+  const { height, depth, margin } = PARTICLE_CHAMBER;
+  const dimensions = [particleChamberWidth(volume), height, depth];
+  const direction = [Math.cos(index * 2.4 + 0.3), Math.sin(index * 1.7 + 0.6), Math.cos(index * 0.9 + 0.8)];
+  const norm = Math.hypot(...direction), speed = 1.35 * Math.sqrt(temperature / 300);
+  const velocity = [], position = [];
+  let collision = { age: Infinity };
+  dimensions.forEach((length, axis) => {
+    const span = length - 2 * margin;
+    const seed = ((index + 1) * [0.681, 0.413, 0.789][axis]) % 1;
+    const v = speed * direction[axis] / norm, raw = seed * span + time * v;
+    let segment = Math.floor(raw / span), remainder = ((raw % span) + span) % span;
+    if (v < 0 && remainder < 1e-12) { segment--; remainder = span; }
+    const odd = ((segment % 2) + 2) % 2;
+    position.push(margin + (odd ? span - remainder : remainder));
+    velocity.push(odd ? -v : v);
+    const distance = v >= 0 ? remainder : (span - remainder) % span;
+    const age = Math.abs(v) > 1e-12 ? distance / Math.abs(v) : Infinity;
+    if (age < collision.age) {
+      const boundary = v >= 0 ? segment : Math.ceil(raw / span);
+      collision = { age, axis, side: ((boundary % 2) + 2) % 2 };
+    }
+  });
+  collision.position = position.map((value, axis) => value - velocity[axis] * collision.age);
+  return { position, velocity, speed, collision };
+}
+
+export function heatSlabGeometry(p) {
+  return { length: 18 * p.thickness, side: 1.45 * Math.sqrt(p.area / 0.02) };
+}
+
+export function heatMarkerPhase(time, power) {
+  // Qualitative, bounded energy-flow motion. Wattage remains a computed reading.
+  return time * (0.05 + 0.24 * power / (power + 100));
+}
+
+export function radiationMarkerAmplitude(power) {
+  return Math.min(1, Math.sqrt(Math.max(0, power) / 100));
+}
+
 export function phaseInventory(p, q) {
   if (p.mode) return { solid: 1, liquid: 0, vapour: 0, name: "Single-phase sample" };
   const solid = 1 - clamp(q.melt, 0, 1), vapour = clamp(q.boil, 0, 1), liquid = 1 - solid - vapour;

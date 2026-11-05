@@ -67,6 +67,11 @@ function textTexture(text, color, theme = 'dark') {
   texture.colorSpace = T.SRGBColorSpace;
   return texture;
 }
+function fitLabel(sprite, texture, width, maxHeight) {
+  const height = width * texture.image.height / texture.image.width;
+  const fit = maxHeight ? Math.min(1, maxHeight / height) : 1;
+  sprite.scale.set(width * fit, height * fit, 1);
+}
 export function createSceneKit(root, { labels = true } = {}) {
   const annotations = [],
     indicators = [],
@@ -160,7 +165,7 @@ export function createSceneKit(root, { labels = true } = {}) {
     setArrow(o, origin, vector);
     return o;
   };
-  const label = (text, pos, color = "#cfe6ef", width = 2.25, theme = 'dark') => {
+  const label = (text, pos, color = "#cfe6ef", width = 2.25, theme = 'dark', maxHeight) => {
     let o;
     if (labels) {
       const map = textTexture(text, color, theme);
@@ -173,7 +178,7 @@ export function createSceneKit(root, { labels = true } = {}) {
           toneMapped: false,
         }),
       );
-      o.scale.set(width, (width * map.image.height) / map.image.width, 1);
+      fitLabel(o, map, width, maxHeight);
       o.renderOrder = 100;
     } else o = new T.Object3D();
     add(o, pos, "label");
@@ -181,6 +186,7 @@ export function createSceneKit(root, { labels = true } = {}) {
     o.userData.labelWidth = width;
     o.userData.labelColor = color;
     o.userData.labelTheme = theme;
+    o.userData.labelMaxHeight = maxHeight;
     annotations.push(o);
     return o;
   };
@@ -199,7 +205,7 @@ export function createSceneKit(root, { labels = true } = {}) {
       map = textTexture(text, color, o.userData.labelTheme);
     o.material.map = map;
     o.material.needsUpdate = true;
-    o.scale.set(width, (width * map.image.height) / map.image.width, 1);
+    fitLabel(o, map, width, o.userData.labelMaxHeight);
     old?.dispose();
   };
   const glass = (w, h, d, pos, color = 0x82c6df) =>

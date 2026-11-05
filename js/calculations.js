@@ -20,7 +20,10 @@ export function calculationNumber(value) {
 /** Explain physical non-results without substituting a fabricated number.
  * Finite values retain their original precision and units. */
 export function calculationOutcome(type, item) {
+  if (type === "photoelectric" && item.value === 0 && ["kineticEV-0", "stopping-1"].includes(item.id))
+    return "No emitted electrons";
   if (item.value === null) {
+    if (type === "bragg" && item.id === "angle-1") return "No permitted Bragg angle";
     if (type === "lenses") return item.id === "image-0" ? "Image at infinity" : "No finite image";
     if (type === "refraction" && item.id === "angle") return "No transmitted ray (TIR)";
     if (type === "refraction" && item.id === "critical") return "No critical angle for this direction";

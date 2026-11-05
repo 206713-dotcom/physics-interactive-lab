@@ -1,12 +1,12 @@
 /** Optical benches and acoustic apparatus. Ray geometry is calculated, while
  * carrier oscillations are deliberately slowed so their structure is visible. */
 import { PALETTE as C, clamp, setPath } from "./scene-kit.js";
+import { createPhotoelectricBench, createBraggBench } from "./scene-quantum-labs.js";
 import { createLensApparatus } from "./scene-optical-bench.js";
 import { createSoundApparatus } from "./scene-sound.js";
 import { createMirrorBench, createDispersionBench, createPolarisationBench } from "./scene-optics-labs.js";
 import { rippleFronts, RIPPLE_HALF_LENGTH as tankX, RIPPLE_HALF_WIDTH as tankZ } from "./ripple-geometry.js";
-const TAU = 2 * Math.PI,
-  rad = (x) => (x * Math.PI) / 180;
+const TAU = 2 * Math.PI;
 function bench(k) {
   k.stand(10, 4);
   k.rod([-4.5, 0.25, 0], [4.5, 0.25, 0], C.muted, 0.06);
@@ -119,52 +119,6 @@ export const WAVE_SCENES = {
   lenses: createLensApparatus,
   dispersion: createDispersionBench,
   polarisation: createPolarisationBench,
-  bragg(p, k) {
-    bench(k);
-    for (let row = 0; row < 3; row++) {
-      k.line(
-        [
-          [-3, 0.8 + row * 0.6, 0],
-          [3, 0.8 + row * 0.6, 0],
-        ],
-        C.blue,
-        0.45,
-      );
-      for (let col = 0; col < 9; col++)
-        k.ball(0.09, C.blue, [-2.8 + col * 0.7, 0.8 + row * 0.6, 0]);
-    }
-    const incoming = animatedWave(k, C.cyan),
-      outgoing = animatedWave(k, C.gold);
-    k.label("θ is measured from lattice planes", [0, 4, 0], "#cfe6ef", 4.7);
-    return (s, q) => {
-      const a = rad(q.angle ?? 0),
-        hit = [0, 2, 0];
-      setPath(incoming, [[-3 * Math.cos(a), 2 + 3 * Math.sin(a), 0], hit]);
-      outgoing.visible = q.permitted;
-      setPath(outgoing, [hit, [3 * Math.cos(a), 2 + 3 * Math.sin(a), 0]]);
-    };
-  },
-  photoelectric(p, k) {
-    bench(k);
-    k.glass(7, 2.8, 2.2, [0, 1.7, 0]);
-    k.box(0.18, 2.3, 1.5, C.gold, [-2.8, 1.7, 0]);
-    k.box(0.18, 2.3, 1.5, C.blue, [2.8, 1.7, 0]);
-    k.arrow([-4, 3.4, 0], [1.1, -1.1, 0], C.purple);
-    k.label("Photons in", [-3, 4.1, 0], "#c3a6ff", 2);
-    k.label("Metal", [-2.8, 0.25, 1.3], "#ffc584", 1.4);
-    k.label("Collector", [2.8, 0.25, 1.3], "#89baff", 1.7);
-    const dots = k.instances(16, 0.055, C.cyan);
-    return (s, q) => {
-      dots.visible = q.emission;
-      for (let i = 0; i < 16; i++) {
-        const u = (s.t * 0.6 + i / 16) % 1;
-        k.instance(dots, i, [
-          -2.6 + u * 5.2,
-          1.1 + (i % 4) * 0.4,
-          ((i % 3) - 1) * 0.3,
-        ]);
-      }
-      k.finishInstances(dots);
-    };
-  },
+  bragg: createBraggBench,
+  photoelectric: createPhotoelectricBench,
 };

@@ -176,6 +176,18 @@ export function heatPowerCalculationId(mode) {
 }
 export function studyReadings(id, state, params, mode, definition) {
   const sheet = calculationSheet(id,state,params);
+  if (id === 'photoelectric') {
+    const q = definition.sample(state, params);
+    return [{ title:'Maximum electron energy', value:q.emission ? q.kineticEV : 'No emission', unit:q.emission ? 'eV' : '' },
+      { title:'Ideal saturation current',value:q.current*1e9,unit:'nA' },
+      { title:'Stopping potential magnitude',value:q.emission ? q.stopping : 'No emitted electrons',unit:q.emission ? 'V' : '' }];
+  }
+  if (id === 'bragg') {
+    const q = definition.sample(state, params);
+    return [{ title:'de Broglie wavelength',value:q.wavelength*1e12,unit:'pm' },
+      { title:'Electron speed',value:q.speed/1e6,unit:'×10⁶ m/s' },
+      { title:'Bragg angle · extension',value:q.angle === null ? 'Not permitted' : q.angle,unit:q.angle === null ? '' : '°' }];
+  }
   if (id === 'polarisation') {
     const q = definition.sample(state, params), unit = 'W/m²';
     return params.mode

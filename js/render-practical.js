@@ -5,6 +5,7 @@ import {
   LAMP_AMBIENT,
 } from "./practical-physics.js";
 import { drawPolarisationBench } from "./render-optics-labs.js";
+import { drawPhotoelectricBench, drawBraggBench } from "./render-quantum-labs.js";
 import { temperatureHeight } from "./thermal-geometry.js";
 import { springTravel, wireTravel } from "./apparatus-scales.js";
 import { drawRectifierBench, drawSensorBench } from "./render-circuit-benches.js";
@@ -16,6 +17,8 @@ const C = "#168e87",
   M = "#5e7c8c";
 export function drawPractical(lab, kit) {
   if (lab.type === "polarisation") return drawPolarisationBench(kit);
+  if (lab.type === "photoelectric") return drawPhotoelectricBench(kit);
+  if (lab.type === "bragg") return drawBraggBench({...kit,vectors:lab.vectors});
   const {
     c,
     p,
@@ -530,84 +533,7 @@ function drawAdvancedInstrument(lab, kit) {
   title(lab.definition.short, lab.type === "materials"
     ? "Extension shown on a compressed scale"
     : "Calculated instrument · see model assumptions");
-  if (lab.type === "photoelectric") {
-    rect(90, 95, 670, 265, "#91baff0c", B, 90);
-    rect(200, 135, 14, 185, "#637f94", G, 3);
-    rect(650, 135, 14, 185, "#637f94", C, 3);
-    text("EMITTER", 207, 385, G, 16, "center");
-    text("COLLECTOR", 657, 385, C, 16, "center");
-    for (let i = 0; i < 6; i++) {
-      const x = 70 + i * 12,
-        y = 150 + i * 25;
-      line(
-        [
-          [x, 70],
-          [198, y],
-        ],
-        P,
-        2,
-      );
-      arrow(
-        198 - (198 - x) * 0.18,
-        y - (y - 70) * 0.18,
-        (198 - x) * 0.18,
-        (y - 70) * 0.18,
-        P,
-        2,
-      );
-    }
-    if (q.emission)
-      for (let i = 0; i < 12; i++) {
-        const phase = (t * 0.6 + i / 12) % 1,
-          x = 220 + phase * 420,
-          y = 160 + (i % 5) * 31;
-        circle(x, y, 3, C, true);
-      }
-    text(`${fmt(q.kineticEV)} eV`, 430, 220, W, 36, "center");
-    text(
-      q.emission
-        ? "maximum electron kinetic energy"
-        : "Below threshold: no emission",
-      430,
-      253,
-      q.emission ? M : G,
-      17,
-      "center",
-    );
-    text(`${fmt(q.current * 1e9)} nA`, 430, 305, C, 24, "center");
-    foot(
-      `Threshold ${fmt(q.threshold / 1e14)} × 10¹⁴ Hz`,
-      `Stopping potential ${fmt(q.stopping)} V`,
-    );
-  } else if (lab.type === "bragg") {
-    for (let row = 0; row < 4; row++) {
-      const y = 160 + row * 48;
-      line(
-        [
-          [245, y],
-          [710, y],
-        ],
-        "#91baff33",
-        1,
-      );
-      for (let j = 0; j < 12; j++) circle(250 + j * 40, y, 5, B);
-    }
-    const angle = q.angle === null ? 0.25 : (q.angle * Math.PI) / 180,
-      ex = 430 + 270 * Math.cos(angle),
-      ey = 210 - 270 * Math.sin(angle);
-    arrow(80, 210 - 250 * Math.sin(angle), 350, 250 * Math.sin(angle), G, 2);
-    arrow(430, 210, ex - 430, ey - 210, C, 2);
-    text(
-      q.angle === null ? "No permitted Bragg angle" : `θ = ${fmt(q.angle)}°`,
-      430,
-      105,
-      W,
-      30,
-      "center",
-    );
-    text("CRYSTAL PLANES · spacing enlarged", 470, 385, M, 16, "center");
-    foot(`Electron wavelength ${fmt(q.wavelength * 1e12)} pm`, `2d sin θ = nλ`);
-  } else if (lab.type === "selector") {
+  if (lab.type === "selector") {
     rect(140, 110, 560, 18, "#6be5d466", C, 3);
     rect(140, 335, 560, 18, "#ffc58066", G, 3);
     for (let x = 180; x < 690; x += 70) {

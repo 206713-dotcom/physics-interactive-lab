@@ -401,6 +401,18 @@ export function installPresentationStudio(stage, controls, id, title, machineAct
           `Right: the object and virtual image are each ${lab.params.distance.toFixed(2)} m from the mirror. Dashed lines are back projections.`;
       if (id === 'dispersion')
         context.textContent = 'Follow one wavefront through the boundary. Its spacing and speed decrease together, keeping frequency unchanged. Compare the reference angles for violet and red.';
+      if (id === 'photoelectric') {
+        const q = lab.definition.sample(lab.state, lab.params);
+        context.textContent = q.emission
+          ? 'More power at fixed frequency raises the photocurrent, while maximum electron energy stays the same. Compare the photon, work-function and kinetic-energy bars on their common scale.'
+          : 'The light reaches the metal, but each photon has too little energy for an electron to escape. Increasing power adds photons without overcoming this energy shortfall.';
+      }
+      if (id === 'bragg') {
+        const q = lab.definition.sample(lab.state, lab.params);
+        context.textContent = q.permitted
+          ? 'Higher accelerating voltage gives more momentum and a shorter wavelength. The cyan and gold paths scatter from neighbouring planes. Their extra path is a whole number of wavelengths at the calculated Bragg angle.'
+          : 'This order has nλ > 2d, so no real Bragg angle exists. Reduce the order, increase plane spacing, or increase accelerating voltage. No outgoing direction is invented.';
+      }
       if (id === 'polarisation') {
         const q = lab.definition.sample(lab.state, lab.params);
         controls.querySelector('#thirdAngle-number').closest('.control').hidden = !lab.params.mode;

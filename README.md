@@ -10,6 +10,16 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 ## What is in the laboratory?
 
+### Version 20.13: see the quantum physics
+
+The rebuilt **photoelectric bench** has a cutaway vacuum tube, a light source, separate emitter and collector, an ideal saturation-current meter, and photon/work-function/maximum-kinetic-energy bars sharing one fixed 0–6.5 eV scale. Above threshold, more optical power increases current and the illustrated flux without changing maximum electron energy. Below threshold, light still arrives while electron traffic and current disappear. Ultraviolet and infrared use labelled colour keys. No retarding-voltage curve or collection field is invented. Marker densities use separate square-root flux scales, and marker speeds are schematic.
+
+The rebuilt **electron-diffraction bench** moves the enlarged crystal planes when their spacing changes. Two scattering paths show the true Bragg angle and the extra travel distance `2d sin θ = nλ`. Relativistic electron momentum supplies the numerical wavelength and speed. The wavelength guide uses its own fixed scale, 12.5 times the lattice enlargement, so changing voltage visibly changes wavelength. Angles are not magnified. Impossible orders have no assigned incoming/outgoing construction, and the instruments state that no Bragg angle is permitted. No diffraction intensities or powder-ring patterns are predicted. The Cambridge focus is `λ = h/p`; the crystal-plane construction remains labelled as an extension.
+
+Both laboratories have matching 2D diagrams, live readings, the common variable drawer and fullscreen controls, with calculations below. **322 automated tests pass**, including new checks for energy accounting, saturation current, power versus energy, absent sub-threshold emission, calibrated energy-bar lengths, relativistic momentum, geometrical path differences, impossible orders and stable rendering allocations.
+
+Physical references: [OpenStax photoelectric effect](https://openstax.org/books/university-physics-volume-3/pages/6-2-photoelectric-effect), [de Broglie matter waves](https://openstax.org/books/university-physics-volume-3/pages/6-5-de-broglies-matter-waves) and [Cambridge 9702 syllabus, 2025–2027](https://www.cambridgeinternational.org/Images/664565-2025-2027-syllabus.pdf).
+
 ### Version 20.12: optics you can follow
 
 - **Plane mirrors** have separate reflection-law and virtual-image constructions. The object-distance control now moves the object and image by equal amounts on a fixed scale. Two real reflected rays back-project to the upright virtual image. All ray angles and distance ratios are calculated.

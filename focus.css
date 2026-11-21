@@ -57,7 +57,14 @@ body #search-results :is(a,button):hover,body #search-results [aria-selected=tru
 .field-more{padding-top:20px;border-color:#d1dce5;gap:12px 25px}.field-more a{font:600 14px Barlow,sans-serif;color:#426f99}.field-more a:hover{color:#1d2d3d}
 
 /* Topic and syllabus navigation uses the same reading hierarchy. */
-.field-paths,.field-topic{max-width:1440px;margin-inline:auto}
+.field-paths,
+.field-topic {
+  /* The centered width supplies the desktop margins. A viewport-based
+     gutter here would subtract that space again inside the content. */
+  width: min(1280px, calc(100% - 48px));
+  margin-inline: auto;
+  padding-inline: 0;
+}
 .paths-heading h1,.topic-heading h1{color:#1d2d3d;font-weight:700;font-size:clamp(40px,5vw,70px)}
 .paths-heading p,.topic-heading p:last-child,.topic-trail{color:#526578;font-size:17px;line-height:1.6}
 .level-switch{border-color:#ccd9e3;gap:28px}.level-switch a{font-size:17px;color:#526578;padding-inline:4px}.level-switch a[aria-current]{color:#1d2d3d;border-color:#5d85ae}
@@ -66,7 +73,20 @@ body #search-results :is(a,button):hover,body #search-results [aria-selected=tru
 .path-name{font-size:18px}.path-count{color:#60778b}.path-list a:hover{background:#e5edf4}
 .topic-trail-path a{color:#1d2d3d}.topic-trail-step a{background:#fff;border-color:#cddae4;color:#426f99}
 .topic-list{gap:14px}.topic-list a{border-color:#d1dce5;border-radius:9px;background:#fff;color:#1d2d3d;box-shadow:0 3px 10px #1d2d3d03;padding:15px}
-.topic-list a:hover{background:#fafdff;border-color:#5d85ae}.topic-thumb{background:#edf3f8;color:#426f99}
+.topic-list a:hover,
+.topic-list a:focus-visible {
+  background: #fafdff;
+  border-color: #5d85ae;
+}
+.topic-list a:focus-visible {
+  outline: 3px solid #5d85ae;
+  outline-offset: 3px;
+}
+.topic-thumb{background:#edf3f8;color:#426f99}
+.topic-item-copy {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 .topic-item-copy strong{font-size:18px;color:#1d2d3d}.topic-item-copy span,.topic-ref{color:#526578;font-size:14px}.topic-ref{background:#edf3f8;border-color:#d1dce5}
 
 /* Light learning pages surround a dark, high-contrast simulation instrument. */
@@ -119,7 +139,19 @@ body .practice-topic-card{border-color:#d1dce5;border-radius:7px;color:#1d2d3d;b
 body .practice-topic-card>span:last-child,body .practice-topic-heading>a{color:#426f99}
 body .practice-view-tabs button[aria-selected=true]{background:#1d2d3d;border-color:#1d2d3d;color:#fff}
 @media(max-width:1100px){body .site-header{gap:15px;padding-inline:24px}.site-header nav{gap:2px}body #lab-select{max-width:160px}.field-intro{max-width:49vw}.field-intro h1{font-size:clamp(58px,7.4vw,84px)}.level-entry{gap:7px}.level-entry a{padding:15px 12px}.level-entry strong{font-size:25px}}
-@media(max-width:800px){
+@media (max-width: 800px) {
+  .field-paths,
+  .field-topic {
+    width: calc(100% - 40px);
+  }
+  body .site-header nav {
+    height: auto;
+    min-height: 40px;
+  }
+  body .site-header nav a {
+    display: inline-flex;
+    align-items: center;
+  }
  body.field-page .site-header nav,body.lab-dark .site-header nav,body .site-header nav{display:flex!important}
  body .site-header,body.field-page .site-header{height:auto;min-height:74px;flex-wrap:wrap;padding:15px 20px;gap:14px}body .site-header nav{width:100%;flex-wrap:wrap;justify-content:flex-start;gap:2px 7px}body .site-header nav a{font-size:15px;padding:8px}body #lab-select{margin-left:auto;max-width:180px}
  body.field-page:has(.field-home)::before,body.field-page:has(.field-home) #backdrop{display:none!important}.field-home{min-height:auto;padding-top:20px}.field-intro{max-width:none;padding-block:24px 32px}.field-intro h1{font-size:clamp(58px,11vw,83px)}.field-intro>p{font-size:17px;max-width:540px}.field-search{max-width:none}.level-entry{max-width:none;gap:10px}.level-entry a{min-height:105px}.field-caption{display:none}.field-more{margin-top:10px;padding-bottom:15px}

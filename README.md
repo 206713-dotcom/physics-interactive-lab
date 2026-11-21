@@ -334,7 +334,7 @@ Open <http://localhost:4173/physics-interactive-lab/>. No install or build step,
 - **Embed:** open the [embed generator](https://206713-dotcom.github.io/physics-interactive-lab/integration.html), or choose **Embed** from an experiment to preserve its initial setup. The working iframe preview and copyable HTML make it ready for an existing lesson page. `?embed=1#/gravity` opens a paused, compact model with calculations; Scroll below the stage for calculations and learning resources. See [INTEGRATION.md](INTEGRATION.md) for FocusPhysics handover, host-page checks and self-hosting. No changes to FocusPhysics itself are made by this repository.
 - **Library:** search by topic or filter by subject. The experiment selector makes it easy to move between studios.
 
-Reduced-motion preference starts experiments paused and keeps the home orbit preview still. Background tabs do not accumulate simulation time. Tiny nonzero readouts use scientific notation; CSV exports retain their full numerical values. All IGCSE instruments retain their calibrated 2D diagrams alongside the 3D apparatus.
+Reduced-motion preference starts experiments paused. Background tabs do not accumulate simulation time. Tiny nonzero readouts use scientific notation; CSV exports retain their full numerical values. All IGCSE instruments retain their calibrated 2D diagrams alongside the 3D apparatus.
 
 ## Physics and numerical methods
 

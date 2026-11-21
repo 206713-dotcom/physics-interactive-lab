@@ -374,7 +374,7 @@ export function drawCurriculum(canvas, lab) {
     }
     case "buoyancy": {
       title(
-        "Release. Rise. Sink.",
+        "Floating and sinking",
         "Actual vertical motion · upward is positive",
       );
       const floor = 355,
@@ -435,18 +435,25 @@ export function drawCurriculum(canvas, lab) {
       arrow(365 + side / 2, yy, 0, -q.upthrust * unit, CYAN, 4);
       arrow(395 + side / 2, yy, 0, -q.drag * unit, BLUE, 3);
       if (q.normal) arrow(340, floor, 0, -q.normal * unit, PURPLE, 4);
-      text(BUOYANCY_STATUS[q.status], 550, 141, WHITE, 22);
-      text("W = " + fmt(q.weight) + " N", 550, 184, GOLD, 20);
-      text("U = " + fmt(q.upthrust) + " N", 550, 218, CYAN, 20);
+      const readingWidth = 260;
+      const reading = (label, y, color, size) => text(label, 550, y, color, size, "left", readingWidth);
+      const status = BUOYANCY_STATUS[q.status];
+      if (scale < 0.65 && status.includes(" ")) {
+        const lastSpace = status.lastIndexOf(" ");
+        reading(status.slice(0, lastSpace), 118, WHITE, 22);
+        reading(status.slice(lastSpace + 1), 152, WHITE, 22);
+      } else reading(status, 141, WHITE, 22);
+      reading("W = " + fmt(q.weight) + " N", 196, GOLD, 20);
+      reading("U = " + fmt(q.upthrust) + " N", 232, CYAN, 20);
       if(lab.studyMode==='igcse') {
         if(q.normal>0) {
-          text('Floor support = '+fmt(q.normal)+' N',550,261,PURPLE,18);
-          text('Support now balances the forces.',550,294,MUTED,14);
-        } else text(q.status===3 || q.status===4?'Balanced forces':'Unbalanced forces change the motion.',550,267,MUTED,14);
+          reading("Support = " + fmt(q.normal) + " N", 273, PURPLE, 18);
+          reading("Balanced forces", 309, MUTED, 14);
+        } else reading(q.status === 3 || q.status === 4 ? "Balanced forces" : "Unbalanced forces", 273, MUTED, 14);
       } else {
-        text("Drag = " + fmt(q.drag) + " N", 550, 252, BLUE, 18);
-        text("Support = " + fmt(q.normal) + " N", 550, 284, PURPLE, 18);
-        text("Net = " + fmt(q.net) + " N", 550, 323, WHITE, 20);
+        reading("Drag = " + fmt(q.drag) + " N", 268, BLUE, 18);
+        reading("Support = " + fmt(q.normal) + " N", 304, PURPLE, 18);
+        reading("Net = " + fmt(q.net) + " N", 340, WHITE, 20);
       }
       foot(
         fmt(q.immersion, 1) + (lab.studyMode==='igcse'?"% immersed":"% immersed · v = " + fmt(q.v, 3) + " m/s"),

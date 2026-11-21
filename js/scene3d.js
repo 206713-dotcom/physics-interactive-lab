@@ -1,6 +1,6 @@
 import { createBudget, ratioForPixels } from "./render-budget.js";
 import { realMaterial, setSceneTheme } from "./scene-materials.js";
-import { studioBackdropTexture, benchMaterial, lightPool, stageRings, dustField, addGlow, paintLabelPlate } from "./scene-look.js";
+import { studioBackdropTexture, benchMaterial, lightPool, addGlow, paintLabelPlate } from "./scene-look.js";
 import { labTopic, DEFAULT_ACCENT } from "./topic-map.js";
 import { levelText } from "./level-wording.js";
 import { apparatusBounds, frameApparatus, frameOrbit, diagramLabelVisible } from './scene-framing.js';
@@ -171,8 +171,6 @@ export class SceneView {
     this.renderer.toneMapping = T.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.12;
     this.scene = new T.Scene();
-    // A quiet studio backdrop adds depth without adding anything to the model.
-    this.studioBackdrop = studioBackdropTexture();
     this.scene.fog = new T.FogExp2(0x080f1b, 0.018);
     this.environmentTarget = studioEnvironment(this.renderer);
     this.scene.environment = this.environmentTarget.texture;
@@ -222,10 +220,6 @@ export class SceneView {
     this.floor = floor;
     this.pool = lightPool();
     this.scene.add(this.pool);
-    this.rings = stageRings();
-    this.scene.add(this.rings);
-    this.dust = dustField();
-    this.scene.add(this.dust);
     // A cool counter-light opposite the world-coloured rim light.
     this.fillLight.color.set(0x8fdcf0);
     this.fillLight.position.set(-6, 3.5, -3.5);
@@ -475,16 +469,15 @@ export class SceneView {
     this.type = type;
     this.key = JSON.stringify(p);
     const space = ["gravity", "earthmoon", "solarsystem", "stars", "binary", "threebody", "universe"].includes(type);
-    // Space scenes share the same night sky, in the violet of the space world.
-    this.scene.background = studioBackdropTexture(space ? 0x6a5cff : accent.getHex());
-    this.scene.fog.color.set(space?0x080f1b:0x070617);
+    this.scene.background = studioBackdropTexture(space);
+    this.scene.fog.color.set(space ? 0x080f1b : 0x102638);
     // Orbital lighting is illustrative, not a simulated day/night cycle.
     this.ambient.intensity = { gravity: 0.36, earthmoon: 0.38, solarsystem: 0.65 }[type] ?? 0.62;
     this.keyLight.intensity = type === "solarsystem" ? 0 : 3.5;
     this.keyLight.position.set(-4, 9, type === "gravity" ? 3 : 6);
     if (type === "gravity") this.keyLight.position.set(-9, 7, 2);
     if (type === "earthmoon") this.keyLight.position.set(-10, 0, 0);
-    this.rimLight.intensity = space ? 0 : 46;
+    this.rimLight.intensity = space ? 0 : 34;
     this.rimLight.color.copy(accent);
     this.fillLight.intensity = type === 'gravity' ? 0.45 : space ? 0.05 : 1.15;
     this.scene.environmentIntensity = type === 'gravity' ? 0.3 : space ? 0.08 : 1.1;
@@ -499,15 +492,11 @@ export class SceneView {
     this.floor.visible = !space && type !== "vectors";
     this.grid.visible = !space && type !== "vectors";
     this.grid.position.y = type === "gravity" ? 1 : this.grid.position.y;
-    this.grid.material.opacity = 0.34;
-    this.grid.material.uniforms.tint.value.copy(accent).lerp(new T.Color(0x8fa0ff), 0.45);
+    this.grid.material.opacity = 0.27;
+    this.grid.material.uniforms.tint.value.set(0x6f9eb8);
     this.pool.visible = this.floor.visible;
     this.pool.position.y = this.floor.position.y + 0.012;
-    this.pool.material.color.copy(accent).lerp(new T.Color(0xffffff), 0.35);
-    this.rings.visible = this.dust.visible = this.floor.visible;
-    this.rings.position.y = this.floor.position.y + 0.016;
-    this.rings.material.color.copy(accent);
-    this.dust.material.color.copy(accent).lerp(new T.Color(0xffffff), 0.6);
+    this.pool.material.color.set(0x699ab3);
     const add = (name, mesh, pos) => {
       o[name] = mesh;
       if (pos) mesh.position.set(...pos);
@@ -1007,13 +996,6 @@ export class SceneView {
     );
     this.camera.lookAt(this.target);
     this.grid.material.uniforms.opacity.value = this.grid.material.opacity;
-    if (this.rings?.visible) {
-      // Stage dressing only: the pad turns and the dust drifts.
-      const beat = performance.now() / 1000;
-      this.rings.rotation.z = beat * 0.03;
-      this.dust.rotation.y = beat * 0.012;
-      this.dust.position.y = Math.sin(beat * 0.22) * 0.25;
-    }
     this.renderer.render(this.scene, this.camera);
     if (this.budget?.frame(performance.now())) {
       this.w = 0; // resize the drawing buffer on the next frame
@@ -1047,8 +1029,6 @@ export class SceneView {
     );
     this.renderer.dispose();
     this.environmentTarget.dispose();
-    this.studioBackdrop.dispose();
-    this.orbitBackdrop?.dispose();
     this.renderer.forceContextLoss();
   }
 }

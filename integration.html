@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#10283e" />
     <title>Embed a simulation · Physics Interactive Lab</title>
     <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./integration.css" />
+    <link rel="stylesheet" href="./integration.css?v=22.0.0" />
     <script type="module" src="./js/embed-builder.js"></script>
   </head>
   <body>
@@ -14,26 +14,21 @@
     <header>
       <a class="brand" href="./"
         ><img src="./assets/favicon.svg" alt="" width="38" height="38" /><span
-          >PHYSICS<small>INTERACTIVE LAB</small></span
+          >Physics Lab<small>Interactive experiments</small></span
         ></a
-      ><a href="./#/gravity">Back to the laboratory ↗</a>
+      ><a href="./#/library">Back to experiments</a>
     </header>
     <main id="main">
       <section class="intro">
-        <span class="eyebrow">FOR TEACHERS & WEBSITE EDITORS</span>
-        <h1>Bring the lab<br />into your lesson.</h1>
+        <span class="eyebrow">For teachers and website editors</span>
+        <h1>Embed a simulation</h1>
         <p>
           Choose a simulation, copy the embed, and place it beside your existing
           resources. The model, controls and live calculations stay together.
         </p>
-        <div class="intro-tags">
-          <span>Browser only</span><span>No account needed</span
-          ><span>Scientific 2D + 3D studios</span>
-        </div>
       </section>
       <section class="builder" aria-label="Simulation embed generator">
         <div class="settings">
-          <span class="eyebrow">01 / CHOOSE</span>
           <h2>Your simulation</h2>
           <label for="embed-model">Experiment</label
           ><select id="embed-model"></select
@@ -48,8 +43,7 @@
           >
         </div>
         <div class="code">
-          <span class="eyebrow">02 / ADD TO YOUR PAGE</span>
-          <h2>Copy. Paste. Explore.</h2>
+          <h2>Copy the embed code</h2>
           <p>
             The site editor can paste this into an HTML or embed block. It
             leaves the rest of the lesson page in place.
@@ -69,17 +63,15 @@
       >
         <div class="preview-heading">
           <div>
-            <span class="eyebrow">03 / CHECK THE EXPERIENCE</span>
-            <h2>Exactly how it embeds.</h2>
+            <h2>Preview</h2>
           </div>
           <a id="open-lab" target="_blank" rel="noopener"
             >Open full lesson & questions ↗</a
           >
         </div>
         <p>
-          The preview starts paused. Press Resume to run it, or choose
-          Parameters to adjust the setup. At narrower widths, the inspector uses
-          tabs.
+          The preview starts paused. Press Resume to run it. Open Change variables
+          inside the model to adjust the setup.
         </p>
         <div class="preview-frame">
           <iframe

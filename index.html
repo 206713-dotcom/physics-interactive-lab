@@ -3,196 +3,189 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#1d2d3d" />
+    <meta name="theme-color" content="#0c2033" />
     <meta
       name="description"
       content="59 interactive physics laboratories with live calculations, a FocusPhysics IGCSE course map and Cambridge 9702 practice questions."
     />
     <title>Physics Interactive Lab · Make physics move</title>
     <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=21.8.0" />
-    <link rel="stylesheet" href="./studio.css?v=21.8.0" />
-    <link rel="stylesheet" href="./workbench.css?v=21.8.0" />
-    <link rel="stylesheet" href="./frontiers.css?v=21.8.0" />
-    <link rel="stylesheet" href="./expanded.css?v=21.8.0" />
-    <link rel="stylesheet" href="./curriculum.css?v=21.8.0" />
-    <link rel="stylesheet" href="./questions.css?v=21.8.0" />
-    <link rel="stylesheet" href="./vectors.css?v=21.8.0" />
-    <link rel="stylesheet" href="./apparatus.css?v=21.8.0" />
-    <link rel="stylesheet" href="./learning.css?v=21.8.0" />
-    <link rel="stylesheet" href="./cinematic.css?v=21.8.0" />
-    <link rel="stylesheet" href="./design.css?v=21.8.0" />
-    <link rel="stylesheet" href="./consolidated.css?v=21.8.0" />
-    <link rel="stylesheet" href="./field.css?v=21.8.0" />
-    <link rel="stylesheet" href="./focus.css?v=21.8.0" />
+    <link rel="stylesheet" href="./styles.css?v=22.0.0" />
+    <link rel="stylesheet" href="./studio.css?v=22.0.0" />
+    <link rel="stylesheet" href="./workbench.css?v=22.0.0" />
+    <link rel="stylesheet" href="./frontiers.css?v=22.0.0" />
+    <link rel="stylesheet" href="./expanded.css?v=22.0.0" />
+    <link rel="stylesheet" href="./curriculum.css?v=22.0.0" />
+    <link rel="stylesheet" href="./questions.css?v=22.0.0" />
+    <link rel="stylesheet" href="./vectors.css?v=22.0.0" />
+    <link rel="stylesheet" href="./apparatus.css?v=22.0.0" />
+    <link rel="stylesheet" href="./learning.css?v=22.0.0" />
+    <link rel="stylesheet" href="./cinematic.css?v=22.0.0" />
+    <link rel="stylesheet" href="./design.css?v=22.0.0" />
+    <link rel="stylesheet" href="./consolidated.css?v=22.0.0" />
+    <link rel="stylesheet" href="./field.css?v=22.0.0" />
+    <link rel="stylesheet" href="./focus.css?v=22.0.0" />
     <script defer src="./vendor/chart.umd.js"></script>
     <!-- Versioned local module graph: npm run refresh-assets -->
     <script type="importmap" id="lab-module-map">
       {
         "imports": {
-          "./js/advanced-simulations.js": "./js/advanced-simulations.js?v=21.8.0",
-          "./js/app.js": "./js/app.js?v=21.8.0",
-          "./js/apparatus-scales.js": "./js/apparatus-scales.js?v=21.8.0",
-          "./js/apparatus-tools.js": "./js/apparatus-tools.js?v=21.8.0",
-          "./js/buoyancy-physics.js": "./js/buoyancy-physics.js?v=21.8.0",
-          "./js/buoyancy-studio.js": "./js/buoyancy-studio.js?v=21.8.0",
-          "./js/calculations-advanced.js": "./js/calculations-advanced.js?v=21.8.0",
-          "./js/calculations.js": "./js/calculations.js?v=21.8.0",
-          "./js/canvas.js": "./js/canvas.js?v=21.8.0",
-          "./js/catalogue-art.js": "./js/catalogue-art.js?v=21.8.0",
-          "./js/circuit-apparatus.js": "./js/circuit-apparatus.js?v=21.8.0",
-          "./js/content-advanced.js": "./js/content-advanced.js?v=21.8.0",
-          "./js/content-curriculum.js": "./js/content-curriculum.js?v=21.8.0",
-          "./js/content-extra.js": "./js/content-extra.js?v=21.8.0",
-          "./js/content.js": "./js/content.js?v=21.8.0",
-          "./js/course-map.js": "./js/course-map.js?v=21.8.0",
-          "./js/course.js": "./js/course.js?v=21.8.0",
-          "./js/curriculum-physics.js": "./js/curriculum-physics.js?v=21.8.0",
-          "./js/curriculum-simulations.js": "./js/curriculum-simulations.js?v=21.8.0",
-          "./js/diagram-theme.js": "./js/diagram-theme.js?v=21.8.0",
-          "./js/direct-handles.js": "./js/direct-handles.js?v=21.8.0",
-          "./js/embed-builder.js": "./js/embed-builder.js?v=21.8.0",
-          "./js/expanded-view.js": "./js/expanded-view.js?v=21.8.0",
-          "./js/field-backdrop.js": "./js/field-backdrop.js?v=21.8.0",
-          "./js/field-geometry.js": "./js/field-geometry.js?v=21.8.0",
-          "./js/galvanometer.js": "./js/galvanometer.js?v=21.8.0",
-          "./js/generator-slip-rings.js": "./js/generator-slip-rings.js?v=21.8.0",
-          "./js/integration.js": "./js/integration.js?v=21.8.0",
-          "./js/kinematics-display.js": "./js/kinematics-display.js?v=21.8.0",
-          "./js/learning-paths.js": "./js/learning-paths.js?v=21.8.0",
-          "./js/learning-studio.js": "./js/learning-studio.js?v=21.8.0",
-          "./js/lesson-view.js": "./js/lesson-view.js?v=21.8.0",
-          "./js/level-wording.js": "./js/level-wording.js?v=21.8.0",
-          "./js/linear-motion.js": "./js/linear-motion.js?v=21.8.0",
-          "./js/math-display.js": "./js/math-display.js?v=21.8.0",
-          "./js/moments-physics.js": "./js/moments-physics.js?v=21.8.0",
-          "./js/motor-commutator.js": "./js/motor-commutator.js?v=21.8.0",
-          "./js/olympiad-practice.js": "./js/olympiad-practice.js?v=21.8.0",
-          "./js/optical-construction.js": "./js/optical-construction.js?v=21.8.0",
-          "./js/orbital-reference.js": "./js/orbital-reference.js?v=21.8.0",
-          "./js/oscillation-physics.js": "./js/oscillation-physics.js?v=21.8.0",
-          "./js/physics-advanced.js": "./js/physics-advanced.js?v=21.8.0",
-          "./js/physics-extra.js": "./js/physics-extra.js?v=21.8.0",
-          "./js/physics.js": "./js/physics.js?v=21.8.0",
-          "./js/practical-labs.js": "./js/practical-labs.js?v=21.8.0",
-          "./js/practical-physics.js": "./js/practical-physics.js?v=21.8.0",
-          "./js/presentation-studio.js": "./js/presentation-studio.js?v=21.8.0",
-          "./js/quantum-display.js": "./js/quantum-display.js?v=21.8.0",
-          "./js/reading-comparison.js": "./js/reading-comparison.js?v=21.8.0",
-          "./js/rectifier-console.js": "./js/rectifier-console.js?v=21.8.0",
-          "./js/render-advanced.js": "./js/render-advanced.js?v=21.8.0",
-          "./js/render-budget.js": "./js/render-budget.js?v=21.8.0",
-          "./js/render-circuit-benches.js": "./js/render-circuit-benches.js?v=21.8.0",
-          "./js/render-curriculum.js": "./js/render-curriculum.js?v=21.8.0",
-          "./js/render-motion.js": "./js/render-motion.js?v=21.8.0",
-          "./js/render-optics-labs.js": "./js/render-optics-labs.js?v=21.8.0",
-          "./js/render-oscillations.js": "./js/render-oscillations.js?v=21.8.0",
-          "./js/render-practical.js": "./js/render-practical.js?v=21.8.0",
-          "./js/render-quantum-labs.js": "./js/render-quantum-labs.js?v=21.8.0",
-          "./js/render-thermal-labs.js": "./js/render-thermal-labs.js?v=21.8.0",
-          "./js/render-vectors.js": "./js/render-vectors.js?v=21.8.0",
-          "./js/render2d.js": "./js/render2d.js?v=21.8.0",
-          "./js/ripple-geometry.js": "./js/ripple-geometry.js?v=21.8.0",
-          "./js/scene-advanced.js": "./js/scene-advanced.js?v=21.8.0",
-          "./js/scene-buoyancy.js": "./js/scene-buoyancy.js?v=21.8.0",
-          "./js/scene-curriculum.js": "./js/scene-curriculum.js?v=21.8.0",
-          "./js/scene-dc-bench.js": "./js/scene-dc-bench.js?v=21.8.0",
-          "./js/scene-devices.js": "./js/scene-devices.js?v=21.8.0",
-          "./js/scene-electric.js": "./js/scene-electric.js?v=21.8.0",
-          "./js/scene-filament.js": "./js/scene-filament.js?v=21.8.0",
-          "./js/scene-finish.js": "./js/scene-finish.js?v=21.8.0",
-          "./js/scene-framing.js": "./js/scene-framing.js?v=21.8.0",
-          "./js/scene-guides.js": "./js/scene-guides.js?v=21.8.0",
-          "./js/scene-heat-transfer.js": "./js/scene-heat-transfer.js?v=21.8.0",
-          "./js/scene-instruments.js": "./js/scene-instruments.js?v=21.8.0",
-          "./js/scene-kit.js": "./js/scene-kit.js?v=21.8.0",
-          "./js/scene-look.js": "./js/scene-look.js?v=21.8.0",
-          "./js/scene-magnetism.js": "./js/scene-magnetism.js?v=21.8.0",
-          "./js/scene-materials.js": "./js/scene-materials.js?v=21.8.0",
-          "./js/scene-mechanics.js": "./js/scene-mechanics.js?v=21.8.0",
-          "./js/scene-moments.js": "./js/scene-moments.js?v=21.8.0",
-          "./js/scene-motion-benches.js": "./js/scene-motion-benches.js?v=21.8.0",
-          "./js/scene-optical-bench.js": "./js/scene-optical-bench.js?v=21.8.0",
-          "./js/scene-optics-labs.js": "./js/scene-optics-labs.js?v=21.8.0",
-          "./js/scene-oscillation-benches.js": "./js/scene-oscillation-benches.js?v=21.8.0",
-          "./js/scene-particle-chamber.js": "./js/scene-particle-chamber.js?v=21.8.0",
-          "./js/scene-particles.js": "./js/scene-particles.js?v=21.8.0",
-          "./js/scene-precision.js": "./js/scene-precision.js?v=21.8.0",
-          "./js/scene-projectile-bench.js": "./js/scene-projectile-bench.js?v=21.8.0",
-          "./js/scene-props.js": "./js/scene-props.js?v=21.8.0",
-          "./js/scene-quantum-labs.js": "./js/scene-quantum-labs.js?v=21.8.0",
-          "./js/scene-rc-bench.js": "./js/scene-rc-bench.js?v=21.8.0",
-          "./js/scene-rectifier.js": "./js/scene-rectifier.js?v=21.8.0",
-          "./js/scene-sensors.js": "./js/scene-sensors.js?v=21.8.0",
-          "./js/scene-sound.js": "./js/scene-sound.js?v=21.8.0",
-          "./js/scene-space.js": "./js/scene-space.js?v=21.8.0",
-          "./js/scene-thermal-benches.js": "./js/scene-thermal-benches.js?v=21.8.0",
-          "./js/scene-thermal.js": "./js/scene-thermal.js?v=21.8.0",
-          "./js/scene-transformer.js": "./js/scene-transformer.js?v=21.8.0",
-          "./js/scene-vectors.js": "./js/scene-vectors.js?v=21.8.0",
-          "./js/scene-wave-bench.js": "./js/scene-wave-bench.js?v=21.8.0",
-          "./js/scene-waves.js": "./js/scene-waves.js?v=21.8.0",
-          "./js/scene3d.js": "./js/scene3d.js?v=21.8.0",
-          "./js/simulations.js": "./js/simulations.js?v=21.8.0",
-          "./js/space-display.js": "./js/space-display.js?v=21.8.0",
-          "./js/spring-helix.js": "./js/spring-helix.js?v=21.8.0",
-          "./js/studio-app.js": "./js/studio-app.js?v=21.8.0",
-          "./js/study-policy.js": "./js/study-policy.js?v=21.8.0",
-          "./js/syllabus-sections.js": "./js/syllabus-sections.js?v=21.8.0",
-          "./js/syllabus.js": "./js/syllabus.js?v=21.8.0",
-          "./js/textbook-answers.js": "./js/textbook-answers.js?v=21.8.0",
-          "./js/textbook-index.js": "./js/textbook-index.js?v=21.8.0",
-          "./js/textbook-library.js": "./js/textbook-library.js?v=21.8.0",
-          "./js/textbook-practice.js": "./js/textbook-practice.js?v=21.8.0",
-          "./js/textbook-variants.js": "./js/textbook-variants.js?v=21.8.0",
-          "./js/thermal-geometry.js": "./js/thermal-geometry.js?v=21.8.0",
-          "./js/topic-map.js": "./js/topic-map.js?v=21.8.0",
-          "./js/transformer-console.js": "./js/transformer-console.js?v=21.8.0",
-          "./js/transformer-visual.js": "./js/transformer-visual.js?v=21.8.0",
-          "./js/vector-geometry.js": "./js/vector-geometry.js?v=21.8.0",
-          "./js/vector-studio.js": "./js/vector-studio.js?v=21.8.0",
-          "./js/visual-state.js": "./js/visual-state.js?v=21.8.0",
-          "./js/wave-geometry.js": "./js/wave-geometry.js?v=21.8.0"
+          "./js/advanced-simulations.js": "./js/advanced-simulations.js?v=22.0.0",
+          "./js/app.js": "./js/app.js?v=22.0.0",
+          "./js/apparatus-scales.js": "./js/apparatus-scales.js?v=22.0.0",
+          "./js/apparatus-tools.js": "./js/apparatus-tools.js?v=22.0.0",
+          "./js/buoyancy-physics.js": "./js/buoyancy-physics.js?v=22.0.0",
+          "./js/buoyancy-studio.js": "./js/buoyancy-studio.js?v=22.0.0",
+          "./js/calculations-advanced.js": "./js/calculations-advanced.js?v=22.0.0",
+          "./js/calculations.js": "./js/calculations.js?v=22.0.0",
+          "./js/canvas.js": "./js/canvas.js?v=22.0.0",
+          "./js/catalogue-art.js": "./js/catalogue-art.js?v=22.0.0",
+          "./js/circuit-apparatus.js": "./js/circuit-apparatus.js?v=22.0.0",
+          "./js/content-advanced.js": "./js/content-advanced.js?v=22.0.0",
+          "./js/content-curriculum.js": "./js/content-curriculum.js?v=22.0.0",
+          "./js/content-extra.js": "./js/content-extra.js?v=22.0.0",
+          "./js/content.js": "./js/content.js?v=22.0.0",
+          "./js/course-map.js": "./js/course-map.js?v=22.0.0",
+          "./js/course.js": "./js/course.js?v=22.0.0",
+          "./js/curriculum-physics.js": "./js/curriculum-physics.js?v=22.0.0",
+          "./js/curriculum-simulations.js": "./js/curriculum-simulations.js?v=22.0.0",
+          "./js/diagram-theme.js": "./js/diagram-theme.js?v=22.0.0",
+          "./js/direct-handles.js": "./js/direct-handles.js?v=22.0.0",
+          "./js/embed-builder.js": "./js/embed-builder.js?v=22.0.0",
+          "./js/expanded-view.js": "./js/expanded-view.js?v=22.0.0",
+          "./js/field-backdrop.js": "./js/field-backdrop.js?v=22.0.0",
+          "./js/field-geometry.js": "./js/field-geometry.js?v=22.0.0",
+          "./js/galvanometer.js": "./js/galvanometer.js?v=22.0.0",
+          "./js/generator-slip-rings.js": "./js/generator-slip-rings.js?v=22.0.0",
+          "./js/integration.js": "./js/integration.js?v=22.0.0",
+          "./js/kinematics-display.js": "./js/kinematics-display.js?v=22.0.0",
+          "./js/learning-paths.js": "./js/learning-paths.js?v=22.0.0",
+          "./js/learning-studio.js": "./js/learning-studio.js?v=22.0.0",
+          "./js/lesson-view.js": "./js/lesson-view.js?v=22.0.0",
+          "./js/level-wording.js": "./js/level-wording.js?v=22.0.0",
+          "./js/linear-motion.js": "./js/linear-motion.js?v=22.0.0",
+          "./js/math-display.js": "./js/math-display.js?v=22.0.0",
+          "./js/moments-physics.js": "./js/moments-physics.js?v=22.0.0",
+          "./js/motor-commutator.js": "./js/motor-commutator.js?v=22.0.0",
+          "./js/olympiad-practice.js": "./js/olympiad-practice.js?v=22.0.0",
+          "./js/optical-construction.js": "./js/optical-construction.js?v=22.0.0",
+          "./js/orbital-reference.js": "./js/orbital-reference.js?v=22.0.0",
+          "./js/oscillation-physics.js": "./js/oscillation-physics.js?v=22.0.0",
+          "./js/physics-advanced.js": "./js/physics-advanced.js?v=22.0.0",
+          "./js/physics-extra.js": "./js/physics-extra.js?v=22.0.0",
+          "./js/physics.js": "./js/physics.js?v=22.0.0",
+          "./js/practical-labs.js": "./js/practical-labs.js?v=22.0.0",
+          "./js/practical-physics.js": "./js/practical-physics.js?v=22.0.0",
+          "./js/presentation-studio.js": "./js/presentation-studio.js?v=22.0.0",
+          "./js/quantum-display.js": "./js/quantum-display.js?v=22.0.0",
+          "./js/reading-comparison.js": "./js/reading-comparison.js?v=22.0.0",
+          "./js/rectifier-console.js": "./js/rectifier-console.js?v=22.0.0",
+          "./js/render-advanced.js": "./js/render-advanced.js?v=22.0.0",
+          "./js/render-budget.js": "./js/render-budget.js?v=22.0.0",
+          "./js/render-circuit-benches.js": "./js/render-circuit-benches.js?v=22.0.0",
+          "./js/render-curriculum.js": "./js/render-curriculum.js?v=22.0.0",
+          "./js/render-motion.js": "./js/render-motion.js?v=22.0.0",
+          "./js/render-optics-labs.js": "./js/render-optics-labs.js?v=22.0.0",
+          "./js/render-oscillations.js": "./js/render-oscillations.js?v=22.0.0",
+          "./js/render-practical.js": "./js/render-practical.js?v=22.0.0",
+          "./js/render-quantum-labs.js": "./js/render-quantum-labs.js?v=22.0.0",
+          "./js/render-thermal-labs.js": "./js/render-thermal-labs.js?v=22.0.0",
+          "./js/render-vectors.js": "./js/render-vectors.js?v=22.0.0",
+          "./js/render2d.js": "./js/render2d.js?v=22.0.0",
+          "./js/ripple-geometry.js": "./js/ripple-geometry.js?v=22.0.0",
+          "./js/scene-advanced.js": "./js/scene-advanced.js?v=22.0.0",
+          "./js/scene-buoyancy.js": "./js/scene-buoyancy.js?v=22.0.0",
+          "./js/scene-curriculum.js": "./js/scene-curriculum.js?v=22.0.0",
+          "./js/scene-dc-bench.js": "./js/scene-dc-bench.js?v=22.0.0",
+          "./js/scene-devices.js": "./js/scene-devices.js?v=22.0.0",
+          "./js/scene-electric.js": "./js/scene-electric.js?v=22.0.0",
+          "./js/scene-filament.js": "./js/scene-filament.js?v=22.0.0",
+          "./js/scene-finish.js": "./js/scene-finish.js?v=22.0.0",
+          "./js/scene-framing.js": "./js/scene-framing.js?v=22.0.0",
+          "./js/scene-guides.js": "./js/scene-guides.js?v=22.0.0",
+          "./js/scene-heat-transfer.js": "./js/scene-heat-transfer.js?v=22.0.0",
+          "./js/scene-instruments.js": "./js/scene-instruments.js?v=22.0.0",
+          "./js/scene-kit.js": "./js/scene-kit.js?v=22.0.0",
+          "./js/scene-look.js": "./js/scene-look.js?v=22.0.0",
+          "./js/scene-magnetism.js": "./js/scene-magnetism.js?v=22.0.0",
+          "./js/scene-materials.js": "./js/scene-materials.js?v=22.0.0",
+          "./js/scene-mechanics.js": "./js/scene-mechanics.js?v=22.0.0",
+          "./js/scene-moments.js": "./js/scene-moments.js?v=22.0.0",
+          "./js/scene-motion-benches.js": "./js/scene-motion-benches.js?v=22.0.0",
+          "./js/scene-optical-bench.js": "./js/scene-optical-bench.js?v=22.0.0",
+          "./js/scene-optics-labs.js": "./js/scene-optics-labs.js?v=22.0.0",
+          "./js/scene-oscillation-benches.js": "./js/scene-oscillation-benches.js?v=22.0.0",
+          "./js/scene-particle-chamber.js": "./js/scene-particle-chamber.js?v=22.0.0",
+          "./js/scene-particles.js": "./js/scene-particles.js?v=22.0.0",
+          "./js/scene-precision.js": "./js/scene-precision.js?v=22.0.0",
+          "./js/scene-projectile-bench.js": "./js/scene-projectile-bench.js?v=22.0.0",
+          "./js/scene-props.js": "./js/scene-props.js?v=22.0.0",
+          "./js/scene-quantum-labs.js": "./js/scene-quantum-labs.js?v=22.0.0",
+          "./js/scene-rc-bench.js": "./js/scene-rc-bench.js?v=22.0.0",
+          "./js/scene-rectifier.js": "./js/scene-rectifier.js?v=22.0.0",
+          "./js/scene-sensors.js": "./js/scene-sensors.js?v=22.0.0",
+          "./js/scene-sound.js": "./js/scene-sound.js?v=22.0.0",
+          "./js/scene-space.js": "./js/scene-space.js?v=22.0.0",
+          "./js/scene-thermal-benches.js": "./js/scene-thermal-benches.js?v=22.0.0",
+          "./js/scene-thermal.js": "./js/scene-thermal.js?v=22.0.0",
+          "./js/scene-transformer.js": "./js/scene-transformer.js?v=22.0.0",
+          "./js/scene-vectors.js": "./js/scene-vectors.js?v=22.0.0",
+          "./js/scene-wave-bench.js": "./js/scene-wave-bench.js?v=22.0.0",
+          "./js/scene-waves.js": "./js/scene-waves.js?v=22.0.0",
+          "./js/scene3d.js": "./js/scene3d.js?v=22.0.0",
+          "./js/simulations.js": "./js/simulations.js?v=22.0.0",
+          "./js/space-display.js": "./js/space-display.js?v=22.0.0",
+          "./js/spring-helix.js": "./js/spring-helix.js?v=22.0.0",
+          "./js/studio-app.js": "./js/studio-app.js?v=22.0.0",
+          "./js/study-policy.js": "./js/study-policy.js?v=22.0.0",
+          "./js/syllabus-sections.js": "./js/syllabus-sections.js?v=22.0.0",
+          "./js/syllabus.js": "./js/syllabus.js?v=22.0.0",
+          "./js/textbook-answers.js": "./js/textbook-answers.js?v=22.0.0",
+          "./js/textbook-index.js": "./js/textbook-index.js?v=22.0.0",
+          "./js/textbook-library.js": "./js/textbook-library.js?v=22.0.0",
+          "./js/textbook-practice.js": "./js/textbook-practice.js?v=22.0.0",
+          "./js/textbook-variants.js": "./js/textbook-variants.js?v=22.0.0",
+          "./js/thermal-geometry.js": "./js/thermal-geometry.js?v=22.0.0",
+          "./js/topic-map.js": "./js/topic-map.js?v=22.0.0",
+          "./js/transformer-console.js": "./js/transformer-console.js?v=22.0.0",
+          "./js/transformer-visual.js": "./js/transformer-visual.js?v=22.0.0",
+          "./js/vector-geometry.js": "./js/vector-geometry.js?v=22.0.0",
+          "./js/vector-studio.js": "./js/vector-studio.js?v=22.0.0",
+          "./js/visual-state.js": "./js/visual-state.js?v=22.0.0",
+          "./js/wave-geometry.js": "./js/wave-geometry.js?v=22.0.0"
         }
       }
     </script>
-    <script type="module" src="./js/app.js?v=21.8.0"></script>
+    <script type="module" src="./js/app.js?v=22.0.0"></script>
   </head>
   <body>
-    <canvas id="backdrop" aria-hidden="true"></canvas>
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <a class="brand" href="#/" aria-label="Physics Interactive Lab home"
         ><img src="./assets/favicon.svg" alt="" width="40" height="40" /><span
-          >Physics Lab<span class="brand-sub">INTERACTIVE EXPERIMENTS</span></span
+          >Physics Lab<span class="brand-sub">Interactive experiments</span></span
         ></a
       >
       <nav aria-label="Main navigation">
-        <a href="#/" data-nav="home">Experiments</a>
+        <a href="#/library" data-nav="home">Experiments</a>
         <a href="#/syllabus" data-nav="course">Learning paths</a>
         <a href="#/textbook" data-nav="questions">A Level practice</a>
         <a href="#/olympiad" data-nav="olympiad">Olympiad</a>
         <label class="sr-only" for="lab-select">Jump to an experiment</label>
         <select id="lab-select" aria-label="Jump to an experiment"></select>
       </nav>
-      <span class="header-level">IGCSE <span> / </span> A LEVEL</span>
     </header>
     <main id="main" tabindex="-1"></main>
     <footer class="site-footer">
-      <a class="footer-brand" href="#/">Physics, made tangible.</a>
-      <p>
-        Independent student project · Created for classroom exploration.<br />Proposed
-        contribution to
-        <a href="https://focusphysics.com" target="_blank" rel="noopener"
-          >FocusPhysics ↗</a
-        >
-      </p>
-      <a
-        href="https://github.com/206713-dotcom/physics-interactive-lab"
-        target="_blank"
-        rel="noopener"
-        >Source & methodology ↗</a
-      >
+      <div>
+        <a class="footer-brand" href="#/">Physics Lab</a>
+        <p>An independent student project for classroom exploration.</p>
+      </div>
+      <nav aria-label="Footer">
+        <a href="#/course">FocusPhysics lesson map</a>
+        <a href="./integration.html">Embed a simulation</a>
+        <a href="https://github.com/206713-dotcom/physics-interactive-lab" target="_blank" rel="noopener">Source & methodology</a>
+      </nav>
     </footer>
     <div id="toast" role="status" class="toast"></div>
     <noscript

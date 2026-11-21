@@ -1,6 +1,6 @@
 /** Shared application shell for the simulation catalogue. Rendering never advances physics. */
 import { SIMULATIONS, CATEGORIES, spatialRows } from "./simulations.js";
-import { catalogueArt, libraryHeroArt } from "./catalogue-art.js";
+import { catalogueArt } from "./catalogue-art.js";
 import { installPresentationStudio } from "./presentation-studio.js";
 import { studyParams, studyControl, studyGraphs, studyTitle, IGCSE_AREAS, igcseArea } from "./study-policy.js";
 import { LESSONS as ORIGINAL_LESSONS } from "./content.js";
@@ -31,16 +31,12 @@ import { renderSyllabus } from "./syllabus.js";
 import { experimentLink } from "./integration.js";
 document.fonts?.load?.('700 20px "Chakra Petch"');
 import { TOPICS, LEVELS, levelByKey, levelTopics, topicBySlug, topicExperiments, topicExtensions, enrichmentExperiments, topicNeighbours, adjacentTopics, labTopic, topicOf, searchExperiments } from "./topic-map.js";
-import { createBackdrop } from "./field-backdrop.js";
 import { hasHandles, opensInDiagram, handlesFor, handleAt, snapToControl, drawHandles } from "./direct-handles.js";
 import { installApparatus } from "./apparatus-tools.js";
 import { installCanvasWording, setWordingLevel, levelText, watchText } from "./level-wording.js";
 import { installLessonBoard } from "./lesson-view.js";
 installCanvasWording();
 import {
-  createOrbit,
-  stepOrbit,
-  ORBIT_DEFAULTS,
   circularSpeed,
   escapeSpeed,
   orbitInfo,
@@ -98,9 +94,7 @@ let lab = null,
   learningStudio = null,
   presentationStudio = null,
   calculationView = null,
-  hero = null,
   view = null,
-  heroView = null,
   charts = [],
   lastFrame = 0,
   toastTimer,
@@ -188,38 +182,47 @@ function card(id, preferredMode) {
     ink = ({Mechanics:'#2573b5',Oscillations:'#a076c9',Waves:'#168e8f',Optics:'#6b78cc',Electricity:'#bd8433',Magnetism:'#b56a7b','Thermal physics':'#ba7554','Nuclear physics':'#8c69b6','Space physics':'#3c81b6',Astrophysics:'#7770c0','Quantum physics':'#7b6bb7'})[d.category] || '#238a9c';
   return `<a class="simulation-card" href="#/${id}?level=${resolveMode(id, typeof preferredMode === "string" ? (preferredMode === "as" || preferredMode === "a2" ? "alevel" : preferredMode) : null)}" style="--accent:${d.color};--card-ink:${ink}"><div class="card-art">${catalogueArt(id,thumbnail(id))}<span class="art-label">${d.category.toUpperCase()}</span><span class="card-dimension">${d.diagramOnly ? "INTERACTIVE DIAGRAM" : icon("cube") + " 3D + 2D"}</span></div><div class="card-body"><div class="card-meta">${preferredMode === "igcse" ? "CAMBRIDGE IGCSE · 0625" : levelBadges(id)}${d.isNew ? '<span class="new-lab-badge">NEW</span>' : ""}</div><h3>${studyTitle(id,preferredMode,d.short)}</h3><p>${preferredMode === "igcse" ? esc(getProfile(id,"igcse").goals.slice(0,2).join(". ")) + "." : d.summary}</p><div class="card-bottom"><span>Open experiment</span><span class="card-open-icon">${icon("arrow")}</span></div></div></a>`;
 }
-const backdrop = createBackdrop($("#backdrop"), TOPICS);
 const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
-/** Start screen: a headline, a search box and three ways in. Nothing else. */
+/** The homepage connects the catalogue, syllabus and original lessons. */
 function home() {
-  $("#main").innerHTML = `<section class="field-home">
-    <div class="field-intro">
-      <p class="focus-kicker">Classroom physics · IGCSE & A Level</p>
-      <h1>Physics,<br><em>made visible.</em></h1>
-      <p>Pick your course, open an experiment, change one thing and watch what happens.</p>
-      <div class="field-search">
-        <input type="search" id="search" role="combobox" aria-expanded="false" aria-controls="search-results" aria-autocomplete="list" aria-label="Find an experiment" autocomplete="off" spellcheck="false" placeholder="Find an experiment, such as pendulum or lenses">
-        <ul id="search-results" role="listbox" aria-label="Matching experiments" hidden></ul>
+  $("#main").innerHTML = `<div class="home-page">
+    <section class="home-hero">
+      <img class="home-hero-image" src="./assets/orbit-cover.webp" alt="" width="1600" height="900" fetchpriority="high">
+      <div class="home-hero-copy">
+        <p class="home-overline">Cambridge IGCSE &amp; A Level</p>
+        <h1>Physics,<br><em>made visible.</em></h1>
+        <p class="home-lead">Change a variable. Watch the model respond. See the physics behind the result.</p>
+        <div class="home-hero-actions">
+          <a class="button home-primary" href="#/library">Explore ${LAB_COUNT} experiments</a>
+          <a class="home-secondary" href="#/syllabus">Find my course</a>
+        </div>
+        <div class="field-search">
+          <input type="search" id="search" role="combobox" aria-expanded="false" aria-controls="search-results" aria-autocomplete="list" aria-label="Find an experiment" autocomplete="off" spellcheck="false" placeholder="Search experiments">
+          <ul id="search-results" role="listbox" aria-label="Matching experiments" hidden></ul>
+        </div>
       </div>
-      <nav class="level-entry" aria-label="Choose your course">${LEVELS.map((l) => {
-        const list = levelTopics(l.key);
-        return `<a href="#/syllabus?track=${l.key}"><strong>${l.name}</strong><span>${l.key === "igcse" ? l.groups.map((g) => g.label).join(" and ") : `Topics ${list[0].number} to ${list.at(-1).number}`}</span></a>`;
-      }).join("")}</nav>
-    </div>
-    <p class="field-caption" aria-hidden="true"><strong id="caption-scene"></strong></p>
-    <p class="field-more"><a href="#/library">All ${LAB_COUNT} experiments</a><a href="#/course">IGCSE lesson map</a><a href="#/textbook">A Level practice</a><a href="#/olympiad">Olympiad</a></p>
-  </section>`;
+      <a class="home-orbit-link" href="#/gravity?view=3d&amp;level=alevel">
+        <span>${icon("cube")}</span><span><small>3D experiment</small><strong>Orbital mechanics</strong></span>
+      </a>
+    </section>
+    <section class="home-courses" aria-labelledby="course-entry-title">
+      <div class="home-section-heading"><h2 id="course-entry-title">Learn by syllabus</h2><a href="#/course">FocusPhysics lesson map</a></div>
+      <nav class="home-course-grid" aria-label="Choose your course">
+        ${LEVELS.map((level) => {
+          const igcse = level.key === "igcse";
+          return `<a href="#/syllabus?track=${level.key}" class="home-course-card" data-track="${level.key}">
+            <span class="home-syllabus-code">${igcse ? "0625" : "9702"}</span>
+            <span><strong>${level.name}</strong><small>${igcse ? "Core and Supplement" : level.key === "as" ? "AS syllabus topics" : "A Level syllabus topics"}</small></span>
+          </a>`;
+        }).join("")}
+      </nav>
+    </section>
+    <section class="home-featured" aria-labelledby="featured-title">
+      <div class="home-section-heading"><h2 id="featured-title">Try an experiment</h2><a href="#/library">See the full catalogue</a></div>
+      <div class="simulation-grid">${["collisions", "magnet-coil", "buoyancy"].map(id => card(id, "igcse")).join("")}</div>
+    </section>
+  </div>`;
   const input = $("#search"), results = $("#search-results");
-  const caption = (index) => {
-    if (!$("#caption-scene")) return;
-    $("#caption-scene").textContent = TOPICS[index].scene;
-    $(".field-caption").style.setProperty("--accent", TOPICS[index].accent);
-  };
-  backdrop.calm(false);
-  backdrop.onChange(caption);
-  backdrop.show(backdrop.current, { instant: true });
-  caption(backdrop.current);
-  backdrop.cycle(true);
   let active = -1;
   const close = () => {
     results.hidden = true;
@@ -240,6 +243,7 @@ function home() {
       : `<li class="search-empty">No experiment matches “${esc(q)}”. Try waves, light or motion.</li>`;
     results.hidden = false;
     input.setAttribute("aria-expanded", "true");
+    input.removeAttribute("aria-activedescendant");
     active = -1;
   };
   input.onkeydown = (e) => {
@@ -248,7 +252,10 @@ function home() {
     if (results.hidden || !options.length) return;
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       e.preventDefault();
-      active = (active + (e.key === "ArrowDown" ? 1 : -1) + options.length) % options.length;
+      active = active === -1
+        ? (e.key === "ArrowDown" ? 0 : options.length - 1)
+        : (active + (e.key === "ArrowDown" ? 1 : -1) + options.length) % options.length;
+      options[active].scrollIntoView({ block: "nearest" });
       mark();
     } else if (e.key === "Enter") {
       e.preventDefault();
@@ -267,31 +274,19 @@ function pathsPage(query) {
     const count = topicExperiments(t).length,
       inner = `<span class="path-topic"><small>Topic</small> <b>${t.number}</b></span><span class="path-name">${esc(t.name)}</span><span class="path-count">${count ? plural(count, "experiment") : "None yet"}</span>`;
     return count
-      ? `<li><a href="#/${t.slug}" data-scene="${t.sceneIndex}" style="--accent:${t.accent}">${inner}</a></li>`
+      ? `<li><a href="#/${t.slug}" style="--accent:${t.accent}">${inner}</a></li>`
       : `<li><span class="path-empty">${inner}</span></li>`;
   };
-  backdrop.calm(true);
-  backdrop.onChange(null);
-  backdrop.cycle(true);
-  backdrop.show(backdrop.current, { instant: true });
   $("#main").innerHTML = `<section class="field-paths">
     <nav class="topic-trail" aria-label="Where you are"><span class="topic-trail-path"><a class="back-button" href="#/" aria-label="Back to the start screen"><span aria-hidden="true">←</span> Back</a></span></nav>
-    <header class="paths-heading"><h1>Choose your topic.</h1><p>${level ? `${level.course}. Topics are in syllabus order.` : "Models that go beyond the syllabus."}</p></header>
+    <header class="paths-heading"><p class="section-kicker">Learning paths</p><h1>${level ? level.name : "Enrichment"}</h1><p>${level ? `${level.course} experiments in syllabus order.` : "Explore models beyond the Cambridge syllabus."}</p></header>
     <nav class="level-switch" aria-label="Course level">${[...LEVELS.map((l) => [l.key, l.name]), ["enrichment", "Enrichment"]].map(([key, name]) => `<a href="#/syllabus?track=${key}"${key === track ? ' aria-current="page"' : ""}>${name}</a>`).join("")}</nav>
     ${level
       ? `<div class="path-groups${level.groups.length > 1 ? " is-split" : ""}">${level.groups.map((g) => `<section class="path-group">${g.label ? `<h2>${g.label}</h2>` : ""}<ol class="path-list">${levelTopics(track).filter((t) => g.topics.includes(t.number)).map(row).join("")}</ol></section>`).join("")}</div>`
       : `<div class="path-groups"><section class="path-group"><ol class="path-list">${enrichmentExperiments().map((e) => `<li><a href="#/${e.id}"><span class="path-topic">Extra</span><span class="path-name">${esc(e.title)}</span><span class="path-count">Open</span></a></li>`).join("")}</ol></section></div>`}
     <p class="field-more"><a href="#/coverage?track=${track === "enrichment" ? "enrichment" : track}">Syllabus coverage and official references</a><a href="#/library">All ${LAB_COUNT} experiments</a>${track === "igcse" ? '<a href="#/course">IGCSE lesson map</a>' : '<a href="#/textbook">A Level practice</a>'}</p>
   </section>`;
-  // Pointing at a topic previews its scene behind the list.
-  $$(".path-list a[data-scene]").forEach((a) => {
-    const pin = () => {
-      backdrop.cycle(false);
-      backdrop.show(Number(a.dataset.scene));
-    };
-    a.addEventListener("pointerenter", pin);
-    a.addEventListener("focus", pin);
-  });
+
 }
 /** One topic of one level: every experiment in syllabus order. */
 function topicPage(topic) {
@@ -299,10 +294,6 @@ function topicPage(topic) {
     level = levelByKey(topic.level), { previous, next } = adjacentTopics(topic),
     sep = '<i aria-hidden="true">›</i>',
     step = (t, label) => t ? `<a href="#/${t.slug}" title="${esc(t.name)}">${label}</a>` : "";
-  backdrop.calm(true);
-  backdrop.onChange(null);
-  backdrop.cycle(false);
-  backdrop.show(topic.sceneIndex);
   $("#main").innerHTML = `<section class="field-topic" style="--accent:${topic.accent}">
     <nav class="topic-trail" aria-label="Where you are"><span class="topic-trail-path"><a class="back-button" href="#/syllabus?track=${topic.level}" aria-label="Back to ${level.name} topics"><span aria-hidden="true">←</span> Back</a><a href="#/syllabus?track=${topic.level}">${level.name}</a>${sep}${topic.group ? `<span>${topic.group}</span>${sep}` : ""}<span>Topic ${topic.number}</span></span><span class="topic-trail-step">${step(previous, `Topic ${previous?.number}`)}${step(next, `Topic ${next?.number}`)}</span></nav>
     <header class="topic-heading"><p class="topic-label">Topic ${topic.number}</p><h1>${esc(topic.name)}</h1><p>${list.length ? `${plural(list.length, "experiment")} in syllabus order, for ${level.course}.` : "No experiments for this topic yet."}</p></header>
@@ -322,44 +313,20 @@ function labTrail(type, mode) {
   return `<nav class="lab-trail" style="--accent:${topic.accent}" aria-label="Where you are"><span class="lab-trail-path"><a class="back-button" href="#/${topic.slug}" aria-label="Back to Topic ${topic.number}"><span aria-hidden="true">←</span> Back</a><a href="#/syllabus?track=${topic.level}">${levelByKey(topic.level).name}</a>${sep}<a href="#/${topic.slug}">Topic ${topic.number}: ${esc(topic.name)}</a>${sep}<span>${here}</span></span><span class="lab-trail-step">${step(n.previous, "Previous", "previous")}<span>${n.index + 1} of ${n.total}</span>${step(n.next, "Next", "next")}</span></nav>`;
 }
 function library() {
-  $("#main").innerHTML =
-    `<div class="page-width library-page"><div class="breadcrumb"><a href="#/">Topics</a><span>/</span><span>All experiments</span></div></div><div class="page-width"><section id="simulations" class="catalogue"><div class="section-heading"><div><div class="eyebrow">THE EXPERIMENT COLLECTION</div><h2>What will you discover?</h2><p>Choose your course and a topic to get started.</p></div><label class="library-search"><span aria-hidden="true">⌕</span><input type="search" id="search" aria-label="Search simulations" placeholder="Find an experiment…"></label></div><div class="catalogue-tools"><div class="category-filters" aria-label="Filter simulations">${CATEGORIES.map((c, i) => `<button class="${i === 0 ? "active" : ""}" data-category="${c}" aria-pressed="${i === 0}">${c}</button>`).join("")}</div><span id="result-count">${LAB_COUNT} experiments</span></div><div class="simulation-grid" id="cards">${Object.keys(SIMULATIONS).map(card).join("")}</div><p id="empty-results" hidden>No experiments match that search. Try a topic such as waves, light or motion.</p></section><section class="method-band"><div><div class="eyebrow">MORE THAN AN ANIMATION</div><h3>A little curiosity.<br>A deeper understanding.</h3></div>${[
-      [
-        "01",
-        "Predict it.",
-        "Use a guided experiment to ask a better “what if?”",
-      ],
-      [
-        "02",
-        "Test it.",
-        "Change one parameter. Read live graphs. Save a measurement.",
-      ],
-      [
-        "03",
-        "Explain it.",
-        "Connect what you see to equations and worked answers.",
-      ],
-    ]
-      .map(
-        ([n, title, t]) =>
-          `<div class="method-item"><span class="number">${n}</span><div><strong>${title}</strong><p>${t}</p></div></div>`,
-      )
-      .join(
-        "",
-      )}</section><p class="home-note"><strong>Real models. Clear assumptions.</strong> Every experiment runs locally in your browser. Rotate the 3D camera without changing the physics, switch to a calibrated 2D diagram, and export calculated data. Built for IGCSE and A Level exploration.</p></div>`;
-  $(".catalogue").insertAdjacentHTML(
-    "beforebegin",
-    '<section class="curriculum-banner"><div><div class="eyebrow">NEW · THE COMPLETE IGCSE COURSE MAP</div><h2>Find your lesson. Open its experiment.</h2><p>78 FocusPhysics lesson pages · all six syllabus areas · original resources linked.</p></div><a class="button" href="#/course">Explore the IGCSE course ↗</a></section>',
-  );
-  $(".catalogue").insertAdjacentHTML(
-    "beforebegin",
-    '<section class="curriculum-banner question-banner"><div><div class="eyebrow">CAMBRIDGE 9702 · TEXTBOOK PRACTICE</div><h2>Practise with the textbook.</h2><p>Solve textbook-inspired questions grouped by topic and difficulty.</p></div><a class="button" href="#/textbook">Browse textbook exercises ↗</a></section>',
-  );
-  const learningHub=document.createElement('section');learningHub.className='learning-hub';
-  $('.catalogue').after(learningHub);
-  $$('.curriculum-banner').forEach(b=>learningHub.append(b));
-  $('.curriculum-banner .eyebrow').textContent='IGCSE · ORIGINAL LESSONS';
-  $('.question-banner .eyebrow').textContent='AS / A LEVEL · SEPARATE PRACTICE';
+  $("#main").innerHTML = `<div class="page-width library-page">
+    <section id="simulations" class="catalogue">
+      <div class="section-heading library-heading">
+        <div><h1>Experiments</h1><p>Find a model by topic or Cambridge level. Open any experiment to adjust its variables and see the results.</p></div>
+        <label class="library-search"><span aria-hidden="true">⌕</span><input type="search" id="search" aria-label="Search simulations" placeholder="Find an experiment"></label>
+      </div>
+      <div class="catalogue-tools">
+        <div class="category-filters" aria-label="Filter simulations"></div>
+        <span id="result-count" aria-live="polite"></span>
+      </div>
+      <div class="simulation-grid" id="cards"></div>
+      <p id="empty-results" hidden>No experiments match your filters. Try another topic or search term.</p>
+    </section>
+  </div>`;
   let category = "All experiments";
   $(".catalogue-tools").insertAdjacentHTML(
     "afterbegin",
@@ -404,17 +371,7 @@ function library() {
   categories();
   $("#search").oninput = filter;
   $("#library-level").onchange = categories;
-  $$("[data-category]").forEach(
-    (b) =>
-      (b.onclick = () => {
-        category = b.dataset.category;
-        $$("[data-category]").forEach((btn) => {
-          btn.classList.toggle("active", btn === b);
-          btn.setAttribute("aria-pressed", String(btn === b));
-        });
-        filter();
-      }),
-  );
+
 }
 
 function controlMarkup(d, p) {
@@ -1978,10 +1935,7 @@ function route() {
   routeToken++;
   viewToken++;
   view?.dispose();
-  heroView?.dispose();
   view = null;
-  heroView = null;
-  hero = null;
   charts.forEach((c) => c.chart.destroy());
   charts = [];
   lab = null;
@@ -2032,14 +1986,11 @@ function route() {
     topicPage(topic);
   } else if (id === "library" || id === "simulations") library();
   else home();
-  // The living backdrop belongs to the start screen, learning paths and topic pages.
   const field = !type && !embedded && (!id || id === "syllabus" || Boolean(topicBySlug(id)));
   document.body.classList.toggle("field-page", field);
   document.body.classList.toggle("lab-dark", Boolean(type));
   // Each topic is a world with its own colour, on the page and in the 3D stage.
   document.body.style.setProperty("--world", (type ? labTopic(type, resolveMode(type, params.get("level") || stored("physics-study-mode", null)))?.accent : topicBySlug(id)?.accent) ?? "#ff8a3c");
-  if (field) backdrop.start();
-  else backdrop.stop();
   window.scrollTo(0, 0);
   lastFrame = 0;
   if (location.hash === "#simulations")
@@ -2052,15 +2003,6 @@ function route() {
 function frame(now) {
   const dt = lastFrame ? Math.min(0.1, (now - lastFrame) / 1000) : 0;
   lastFrame = now;
-  if (hero) {
-    if (!reduced() && !document.hidden) {
-      for (let i = 0; i < Math.round(dt * 1800); i++)
-        hero.state = stepOrbit(hero.state, hero.params, 2);
-      hero.trail.push({ x: hero.state.x, y: hero.state.y });
-      if (hero.trail.length > 600) hero.trail.shift();
-    }
-    heroView?.update(hero);
-  }
   if (lab) {
     if (lab.ended && lab.replayAt && now >= lab.replayAt && !document.hidden && !handleState.active) {
       reset();

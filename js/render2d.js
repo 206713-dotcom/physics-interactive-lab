@@ -168,7 +168,10 @@ function drawDiagram(canvas, lab) {
         "center",
       );
     }
-    text(lab.projectileFrame==='vacuum'?'Full vacuum comparison · dashed = vacuum':'Actual-flight frame · off-window vacuum reference clipped',24,40,'#abc5d5',13);
+    const fullReference = r.range <= layout.maxX && r.maxHeight <= layout.maxY;
+    const frameLabel = lab.projectileFrame === "vacuum" ? "Vacuum comparison" : "Actual-flight frame";
+    const referenceLabel = fullReference ? "dashed = vacuum" : "dashed vacuum path clipped to frame";
+    text(lab.showTrail ? `${frameLabel} · ${referenceLabel}` : frameLabel, 24, 40, "#abc5d5", 13);
   } else if (lab.type === "collisions") {
     const layout=collisionLayout(p),
       pixels=Math.max(1,w-66)/9.4,
@@ -346,23 +349,22 @@ function drawDiagram(canvas, lab) {
       top = h * 0.25,
       bottom = h * 0.78,
       cy = h * 0.52,
+      resistorLeft = w * 0.4,
+      resistorRight = w * 0.6,
       q = E.circuitAt(s.t, p);
-    line(
-      [
-        [rx, cy - 9],
-        [rx, top],
-        [lx, top],
-        [lx, bottom],
-        [rx, bottom],
-        [rx, cy + 9],
-      ],
-      "#7fa7b8",
-      2,
-    );
+    const wire = "#7fa7b8";
+    line([[rx, cy - 9], [rx, top], [resistorRight, top]], wire);
+    line([[resistorLeft, top], [lx, top], [lx, cy - 9]], wire);
+    line([[lx, cy + 9], [lx, bottom], [rx, bottom], [rx, cy + 9]], wire);
+    if (p.discharge) line([[lx, cy - 9], [lx, cy + 9]], wire);
+    else {
+      line([[lx - 22, cy - 9], [lx + 22, cy - 9]], C, 3);
+      line([[lx - 12, cy + 9], [lx + 12, cy + 9]], C, 3);
+    }
     const zig = [];
     for (let i = 0; i <= 16; i++)
       zig.push([
-        w * 0.4 + (i * w * 0.2) / 16,
+        resistorLeft + i * (resistorRight - resistorLeft) / 16,
         top + (i === 0 || i === 16 ? 0 : i % 2 ? 10 : -10),
       ]);
     line(zig, G, 2);
@@ -384,24 +386,6 @@ function drawDiagram(canvas, lab) {
     );
     c.fillStyle = `rgba(100,240,210,${(q.voltage / p.voltage) * 0.25})`;
     c.fillRect(rx - 24, cy - 7, 48, 14);
-    c.fillStyle = "#153447";
-    c.fillRect(lx - 15, cy - 24, 30, 48);
-    line(
-      [
-        [lx - 22, cy - 7],
-        [lx + 22, cy - 7],
-      ],
-      p.discharge ? "#48667a" : C,
-      3,
-    );
-    line(
-      [
-        [lx - 12, cy + 7],
-        [lx + 12, cy + 7],
-      ],
-      p.discharge ? "#48667a" : C,
-      3,
-    );
     text(
       `${p.resistance.toLocaleString()} Ω`,
       w / 2,
@@ -412,15 +396,15 @@ function drawDiagram(canvas, lab) {
     );
     text(`${(p.capacitance * 1e6).toFixed(0)} µF`, rx, cy + 45);
     text(
-      p.discharge ? "Source disconnected" : `${p.voltage} V`,
+      p.discharge ? "Source isolated · closed discharge path" : `${p.voltage} V source`,
       lx,
       cy + 50,
       "#99becf",
       11,
       "center",
     );
-    text("Conventional current", w / 2, bottom + 30, "#99becf", 11, "center");
-    if (Math.abs(q.current) > 0.00001)
+    if (lab.vectors && Math.abs(q.current) > 0.00001) {
+      text("Conventional current", w / 2, bottom + 30, "#99becf", 11, "center");
       arrow(
         w / 2 + (p.discharge ? -30 : 30),
         bottom,
@@ -428,6 +412,7 @@ function drawDiagram(canvas, lab) {
         0,
         G,
       );
+    }
   } else if (lab.type === "fields") {
     const sc = Math.min((w - 65) / 10, (h - 75) / 7),
       cx = w / 2,

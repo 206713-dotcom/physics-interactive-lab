@@ -9,6 +9,7 @@ import { createRectifierBench } from './scene-rectifier.js';
 import { createSensorBench } from './scene-sensors.js';
 import { createTransformerBench } from './scene-transformer.js';
 import { createDeviceBench } from './scene-devices.js';
+import { selectorLayout, selectorForceVectors } from "./field-geometry.js";
 import { machineSide, MAGNET_STROKE_METRES, magnetLampLevel } from "./curriculum-physics.js";
 import {
   radiationReferences,
@@ -295,42 +296,49 @@ export const ELECTRIC_SCENES = {
     return createTransformerBench(p, k);
   },
   selector(p, k) {
-    chamber(k);
-    const sc = Math.min(6 / p.length, 1.5 / 0.095),
-      length = p.length * sc,
-      left = -length / 2,
-      halfHeight = 0.095 * sc;
-    k.box(length, 0.15, 1.5, C.gold, [0, 2 - halfHeight, 0]);
-    k.box(length, 0.15, 1.5, C.cyan, [0, 2 + halfHeight, 0]);
-    for (const x of [-2, 0, 2]) k.arrow([x, 3.3, 0], [0, -2.6, 0], C.cyan);
+    k.stand(8.8, 3.5);
+    const { scale, width, height } = selectorLayout(p, 6.8, 2.8);
+    const left = -width / 2, center = 2.1, plate = 0.12;
+    const point = ({ x, y }) => [left + x * scale, center + y * scale, 0];
+    k.box(width, plate, 1.7, C.blue, [0, center - (height + plate) / 2, 0]);
+    k.box(width, plate, 1.7, C.red, [0, center + (height + plate) / 2, 0]);
+    k.glass(width, height, 0.045, [0, center, -0.88]);
+    for (const x of [left, -left]) {
+      k.rod([x, 0.14, -0.9], [x, center + height / 2, -0.9], C.muted, 0.04);
+      k.line([[x, center - height / 2, 0], [x, center + height / 2, 0]], C.white, 0.46);
+    }
+    const fields = new T.Group();
+    k.add(fields);
+    const columns = Math.max(2, Math.floor(width));
+    for (let i = 1; i <= columns; i++) {
+      const x = left + width * i / (columns + 1);
+      fields.add(k.arrow([x, center + height * 0.37, -0.45], [0, -height * 0.74, 0], C.blue));
+      for (const y of [center - height * 0.22, center + height * 0.22]) {
+        const r = Math.min(0.075, height * 0.08);
+        for (const sign of [-1, 1]) fields.add(k.line([[x - r, y - r * sign, -0.85], [x + r, y + r * sign, -0.85]], C.purple, 0.85));
+      }
+    }
+    k.label("Positive plate", [0, center + height / 2 + 0.37, 0.1], "#ffb9a8", 2.15);
+    k.label("Negative plate", [0, center - height / 2 - 0.34, 0.7], "#aacdff", 2.15);
     const path = wire(k, [], C.gold),
-      dot = k.ball(0.1, C.gold, [-3, 2, 0]),
-      electric = k.arrow([0, 2, 0], [0, -0.7, 0], C.red),
-      magnetic = k.arrow([0, 2, 0], [0, 0.7, 0], C.purple);
-    k.label(
-      "E down · B into the trajectory plane",
-      [0, 4.7, 0],
-      "#cfe6ef",
-      5.3,
-    );
-    return (s, q) => {
-      const scale = sc,
-        pts = selectorPath(p, s.t).map((a) => [
-          left + a.x * scale,
-          2 + a.y * scale,
-          0,
-        ]);
-      setPath(path, pts);
-      dot.position.set(...pts.at(-1));
-      const force = Math.max(q.electric, q.magnetic, 1e-30);
-      k.setArrow(electric, pts.at(-1), [0, -q.electric / force, 0]);
-      k.setArrow(magnetic, pts.at(-1), [
-        ((-q.vy / Math.max(p.speed, Math.hypot(q.vx, q.vy))) * q.magnetic) /
-          force,
-        ((q.vx / Math.max(p.speed, Math.hypot(q.vx, q.vy))) * q.magnetic) /
-          force,
-        0,
-      ]);
+      dot = k.ball(0.085, C.gold, point({ x: 0, y: 0 })),
+      electric = k.arrow([0, center, 0], [0, 0, 0], C.red),
+      magnetic = k.arrow([0, center, 0], [0, 0, 0], C.purple);
+    k.label("Electric field ↓ · Magnetic field ⊗", [0, 4.55, 0], "#cfe6ef", 4.2);
+    k.label("Gold: proton · coral: Fₑ · purple: Fᵦ", [0, 0.27, 1.5], "#cfe6ef", 4.3);
+    return {
+      update(s, q, lab) {
+        path.visible = lab.showTrail;
+        if (path.visible) setPath(path, selectorPath(p, s.t).map(point));
+        const at = point(q);
+        dot.position.set(...at);
+        const forces = selectorForceVectors(p, q);
+        k.setArrow(electric, at, forces.electric.map(value => value * 0.9));
+        k.setArrow(magnetic, at, forces.magnetic.map(value => value * 0.9));
+        fields.visible = lab.vectors !== false;
+        electric.visible = fields.visible;
+        magnetic.visible = fields.visible && Math.hypot(...forces.magnetic) > 1e-9;
+      },
     };
   },
 };

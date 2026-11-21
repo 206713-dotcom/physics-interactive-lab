@@ -9,6 +9,7 @@ import { drawPhotoelectricBench, drawBraggBench } from "./render-quantum-labs.js
 import { temperatureHeight } from "./thermal-geometry.js";
 import { springTravel, wireTravel } from "./apparatus-scales.js";
 import { drawRectifierBench, drawSensorBench } from "./render-circuit-benches.js";
+import { selectorForceVectors, selectorLayout } from "./field-geometry.js";
 const C = "#168e87",
   G = "#b37c32",
   B = "#4f7cb1",
@@ -534,29 +535,42 @@ function drawAdvancedInstrument(lab, kit) {
     ? "Extension shown on a compressed scale"
     : "Calculated instrument · see model assumptions");
   if (lab.type === "selector") {
-    rect(140, 110, 560, 18, "#6be5d466", C, 3);
-    rect(140, 335, 560, 18, "#ffc58066", G, 3);
-    for (let x = 180; x < 690; x += 70) {
-      text("⊗", x, 190, "#91baff55", 24);
-      arrow(x, 155, 0, 120, C, 1);
+    const { scale, width, height } = selectorLayout(p, 630, 190);
+    const cx = 420, cy = 227;
+    const left = cx - width / 2, right = cx + width / 2;
+    const top = cy - height / 2, bottom = cy + height / 2;
+    const positive = "#ac453e";
+    const point = (v) => [left + v.x * scale, cy - v.y * scale];
+    rect(left, top, width, height, "#dcecf4", "#a6c3d3", 3);
+    line([[left, cy], [right, cy]], "#a6c3d3", 1, [5, 5]);
+    rect(left, top - 11, width, 11, "#f5c9c1", positive, 3);
+    rect(left, bottom, width, 11, "#c7dff2", B, 3);
+    text("+ plate", cx, top - 19, positive, 16, "center");
+    text("− plate", cx, bottom + 34, B, 16, "center");
+    text("Entry", left - 11, cy + 5, M, 14, "right");
+    text("Exit", right + 11, cy + 5, M, 14);
+    if (lab.vectors !== false) {
+      const columns = Math.max(1, Math.floor(width / 70));
+      for (let i = 0; i < columns; i++) {
+        const x = left + (i + 0.5) * width / columns;
+        text("⊗", x, cy - height * 0.24, "#577fa2", 18, "center");
+        text("⊗", x, cy + height * 0.32, "#577fa2", 18, "center");
+      }
     }
-    const scale = 1e3;
-    const path = lab.definition.path(p, t);
-    clampPath(c, 140, 135, 560, 195, () => {
-      line(
-        path.map((v) => [140 + (560 * v.x) / p.length, 230 - v.y * scale]),
-        G,
-        3,
-      );
-      circle(140 + (560 * q.x) / p.length, 230 - q.y * scale, 5, G, true);
-    });
-    rect(710, 130, 12, 90, "#637f94", M, 2);
-    rect(710, 265, 12, 75, "#637f94", M, 2);
-    text("EXIT SLIT", 750, 380, M, 14, "center");
-    text(`v selected = ${fmt(q.selected)} m/s`, 420, 85, W, 25, "center");
+    if (lab.showTrail) line(lab.definition.path(p, t).map(point), G, 3);
+    const [x, y] = point(q);
+    if (lab.vectors !== false) {
+      const { electric, magnetic } = selectorForceVectors(p, q);
+      const length = 62;
+      // The two origins are slightly separated so they remain readable at balance.
+      arrow(x - 5, y, electric[0] * length, -electric[1] * length, positive, 3);
+      arrow(x + 5, y, magnetic[0] * length, -magnetic[1] * length, P, 3);
+    }
+    circle(x, y, 6, G, true);
+    text(`Undeflected speed E/B = ${fmt(q.selected / 1000)} km/s`, cx, 85, W, 19, "center");
     foot(
       `Electric force ${fmt(q.electric)} N`,
-      `Magnetic force ${fmt(q.magnetic)} N · vertical: 1000 px/m`,
+      `Magnetic force ${fmt(q.magnetic)} N · ⊗ into the page`,
     );
   } else if (lab.type === "driven") {
     const y = 220 + q.displacement * Math.min(210, 80 / q.amplitude);
@@ -686,14 +700,6 @@ function drawAdvancedInstrument(lab, kit) {
       "Linear elastic region",
     );
   }
-}
-function clampPath(c, x, y, w, h, fn) {
-  c.save();
-  c.beginPath();
-  c.rect(x, y, w, h);
-  c.clip();
-  fn();
-  c.restore();
 }
 export function practicalThumbnail(id) {
   const paths = {

@@ -138,6 +138,51 @@ export function selectorPosition(p, t) {
     vy: diff * Math.sin(a),
   };
 }
+export const SELECTOR_HALF_GAP = 0.095;
+
+// Between stationary points x is monotone, so a boundary crossing can be
+// bracketed even when the proton turns around and returns through the inlet.
+const selectorExits = new WeakMap();
+export function selectorExit(p) {
+  const { field, electricField, speed, length } = p;
+  const cached = selectorExits.get(p);
+  if (cached && cached.field === field && cached.electricField === electricField &&
+      cached.speed === speed && cached.length === length) return cached.exit;
+  const omega = E_CHARGE * field / PROTON_MASS;
+  const drift = electricField / field;
+  const difference = speed - drift;
+  const sine = Math.sqrt(SELECTOR_HALF_GAP * omega / (2 * Math.abs(difference)));
+  const plateTime = sine <= 1 ? 2 * Math.asin(sine) / omega : Infinity;
+  // The oscillatory correction to x is bounded by |difference|/omega.
+  const end = Math.min(plateTime, (length + Math.abs(difference) / omega + 1e-12) / drift);
+  const checkpoints = [];
+  if (difference > drift) {
+    const turn = Math.acos(-drift / difference), cycle = 2 * Math.PI;
+    for (let phase = 0; phase + turn < omega * end; phase += cycle) {
+      checkpoints.push((phase + turn) / omega);
+      if (phase + cycle - turn < omega * end) checkpoints.push((phase + cycle - turn) / omega);
+    }
+  }
+  checkpoints.push(end);
+  let start = 0, exit = { t: end, edge: difference < 0 ? "lower plate" : "upper plate" };
+  for (const checkpoint of checkpoints) {
+    const { x } = selectorPosition(p, checkpoint);
+    if (x >= length || x <= 0) {
+      const forward = x >= length;
+      let low = start, high = checkpoint;
+      for (let i = 0; i < 48; i++) {
+        const mid = (low + high) / 2, position = selectorPosition(p, mid).x;
+        if (forward ? position >= length : position <= 0) high = mid;
+        else low = mid;
+      }
+      exit = { t: high, edge: forward ? "exit plane" : "entrance" };
+      break;
+    }
+    start = checkpoint;
+  }
+  selectorExits.set(p, { field, electricField, speed, length, exit });
+  return exit;
+}
 export function selectorPath(p, t) {
   return Array.from({ length: 251 }, (_, i) =>
     selectorPosition(p, (t * i) / 250),
@@ -163,6 +208,7 @@ export function lampRates(s, p) {
 /** Integrate T and both energy integrals with the same RK4 stages. Internal
  * step <= 1/4000 s resolves the fastest supported thermal transient. */
 export function stepPractical(id, s, p, h) {
+  if (id === "selector") return { ...s, t: Math.min(s.t + h, selectorExit(p).t) };
   if (id !== "filament") return { ...s, t: s.t + h };
   const count = Math.ceil(h * 4000),
     dt = h / count,

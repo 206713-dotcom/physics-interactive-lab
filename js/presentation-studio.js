@@ -255,6 +255,11 @@ export function installPresentationStudio(stage, controls, id, title, machineAct
   panel.setAttribute('aria-live','off');
   panel.innerHTML = '<div class="instrument-values"></div><div class="instrument-observe"><strong>What to watch</strong><span class="instrument-context"></span></div>';
   stage.querySelector('.transport').after(panel);
+  const graphicsNotice = document.createElement('p');
+  graphicsNotice.className = 'graphics-notice';
+  graphicsNotice.setAttribute('role', 'status');
+  graphicsNotice.hidden = true;
+  panel.before(graphicsNotice);
   const compareReadings = installReadingComparison(panel);
   const updateRectifier = id === 'rectifier' ? installRectifierConsole(stage, machineActions) : null;
   const updateTransformer = id === 'transformer' ? installTransformerConsole(stage, machineActions) : null;
@@ -327,7 +332,9 @@ export function installPresentationStudio(stage, controls, id, title, machineAct
   dialog.onclose = () => { if (!dialog.open) restore(); };
   let signature = '', nodes = [];
   return {
-    setView(mode) {
+    setView(mode, notice = '') {
+      graphicsNotice.textContent = notice;
+      graphicsNotice.hidden = !notice;
       const diagram = mode === '2d';
       diagramTools.hidden = !diagram;
       if (diagram) diagramTools.append(drawerToggle, equation);

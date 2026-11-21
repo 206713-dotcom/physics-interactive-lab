@@ -1,4 +1,4 @@
-import { createBudget } from "./render-budget.js";
+import { createBudget, ratioForPixels } from "./render-budget.js";
 import { realMaterial, setSceneTheme } from "./scene-materials.js";
 import { studioBackdropTexture, benchMaterial, lightPool, stageRings, dustField, addGlow, paintLabelPlate } from "./scene-look.js";
 import { labTopic, DEFAULT_ACCENT } from "./topic-map.js";
@@ -33,6 +33,7 @@ import {
 } from "./physics-extra.js";
 /** Camera distance factor: below 1 brings every apparatus closer at the start. */
 export const SETUP_ZOOM = 1;
+const MAX_SCENE_PIXELS = 2_500_000;
 const CYAN = 0x63efda,
   GOLD = 0xffc778,
   BLUE = 0x7baeff;
@@ -258,6 +259,7 @@ export class SceneView {
   bindCamera() {
     const c = this.canvas;
     this.handlers = {};
+    this.handlers.webglcontextlost = () => this.onGraphicsLost?.();
     let down = null;
     const pointer = (e) => {
       const rect = c.getBoundingClientRect();
@@ -270,6 +272,7 @@ export class SceneView {
       if (e.button !== 0) return;
       this.cameraGoal = null;
       this.introGoal = null;
+      this.introPending = false;
       const handle = this.curriculum?.interaction?.pick(
         pointer(e),
         this.camera,
@@ -347,6 +350,8 @@ export class SceneView {
     };
     this.handlers.wheel = (e) => {
       e.preventDefault();
+      this.introGoal = null;
+      this.introPending = false;
       const goal = this.cameraGoal || { azimuth: this.azimuth, polar: this.polar, radius: this.radius };
       goal.radius = Math.max(
         5,
@@ -357,19 +362,11 @@ export class SceneView {
     };
     this.handlers.keydown = (e) => {
       const k = e.key;
+      if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "+", "-", "0"].includes(k)) return;
+      e.preventDefault();
       this.cameraGoal = null;
-      if (
-        [
-          "ArrowLeft",
-          "ArrowRight",
-          "ArrowUp",
-          "ArrowDown",
-          "+",
-          "-",
-          "0",
-        ].includes(k)
-      )
-        e.preventDefault();
+      this.introGoal = null;
+      this.introPending = false;
       if (k === "ArrowLeft") this.azimuth -= 0.12;
       if (k === "ArrowRight") this.azimuth += 0.12;
       if (k === "ArrowUp") this.polar = Math.max(0.15, this.polar - 0.1);
@@ -386,6 +383,8 @@ export class SceneView {
   }
   home() {
     this.cameraGoal = null;
+    this.introGoal = null;
+    this.introPending = false;
     this.azimuth = this.homeAzimuth ?? -0.38;
     this.polar = this.homePolar ?? 1.05;
     this.radius = this.homeRadius || 15;
@@ -748,6 +747,10 @@ export class SceneView {
     }
   }
   update(lab) {
+    const w = this.canvas.clientWidth, h = this.canvas.clientHeight;
+    // Reparenting the stage or hiding the tab can temporarily remove its
+    // drawing area. Wait for a real viewport before fitting or building it.
+    if (w <= 0 || h <= 0 || this.onScreen === false) return;
     const p = lab.params,
       s = lab.state,
       type = lab.type;
@@ -914,9 +917,9 @@ export class SceneView {
           !sceneLabelAllowed(lab.type,lab.studyMode,node.userData.text) ||
           (lab.cleanPresentation && !diagramLabelVisible(node.userData.text,node.userData.labelWidth)))) node.visible = false;
     });
-    const w = this.canvas.clientWidth,
-      h = this.canvas.clientHeight;
     if (this.w !== w || this.h !== h) {
+      const ratio = ratioForPixels(w, h, this.budget.ratio, MAX_SCENE_PIXELS);
+      if (ratio !== this.renderer.getPixelRatio()) this.renderer.setPixelRatio(ratio);
       this.renderer.setSize(w, h, false);
       this.camera.aspect = w / h;
       this.camera.updateProjectionMatrix();
@@ -1011,10 +1014,8 @@ export class SceneView {
       this.dust.rotation.y = beat * 0.012;
       this.dust.position.y = Math.sin(beat * 0.22) * 0.25;
     }
-    if (this.onScreen === false) return;
     this.renderer.render(this.scene, this.camera);
     if (this.budget?.frame(performance.now())) {
-      this.renderer.setPixelRatio(this.budget.ratio);
       this.w = 0; // resize the drawing buffer on the next frame
     }
     if (!this.firstFrame) {
@@ -1031,6 +1032,7 @@ export class SceneView {
   }
   dispose() {
     this.screenWatch?.disconnect();
+    if (this.draggingPart || this.editingHandle) this.handlers.pointerup();
     this.clear();
     this.scene.traverse((o) => {
       o.geometry?.dispose();

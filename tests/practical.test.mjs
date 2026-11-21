@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import * as P from "../js/practical-physics.js";
+import { selectorForceVectors, selectorLayout } from "../js/field-geometry.js";
 import {
   DEFAULTS,
   createCurriculum,
@@ -236,6 +237,49 @@ test("exact crossed-field paths satisfy force balance, differential equations an
       -p.electricField * q.y,
       1e-9,
     );
+  }
+});
+test("the velocity selector stops at the first edge reached, including a return through the entrance", () => {
+  const cases = [
+    [{}, "exit plane"],
+    [{ speed: 2e6, field: 0.1, electricField: 1000, length: 0.5 }, "upper plate"],
+    [{ speed: 20000, field: 0.01, electricField: 20000, length: 0.5 }, "lower plate"],
+    [{ speed: 300000, field: 0.1, electricField: 1000, length: 0.05 }, "entrance"],
+  ];
+  for (const [overrides, edge] of cases) {
+    const p = { ...DEFAULTS.selector, ...overrides };
+    const initial = P.createPractical("selector");
+    const final = P.stepPractical("selector", initial, p, 1);
+    const points = P.selectorPath(p, final.t);
+    const end = points.at(-1);
+    assert.equal(P.selectorExit(p).edge, edge);
+    assert.ok(final.t > 0 && final.t < 1e-4);
+    assert.ok(LABS.selector.ended(final, p));
+    assert.equal(P.stepPractical("selector", final, p, 1).t, final.t);
+    if (edge === "exit plane") near(end.x, p.length);
+    if (edge === "upper plate") near(end.y, 0.095);
+    if (edge === "lower plate") near(end.y, -0.095);
+    if (edge === "entrance") {
+      near(end.x, 0);
+      assert.ok(end.vx < 0);
+    }
+    for (const { x, y } of points.slice(1, -1)) {
+      assert.ok(x > 0 && x < p.length);
+      assert.ok(Math.abs(y) < 0.095);
+    }
+  }
+});
+test("velocity selector displays scaled distances and relative force magnitudes without distortion", () => {
+  const p = { ...DEFAULTS.selector, speed: 300000 };
+  const q = sample("selector", p, 3e-7);
+  const { electric, magnetic } = selectorForceVectors(p, q);
+  assert.ok(electric[1] < 0);
+  near((magnetic[0] * q.vx + magnetic[1] * q.vy) / Math.hypot(q.vx, q.vy), 0);
+  near(Math.hypot(...magnetic) / Math.hypot(...electric), q.magnetic / q.electric);
+  for (const [maxWidth, maxHeight] of [[6.8, 2.8], [630, 190]]) {
+    const { width, height } = selectorLayout(p, maxWidth, maxHeight);
+    near(width / height, p.length / 0.19);
+    assert.ok(width <= maxWidth * (1 + 1e-12) && height <= maxHeight * (1 + 1e-12));
   }
 });
 test("steady driven oscillator solves its differential equation and mean power equals damping loss", () => {

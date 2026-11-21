@@ -1,7 +1,24 @@
 /** Display/time windows for the existing nonrelativistic Lorentz model.
  * Every transform is uniform in x/y and fixed throughout a run. */
-import { particlePosition } from "./practical-physics.js";
+import { particlePosition, SELECTOR_HALF_GAP } from "./practical-physics.js";
 export const E_CHARGE = 1.602176634e-19;
+
+export function selectorLayout(p, maxWidth, maxHeight) {
+  const scale = Math.min(maxWidth / p.length, maxHeight / (2 * SELECTOR_HALF_GAP));
+  return { scale, width: p.length * scale, height: 2 * SELECTOR_HALF_GAP * scale };
+}
+
+/** Both arrows use one fixed force scale for the selected setup. The
+ * magnetic force stays perpendicular to the current proton velocity. */
+export function selectorForceVectors(p, q) {
+  const drift = p.electricField / p.field;
+  const maxSpeed = drift + Math.abs(p.speed - drift);
+  const scale = 1 / Math.max(p.electricField, p.field * maxSpeed);
+  return {
+    electric: [0, -p.electricField * scale, 0],
+    magnetic: [-p.field * q.vy * scale, p.field * q.vx * scale, 0],
+  };
+}
 export function chargedTiming(p) {
   const omega = -p.charge * E_CHARGE * p.field / p.mass,
     period = omega ? 2 * Math.PI / Math.abs(omega) : Infinity,

@@ -3,7 +3,7 @@ import {
   LAMP_AMBIENT,
   LAMP_ALPHA,
   selectorPath,
-  selectorPosition,
+  selectorExit,
   planckSpectrum,
 } from "./practical-physics.js";
 const N = (
@@ -323,10 +323,8 @@ export const PRACTICAL_LABS = {
     level: "A Level",
     path: selectorPath,
     ended: (s, p) => {
-      const z = selectorPosition(p, s.t);
-      return z.x >= p.length || Math.abs(z.y) >= 0.095
-        ? "The beam has left the displayed chamber window. Reset to compare another entry speed."
-        : null;
+      const exit = selectorExit(p);
+      return s.t >= exit.t ? `Proton reached the ${exit.edge}` : null;
     },
     info: [
       "Crossed-field velocity selector",
@@ -346,10 +344,12 @@ export const PRACTICAL_LABS = {
     timing: {
       h: 1e-9,
       rate: 2e-7,
-      sampleEvery: 5e-9,
+      hFor: p => selectorExit(p).t / 1200,
+      rateFor: p => selectorExit(p).t / 5,
+      sampleEvery: p => selectorExit(p).t / 360,
       timeUnit: "μs",
       timeFactor: 1e-6,
-      window: 5,
+      window: p => selectorExit(p).t / 1e-6,
     },
     questionTime: 1e-6,
     work: [
@@ -411,7 +411,7 @@ export const PRACTICAL_LABS = {
       "Only one entry speed balances the fields.",
       "Positive protons enter to the right. A downward electric field competes with the upward magnetic force from a field into the screen. At v = E/B the forces cancel.",
       "For other entry speeds, velocity changes direction and electric work changes kinetic energy. The exact constant-field solution includes this changing velocity, rather than assuming constant transverse acceleration.",
-      "Uniform fields extend indefinitely in the mathematical model; the drawing clips a finite chamber window. The exit slit is illustrative and does not absorb trajectories. Proton speeds are nonrelativistic. Horizontal position uses the chamber length, vertical position uses a separately labelled 1000 px/m. Time is slowed.",
+      "The exact uniform-field path stops at the first chamber boundary. Both axes use the same length scale. The exit plane marks the end of the displayed field region. Proton speeds are nonrelativistic. Time is slowed to show the full run at 1× speed.",
       "Velocity filters and charged-particle beam preparation.",
       "Does increasing particle mass change the selected speed?",
       "No. Force balance qE = qvB gives v = E/B. Mass affects the deflected trajectory and its time scale.",

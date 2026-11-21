@@ -206,10 +206,10 @@ export const SCENE_GUIDES = {
     "All beams share one distance and time scale. Beta motion uses relativistic momentum. A tight beta curve can look small beside the gamma path.",
   ],
   selector: [
-    "A proton enters between the plates. Compare the downward electric and upward magnetic forces.",
+    "A proton enters from the left. The electric force points down. The magnetic force starts upward and stays perpendicular to the proton's velocity.",
     "The forces cancel for an undeflected beam only when v = E/B. Other entry speeds follow curved trajectories.",
-    "Set speed to E/B, then increase it slightly and follow the deflection.",
-    "All trajectory coordinates use one length scale. Particle size and force-arrow lengths are enlarged; the exact trajectory is calculated in microscopic simulation time.",
+    "Set the speed to E/B, then change it and see whether the proton reaches the exit, hits a plate or turns back through the entrance.",
+    "Both views use one length scale for the chamber and trajectory. The particle and arrows are enlarged. Playback slows the flight so you can see it.",
   ],
   induction: [
     "Gold arrows show the driven motion. Purple shows the direction of induced current if a resistive circuit is closed.",

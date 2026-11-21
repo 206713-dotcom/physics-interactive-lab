@@ -117,6 +117,22 @@ body.lab-dark #main .lab-page .lesson-course-links{background:#e7eff5;border-col
 body.lab-dark #main .lab-page .lesson-course-links a{background:#fff;color:#426f99}
 body.lab-dark #main .lab-page .lab-title-row .pill{background:#e9f0f6;color:#426f99;border-color:#c9d9e6;border-radius:4px}
 .page-width{max-width:1440px}
+.stage .graphics-notice {
+  margin: 0;
+  padding: 12px 18px;
+  background: #e8f1f8;
+  border-bottom: 1px solid #b6cbdd;
+  color: #1d2d3d;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.model-variables .controls .value-input input {
+  width: 9ch;
+  font-variant-numeric: tabular-nums;
+}
+body.lab-dark #main .lab-page .stage .graphics-notice {
+  color: #1d2d3d;
+}
 body .back-button{color:#426f99;background:#fff;border:1px solid #ccd9e3;border-radius:5px}
 body.field-page .back-button{color:#426f99;background:#fff;border-color:#ccd9e3}
 body .button{color:#fff;background:#1d2d3d;border-color:#1d2d3d;border-radius:6px}

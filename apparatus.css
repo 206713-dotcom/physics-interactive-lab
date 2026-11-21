@@ -1,10 +1,10 @@
 .buoyancy-reading {
-  background: #f8fdff;
-  border: 1px solid #c6dee8;
+  background: #fffaf8;
+  border: 1px solid #ebcec3;
   border-radius: 18px;
   padding: 25px;
   margin: 18px 0;
-  color: #163b50;
+  color: #2d3139;
 }
 .expanded-model .scene-container {
   height: clamp(340px, 48dvh, 580px);
@@ -34,7 +34,7 @@
   font:
     600 15px ui-monospace,
     monospace;
-  background: #e8f3f7;
+  background: #f8ebe7;
   padding: 12px;
   border-radius: 9px;
 }
@@ -47,15 +47,15 @@
   --force: #b87830;
   padding: 16px;
   background: white;
-  border: 1px solid #d8e6ec;
+  border: 1px solid #eedcd6;
   border-radius: 12px;
   min-width: 0;
 }
 .force-card.cyan {
-  --force: #07897e;
+  --force: #d23800;
 }
 .force-card.blue {
-  --force: #3978be;
+  --force: #6d778a;
 }
 .force-card.purple {
   --force: #8660b8;
@@ -71,13 +71,13 @@
     650 clamp(19px, 2vw, 27px) ui-monospace,
     monospace;
   margin: 9px 0 13px;
-  color: #123348;
+  color: #272b33;
 }
 .force-card i {
   display: block;
   height: 5px;
   border-radius: 5px;
-  background: #e8eff3;
+  background: #f0edeb;
   overflow: hidden;
 }
 .force-card b {
@@ -98,7 +98,7 @@
   font:
     14px/1.8 ui-monospace,
     monospace;
-  border-top: 1px solid #d4e4eb;
+  border-top: 1px solid #edd9d2;
   padding-top: 14px;
 }
 .buoyancy-reading details {
@@ -109,18 +109,18 @@
 .buoyancy-reading summary {
   font-weight: 650;
   cursor: pointer;
-  color: #087884;
+  color: #cf3902;
   min-height: 32px;
 }
 .solar-atlas-link {
   display: block;
   margin: 18px 0;
   padding: 24px 27px;
-  background: linear-gradient(120deg, #102b43, #164c5b);
-  color: #fff;
+  background: linear-gradient(120deg, #24282f, #a8431f);
+  color: #ffffff;
   border-radius: 16px;
   text-decoration: none;
-  border: 1px solid #5a9dba;
+  border: 1px solid #c27052;
 }
 .solar-atlas-link strong {
   display: block;
@@ -132,10 +132,10 @@
   display: block;
   font-size: 17px;
   line-height: 1.7;
-  color: #d3ebf4;
+  color: #f6dbd1;
 }
 .solar-atlas-link:hover {
-  background: #1b5262;
+  background: #a74724;
 }
 @media (max-width: 700px) {
   .buoyancy-reading {

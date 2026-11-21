@@ -8,7 +8,7 @@
 }
 .frontier-lab .controls .preset-block {
   border-top: 0;
-  border-bottom: 1px solid #d6e4eb;
+  border-bottom: 1px solid #eddbd4;
   padding: 0 0 20px;
   margin: 0 0 24px;
 }
@@ -34,7 +34,7 @@
   flex-wrap: wrap;
   gap: 13px 22px;
   padding: 0 2px;
-  color: #456679;
+  color: #595d65;
   font-size: 13px;
 }
 .frontier-legend > span {
@@ -63,23 +63,23 @@
   cursor: pointer;
 }
 .frontier-toggles input {
-  accent-color: #087b7e;
+  accent-color: #cc3803;
   width: 16px;
   height: 16px;
 }
 .frontier-story > p {
   font-size: 15px;
   line-height: 1.75;
-  color: #567183;
+  color: #686b71;
   margin: 17px 0 0;
   padding: 16px 19px;
-  background: #eaf3f6;
-  border-left: 3px solid #93cfc8;
+  background: #f7ede9;
+  border-left: 3px solid #d4a08e;
   border-radius: 0 9px 9px 0;
 }
 .frontier-model-notes {
   margin: 17px 0 27px;
-  color: #607c8c;
+  color: #71747b;
   font-size: 13px;
 }
 .frontier-model-notes summary {

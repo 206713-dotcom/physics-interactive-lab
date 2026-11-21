@@ -1,3 +1,8 @@
+import { createBudget } from "./render-budget.js";
+import { realMaterial, setSceneTheme } from "./scene-materials.js";
+import { studioBackdropTexture, benchMaterial, lightPool, stageRings, dustField, addGlow, paintLabelPlate } from "./scene-look.js";
+import { labTopic, DEFAULT_ACCENT } from "./topic-map.js";
+import { levelText } from "./level-wording.js";
 import { apparatusBounds, frameApparatus, frameOrbit, diagramLabelVisible } from './scene-framing.js';
 import { sceneLabelAllowed } from './study-policy.js';
 import { wavelengthRGB } from './diagram-theme.js';
@@ -26,17 +31,13 @@ import {
   fieldAt,
   interferenceAt,
 } from "./physics-extra.js";
+/** Camera distance factor: below 1 brings every apparatus closer at the start. */
+export const SETUP_ZOOM = 1;
 const CYAN = 0x63efda,
   GOLD = 0xffc778,
   BLUE = 0x7baeff;
 function material(color, extra = {}) {
-  return new T.MeshStandardMaterial({
-    color,
-    roughness: 0.4,
-    metalness: 0.22,
-    envMapIntensity: 0.6,
-    ...extra,
-  });
+  return realMaterial(color, extra);
 }
 function sphere(r, color) {
   const m = new T.Mesh(new T.SphereGeometry(r, 32, 20), material(color));
@@ -66,14 +67,11 @@ function label(value, color = "#a9c8d9") {
   canvas.height = 128;
   canvas.width = word ? 320 : 128;
   const c = canvas.getContext("2d");
-  c.beginPath();
-  c.roundRect(20, 20, canvas.width-40, 88, 24);
-  c.fillStyle = "#0a2035";
-  c.fill();
-  c.strokeStyle = color;
-  c.lineWidth = 3;
-  c.stroke();
-  c.font = word ? "600 48px Segoe UI,sans-serif" : "italic 66px Georgia,serif";
+  c.save();
+  c.translate(17, 17);
+  paintLabelPlate(c, canvas.width - 34, 94, color);
+  c.restore();
+  c.font = word ? "650 50px Manrope,Segoe UI,sans-serif" : "italic 600 66px Georgia,serif";
   c.textAlign = "center";
   c.textBaseline = "middle";
   c.fillStyle = color;
@@ -88,7 +86,7 @@ function label(value, color = "#a9c8d9") {
       toneMapped: false,
     }),
   );
-  sprite.scale.set(word ? 1.18 : 0.64, word ? 0.472 : 0.64, 1);
+  sprite.scale.set(word ? 1.2 : 0.66, word ? 0.48 : 0.66, 1);
   sprite.userData.role = "label";
   sprite.userData.text = value;
   return sprite;
@@ -150,25 +148,30 @@ export class SceneView {
     canvas.setAttribute("aria-busy", "true");
     this.renderer = new T.WebGLRenderer({
       canvas,
-      antialias: true,
+      // Multisampling on top of a dense screen is the costliest thing an
+      // integrated GPU does here; a 1.5x surface is already smooth without it.
+      antialias: (globalThis.devicePixelRatio || 1) < 1.5,
       alpha: false,
       powerPreference: "high-performance",
     });
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+    // Start no higher than 1.5× and step down if frames arrive slowly: a 2×
+    // surface with antialiasing is too much for integrated graphics.
+    this.budget = createBudget({ start: Math.min(devicePixelRatio || 1, 1.5), floor: 1, slowMs: 21, window: 36 });
+    // Draw only while the stage is on screen; the model keeps running.
+    this.onScreen = true;
+    if (typeof IntersectionObserver === "function") {
+      this.screenWatch = new IntersectionObserver(([entry]) => { this.onScreen = entry.isIntersecting; });
+      this.screenWatch.observe(canvas);
+    }
+    this.renderer.setPixelRatio(this.budget.ratio);
     this.renderer.setClearColor(0x080f1b);
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = T.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = T.PCFShadowMap;
     this.renderer.toneMapping = T.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.05;
+    this.renderer.toneMappingExposure = 1.12;
     this.scene = new T.Scene();
     // A quiet studio backdrop adds depth without adding anything to the model.
-    const backdrop=document.createElement('canvas');backdrop.width=backdrop.height=512;
-    const backdropContext=backdrop.getContext('2d'),backdropPaint=backdropContext.createRadialGradient(256,180,0,256,230,400);
-    backdropPaint.addColorStop(0,'#31586b');
-    backdropPaint.addColorStop(.47,'#18394f');
-    backdropPaint.addColorStop(1,'#071522');
-    backdropContext.fillStyle=backdropPaint;backdropContext.fillRect(0,0,512,512);
-    this.studioBackdrop=new T.CanvasTexture(backdrop);this.studioBackdrop.colorSpace=T.SRGBColorSpace;
+    this.studioBackdrop = studioBackdropTexture();
     this.scene.fog = new T.FogExp2(0x080f1b, 0.018);
     this.environmentTarget = studioEnvironment(this.renderer);
     this.scene.environment = this.environmentTarget.texture;
@@ -184,7 +187,7 @@ export class SceneView {
     key.position.set(-4, 9, 6);
     this.keyLight = key;
     key.castShadow = true;
-    key.shadow.mapSize.set(2048, 2048);
+    key.shadow.mapSize.set(1024, 1024);
     key.shadow.normalBias = 0.025;
     key.shadow.bias = -0.00015;
     key.shadow.radius = 3;
@@ -206,10 +209,9 @@ export class SceneView {
     this.bindCamera();
   }
   addEnvironment() {
-    const floor = new T.Mesh(
-      new T.PlaneGeometry(200, 200),
-      new T.ShadowMaterial({ color: 0x020b15, opacity: 0.42, depthWrite: false }),
-    );
+    // A graphite bench under every apparatus. It fades out in a soft circle,
+    // so there is no table edge or horizon line cutting across the model.
+    const floor = new T.Mesh(new T.CircleGeometry(30, 72), benchMaterial());
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = -0.82;
     floor.receiveShadow = true;
@@ -217,10 +219,19 @@ export class SceneView {
     floor.renderOrder = -1;
     this.scene.add(floor);
     this.floor = floor;
+    this.pool = lightPool();
+    this.scene.add(this.pool);
+    this.rings = stageRings();
+    this.scene.add(this.rings);
+    this.dust = dustField();
+    this.scene.add(this.dust);
+    // A cool counter-light opposite the world-coloured rim light.
+    this.fillLight.color.set(0x8fdcf0);
+    this.fillLight.position.set(-6, 3.5, -3.5);
     const grid = studioGrid();
     grid.position.y = -0.8;
     grid.material.transparent = true;
-    grid.material.opacity = 0.23;
+    grid.material.opacity = 0.1;
     this.scene.add(grid);
     this.grid = grid;
     const points = [];
@@ -258,6 +269,7 @@ export class SceneView {
     this.handlers.pointerdown = (e) => {
       if (e.button !== 0) return;
       this.cameraGoal = null;
+      this.introGoal = null;
       const handle = this.curriculum?.interaction?.pick(
         pointer(e),
         this.camera,
@@ -271,11 +283,27 @@ export class SceneView {
         this.onEditStart?.();
         return;
       }
+      // Pressing on the apparatus moves the part; pressing on empty space turns the camera.
+      if (this.partDrag && this.overModel(pointer(e))) {
+        e.preventDefault();
+        const rect = c.getBoundingClientRect(), flip = Math.cos(this.azimuth) < 0 ? -1 : 1,
+          across = (e.clientX - rect.left) / rect.width;
+        this.draggingPart = { start: [e.clientX, e.clientY], flip, scale: 900 / rect.width };
+        this.partDrag.begin(flip < 0 ? 1 - across : across);
+        c.setPointerCapture(e.pointerId);
+        c.classList.add("editing-vector");
+        return;
+      }
       down = [e.clientX, e.clientY];
       c.setPointerCapture(e.pointerId);
       c.classList.add("dragging");
     };
     this.handlers.pointermove = (e) => {
+      if (this.draggingPart) {
+        const d = this.draggingPart;
+        this.partDrag?.move((e.clientX - d.start[0]) * d.flip * d.scale, (e.clientY - d.start[1]) * d.scale);
+        return;
+      }
       if (this.editingHandle) {
         const patch = this.curriculum?.interaction?.move(
           pointer(e),
@@ -287,6 +315,7 @@ export class SceneView {
       if (!down) {
         c.classList.toggle(
           "over-handle",
+          (!!this.partDrag && this.overModel(pointer(e))) ||
           !!this.curriculum?.interaction?.pick(pointer(e), this.camera),
         );
         return;
@@ -295,13 +324,18 @@ export class SceneView {
       goal.azimuth -= (e.clientX - down[0]) * 0.007;
       goal.polar = Math.max(
         0.15,
-        Math.min(Math.PI - 0.15, goal.polar + (e.clientY - down[1]) * 0.006),
+        // Dragging up lifts the view of the model up (the camera drops), and down the reverse.
+        Math.min(Math.PI - 0.15, goal.polar - (e.clientY - down[1]) * 0.006),
       );
       if (matchMedia("(prefers-reduced-motion: reduce)").matches) Object.assign(this, goal);
       else this.cameraGoal = goal;
       down = [e.clientX, e.clientY];
     };
     this.handlers.pointerup = () => {
+      if (this.draggingPart) {
+        this.draggingPart = null;
+        this.partDrag?.end();
+      }
       if (this.editingHandle) {
         this.editingHandle = false;
         this.curriculum?.interaction?.end();
@@ -405,6 +439,34 @@ export class SceneView {
     this.objects = {};
   }
   build(type, p, studyMode) {
+    const firstLook = this.type !== type;
+    this.buildModel(type, p, studyMode);
+    this.finishLook(firstLook);
+  }
+  /** After any model is built: halos on lit parts, labels of this level only,
+   * and a short camera move the first time an experiment opens. */
+  finishLook(firstLook) {
+    addGlow(this.root);
+    this.labelNodes = [];
+    this.root.traverse((node) => {
+      if (node.userData.role === "label" && node.isSprite) this.labelNodes.push(node);
+    });
+    this.syncLabels();
+    this.introPending = firstLook && typeof matchMedia === "function" && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+  /** A label whose wording is not part of this level is taken off the camera's
+   * layer. Its own show/hide logic is left alone. */
+  syncLabels() {
+    for (const node of this.labelNodes ?? []) {
+      const text = node.userData.text;
+      if (node.userData.checkedText === text) continue;
+      node.userData.checkedText = text;
+      node.layers.set(typeof text === "string" && text && levelText(text) === "" ? 1 : 0);
+    }
+  }
+  buildModel(type, p, studyMode) {
+    const accent = new T.Color(labTopic(type, studyMode)?.accent ?? DEFAULT_ACCENT);
+    setSceneTheme(type, accent.getHex());
     const newModel = this.type !== type;
     this.clear();
     this.framingBounds = null;
@@ -414,17 +476,19 @@ export class SceneView {
     this.type = type;
     this.key = JSON.stringify(p);
     const space = ["gravity", "earthmoon", "solarsystem", "stars", "binary", "threebody", "universe"].includes(type);
-    this.scene.background = space ? (this.orbitBackdrop ??= makeOrbitBackdrop()) : this.studioBackdrop;
-    this.scene.fog.color.set(space?0x080f1b:0x10283c);
+    // Space scenes share the same night sky, in the violet of the space world.
+    this.scene.background = studioBackdropTexture(space ? 0x6a5cff : accent.getHex());
+    this.scene.fog.color.set(space?0x080f1b:0x070617);
     // Orbital lighting is illustrative, not a simulated day/night cycle.
-    this.ambient.intensity = { gravity: 0.36, earthmoon: 0.38, solarsystem: 0.65 }[type] ?? 1.25;
-    this.keyLight.intensity = type === "solarsystem" ? 0 : 3.2;
+    this.ambient.intensity = { gravity: 0.36, earthmoon: 0.38, solarsystem: 0.65 }[type] ?? 0.62;
+    this.keyLight.intensity = type === "solarsystem" ? 0 : 3.5;
     this.keyLight.position.set(-4, 9, type === "gravity" ? 3 : 6);
     if (type === "gravity") this.keyLight.position.set(-9, 7, 2);
     if (type === "earthmoon") this.keyLight.position.set(-10, 0, 0);
-    this.rimLight.intensity = space ? 0 : 26;
+    this.rimLight.intensity = space ? 0 : 46;
+    this.rimLight.color.copy(accent);
     this.fillLight.intensity = type === 'gravity' ? 0.45 : space ? 0.05 : 1.15;
-    this.scene.environmentIntensity = type === 'gravity' ? 0.3 : space ? 0.08 : 0.9;
+    this.scene.environmentIntensity = type === 'gravity' ? 0.3 : space ? 0.08 : 1.1;
     this.stars.visible = space;
     const r = this.root,
       o = this.objects;
@@ -436,7 +500,15 @@ export class SceneView {
     this.floor.visible = !space && type !== "vectors";
     this.grid.visible = !space && type !== "vectors";
     this.grid.position.y = type === "gravity" ? 1 : this.grid.position.y;
-    this.grid.material.opacity = 0.23;
+    this.grid.material.opacity = 0.34;
+    this.grid.material.uniforms.tint.value.copy(accent).lerp(new T.Color(0x8fa0ff), 0.45);
+    this.pool.visible = this.floor.visible;
+    this.pool.position.y = this.floor.position.y + 0.012;
+    this.pool.material.color.copy(accent).lerp(new T.Color(0xffffff), 0.35);
+    this.rings.visible = this.dust.visible = this.floor.visible;
+    this.rings.position.y = this.floor.position.y + 0.016;
+    this.rings.material.color.copy(accent);
+    this.dust.material.color.copy(accent).lerp(new T.Color(0xffffff), 0.6);
     const add = (name, mesh, pos) => {
       o[name] = mesh;
       if (pos) mesh.position.set(...pos);
@@ -902,8 +974,24 @@ export class SceneView {
       this.radius=fit.radius*(Number.isFinite(zoom)?zoom:1);
       if (this.orbitNewModel) {this.home();this.orbitNewModel=false;}
     }
+    this.syncLabels();
+    if (this.introPending && Number.isFinite(this.homeRadius) && !this.pendingFraming) {
+      // Arrive with a slow push-in and a slight turn, then settle on the home view.
+      this.introPending = false;
+      const goal = { azimuth: this.azimuth, polar: this.polar, radius: this.radius };
+      this.radius *= 1.22;
+      this.azimuth -= 0.2;
+      this.polar = Math.max(0.3, this.polar - 0.07);
+      this.introGoal = goal;
+      this.introStart = performance.now();
+    }
+    if (this.introGoal) {
+      if (this.cameraGoal || performance.now() - this.introStart > 2600) this.introGoal = null;
+      else for (const field of ["azimuth", "polar", "radius"]) this[field] += (this.introGoal[field] - this[field]) * 0.045;
+    }
+    // The apparatus opens large; zooming out is one scroll away.
     const cameraRadius =
-      this.radius *
+      SETUP_ZOOM * this.radius *
       (!this.framingBounds && !this.orbitComposition && (ADVANCED_IDS.includes(type) || this.curriculum || this.precision)
         ? Math.max(1, (this.curriculum?.camera?.fitAspect || this.precision?.fitAspect || (type === "buoyancy" ? 1.05 : type === "lenses" ? 1.55 : 1.35)) / this.camera.aspect)
         : 1);
@@ -916,13 +1004,33 @@ export class SceneView {
     );
     this.camera.lookAt(this.target);
     this.grid.material.uniforms.opacity.value = this.grid.material.opacity;
+    if (this.rings?.visible) {
+      // Stage dressing only: the pad turns and the dust drifts.
+      const beat = performance.now() / 1000;
+      this.rings.rotation.z = beat * 0.03;
+      this.dust.rotation.y = beat * 0.012;
+      this.dust.position.y = Math.sin(beat * 0.22) * 0.25;
+    }
+    if (this.onScreen === false) return;
     this.renderer.render(this.scene, this.camera);
+    if (this.budget?.frame(performance.now())) {
+      this.renderer.setPixelRatio(this.budget.ratio);
+      this.w = 0; // resize the drawing buffer on the next frame
+    }
     if (!this.firstFrame) {
       this.firstFrame = true;
       this.canvas.setAttribute("aria-busy", "false");
     }
   }
+  /** True when a pointer (in clip coordinates) is over a solid part of the apparatus. */
+  overModel(point) {
+    this.raycaster ??= new T.Raycaster();
+    this.raycaster.setFromCamera(point, this.camera);
+    return this.raycaster.intersectObjects(this.root.children, true)
+      .some((hit) => hit.object.isMesh && hit.object.visible && hit.object.userData.role !== "label");
+  }
   dispose() {
+    this.screenWatch?.disconnect();
     this.clear();
     this.scene.traverse((o) => {
       o.geometry?.dispose();

@@ -79,7 +79,7 @@ function drawDiagram(canvas, lab) {
   };
   const text = (t, x, y, col = "#94b7cb", size = 11, align = "left") => {
     c.fillStyle = col;
-    c.font = `500 ${Math.max(size,12)}px Manrope,Segoe UI,sans-serif`;
+    c.font = `600 ${Math.max(size*1.22,14)}px Manrope,Segoe UI,sans-serif`;
     c.textAlign = align;
     c.fillText(t, x, y);
   };

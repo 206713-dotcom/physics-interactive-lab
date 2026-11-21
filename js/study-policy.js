@@ -87,12 +87,26 @@ export function studyGraphs(id, mode, definition) {
     ? definition.graphs.filter(g => (GRAPHS[id] || []).includes(g.id))
     : definition.graphs;
 }
+/** A slider endpoint converted from display units to SI can land one rounding
+ * step outside its limit (10 mm² × 1e-6 is just below 1e-5 m²), which made the
+ * end of the slider unusable. Correct round-off only; real out-of-range input
+ * still fails validation. */
+export function snapToLimits(definition, params) {
+  for (const [key, bounds] of Object.entries(definition.limits || {})) {
+    const value = params[key];
+    if (!Number.isFinite(value) || !Array.isArray(bounds)) continue;
+    const [min, max] = bounds;
+    if (value < min && min - value <= Math.abs(min) * 1e-12) params[key] = min;
+    else if (value > max && value - max <= Math.abs(max) * 1e-12) params[key] = max;
+  }
+  return params;
+}
 /** Parameters outside the current teaching scope have fixed, documented
  * starting values. A shared URL cannot turn those options back on. */
 export function studyParams(id, mode, definition, requested = {}) {
   const base = { ...definition.defaults, ...getProfile(id,mode).setup,
     ...(mode === 'igcse' ? SETUP[id] : {}) };
-  if (mode !== 'igcse') return { ...base, ...requested };
+  if (mode !== 'igcse') return snapToLimits(definition, { ...base, ...requested });
   for (const key of visibleControlKeys(id,mode)) {
     if (!(key in requested)) continue;
     const d = studyControl(id,mode,definition.controls.find(c => c.key === key));

@@ -1,3 +1,4 @@
+import { brightInk } from "./scene-kit.js";
 import * as T from "../vendor/three.module.min.js";
 
 export const CIRCUIT_INK = 0x486b80;
@@ -8,13 +9,15 @@ export function createCircuitBoard(k) {
   k.box(10.8, 5.4, 0.16, 0x30546b, [0, 2.6, -0.20]);
   const face = k.box(10.6, 5.2, 0.025, 0xeaf2f7, [0, 2.6, -0.10]);
   face.material.dispose();
-  face.material = new T.MeshBasicMaterial({ color: 0xeaf2f7, toneMapped: false });
+  face.material = new T.MeshBasicMaterial({ color: 0x100e2e, toneMapped: false });
   for (const x of [-5.12, 5.12]) for (const y of [0.16, 5.04]) {
     k.cylinder(0.046, 0.025, 0x8ca4b3, [x, y, -0.06]).rotation.x = Math.PI / 2;
   }
 }
 
 export function circuitWire(k, path, color = CIRCUIT_INK, radius = 0.027) {
+  // Wires are drawn in light ink: the board behind them is a dark screen.
+  color = brightInk(color, 0.62);
   return path.slice(1).map((point, i) => k.rod(path[i], point, color, radius));
 }
 

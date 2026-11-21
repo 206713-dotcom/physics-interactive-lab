@@ -3,6 +3,7 @@ import * as T from "../vendor/three.module.min.js";
 import { SOLAR_MASS, stellarTime, doublePosition } from "./physics-advanced.js";
 import { atmosphereMaterial, stellarMaterial } from "../atlas/visual-detail.js";
 import { roundedBox } from "./scene-finish.js";
+import { paintLabelPlate } from "./scene-look.js";
 const PALETTE = [0xffc37d, 0x85d6ff, 0xc39aff];
 function textSprite(text, color = "#b7cedf") {
   const canvas = document.createElement("canvas");
@@ -11,13 +12,7 @@ function textSprite(text, color = "#b7cedf") {
   c.font = font;
   canvas.width = Math.ceil(c.measureText(text).width) + 40;
   canvas.height = 82;
-  c.fillStyle = "#10243ce8";
-  c.beginPath();
-  c.roundRect(2, 2, canvas.width - 4, 78, 13);
-  c.fill();
-  c.strokeStyle = "#a7c2e144";
-  c.lineWidth = 2;
-  c.stroke();
+  paintLabelPlate(c, canvas.width, canvas.height, color);
   c.font = font;
   c.textAlign = "center";
   c.textBaseline = "middle";

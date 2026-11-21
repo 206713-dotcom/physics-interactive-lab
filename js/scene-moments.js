@@ -4,46 +4,52 @@ import * as T from '../vendor/three.module.min.js';
 import { PALETTE as C, setPath } from './scene-kit.js';
 import { BEAM_STOP } from './moments-physics.js';
 import { dashedPath } from './scene-instruments.js';
+import { FINISH, slottedMasses } from './scene-props.js';
 export function createMomentsBench(p,k) {
   const scale=2,pivotY=2.05,half=Math.max(1.15,p.d1,p.d2)*scale+.35,
     metal={metalness:.65,roughness:.28};
   k.stand(half*2+.6,3.2);
-  k.box(.85,.16,1.2,0x385a70,[0,.12,0],metal);
-  k.cylinder(.2,pivotY-.14,0x91afbc,[0,pivotY/2,0],metal);
-  const axle=k.cylinder(.14,.8,0xb0c7d0,[0,pivotY,0],metal);axle.rotation.x=Math.PI/2;
-  const disc=k.cylinder(.19,.10,0x547589,[0,pivotY,.48],metal);disc.rotation.x=Math.PI/2;
-  k.ring(.195,C.white,[0,pivotY,.55],'z',.85);
-  const cap=k.cylinder(.075,.025,0xc5d7df,[0,pivotY,.55],metal);cap.rotation.x=Math.PI/2;
-  // A bearing frame and stop scale make the pivot visible without covering
-  // the beam. These decorative parts carry no additional mass or inertia.
-  for(const z of [-.42,.28]) for(const sign of [-1,1])
-    k.rod([sign*.38,.25,z],[0,pivotY-.18,z],0x587a90,.055);
+  // Knife-edge stand: an iron foot, two steel cheek plates and a pin through
+  // the rule. Decorative parts carry no mass or inertia in the model.
+  k.box(1.5,.12,1.15,FINISH.iron[0],[0,.06,0],FINISH.iron[1]);
+  for(const z of [-.36,.36]) {
+    const cheek=new T.Shape();cheek.moveTo(-.55,0);cheek.lineTo(.55,0);cheek.lineTo(.13,pivotY+.12);cheek.lineTo(-.13,pivotY+.12);cheek.closePath();
+    const hole=new T.Path();hole.moveTo(-.2,.3);hole.lineTo(.2,.3);hole.lineTo(.06,pivotY-.45);hole.lineTo(-.06,pivotY-.45);hole.closePath();cheek.holes.push(hole);
+    k.mesh(new T.ExtrudeGeometry(cheek,{depth:.05,bevelEnabled:false}),FINISH.steel[0],[0,.12,z-.025],FINISH.steel[1]);
+    const cap=k.cylinder(.085,.05,FINISH.brass[0],[0,pivotY,z+Math.sign(z)*.05],FINISH.brass[1]);cap.rotation.x=Math.PI/2;
+  }
+  const axle=k.cylinder(.04,.86,FINISH.chrome[0],[0,pivotY,0],FINISH.chrome[1]);axle.rotation.x=Math.PI/2;
   const stopArc=Array.from({length:49},(_,i)=>{
     const a=-BEAM_STOP+2*BEAM_STOP*i/48;return [.82*Math.cos(a),pivotY+.82*Math.sin(a),.36];
   });
-  k.line(stopArc,0x8bb1c5,.55);
+  k.line(stopArc,0xc9c9c9,.55);
   for(let angle=-20;angle<=20;angle+=5) {
     const a=angle*Math.PI/180,r=angle%10===0?.78:.8;
     k.line([[r*Math.cos(a),pivotY+r*Math.sin(a),.37],[.87*Math.cos(a),pivotY+.87*Math.sin(a),.37]],0xaac7d4,.8);
   }
   for(const sign of [-1,1]) {
-    const peg=k.cylinder(.065,.18,C.red,[.73*Math.cos(BEAM_STOP),pivotY+sign*.73*Math.sin(BEAM_STOP),.36],metal);
+    const peg=k.cylinder(.05,.2,FINISH.brass[0],[.73*Math.cos(BEAM_STOP),pivotY+sign*.73*Math.sin(BEAM_STOP),.36],FINISH.brass[1]);
     peg.rotation.x=Math.PI/2;
   }
   const moving=new T.Group();k.add(moving,[0,pivotY,0],'moments-beam');
-  const beam=k.box(half*2,.14,.42,0xb5d0d9,[0,0,0],metal);moving.add(beam);
+  const beam=k.box(half*2,.14,.42,FINISH.boxwood[0],[0,0,0],{roughness:.6,metalness:0});moving.add(beam);
   // Engraved ticks use the very same two scene units per metre as the loads.
   for(let i=-Math.floor(half/scale*10);i<=Math.floor(half/scale*10);i++) {
     const x=i*scale/10,major=i%5===0,
-      tick=k.line([[x,-.045,.216],[x,major?.05:.0,.216]],0x2c5269,.8);
+      tick=k.line([[x,-.045,.216],[x,major?.05:.0,.216]],0x24170c,.9);
     moving.add(tick);tick.userData.role='moments-ruler-tick';tick.userData.metres=i/10;
   }
   const labelWidth=Math.min(1.15,Math.min(p.d1,p.d2)*scale*2),
     weights=[[-p.d1*scale,p.m1,C.cyan],[p.d2*scale,p.m2,C.gold]].map(([x,mass,color],i)=>{
-      const size=Math.min(.52,.6*Math.abs(x)),block=k.box(size,size,.62,color,[x,0,0],{metalness:.32,roughness:.3});
+      // A sliding clip on the rule carries a hanger of slotted masses, which
+      // stays vertical under gravity however far the rule tips.
+      const block=k.box(.13,.24,.5,FINISH.steel[0],[x,0,0],FINISH.steel[1]);
       moving.add(block);block.userData.role=i?'moments-right-mass':'moments-left-mass';
-      const face=k.box(size*.7,size*.7,.018,0xe4edf0,[0,0,.32],metal);block.add(face);
-      return {x,mass,block,label:k.label(`${mass.toFixed(2)} kg`,[x,pivotY+.6,0],i?'#ffd293':'#83ead6',labelWidth),
+      const count=Math.max(1,Math.min(6,Math.ceil(mass))),
+        hanger=slottedMasses(k,{count,radius:.2+.012*count,thickness:.055,stem:.1+count*.059,
+          finish:[color,{metalness:.9,roughness:.3,envMapIntensity:1.3}]});
+      moving.add(hanger);hanger.position.set(x,-.12,0);
+      return {x,mass,block,hanger,label:k.label(`${mass.toFixed(2)} kg`,[x,pivotY+.6,0],i?'#ffd293':'#83ead6',labelWidth),
         vector:k.arrow([x,pivotY,0],[0,-1,0],color),
         guide:dashedPath(k,[[x,pivotY,0],[x,.43,0]],color,.32),
         arm:k.line([],color,.9),
@@ -58,6 +64,7 @@ export function createMomentsBench(p,k) {
         // even at the lowest supported load position and the angular stop.
         forceScale=Math.min(1.05,pivotY-Math.max(p.d1,p.d2)*scale*Math.sin(BEAM_STOP)-.35)/Math.max(p.m1,p.m2);
       moving.rotation.z=theta;
+      for(const w of weights)w.hanger.rotation.z=-theta;
       weights.forEach((w,i)=>{
         const x=w.x*cos,y=pivotY+w.x*sin;
         k.setArrow(w.vector,[x,y-.2,.65],[0,-w.mass*forceScale,0]);

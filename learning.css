@@ -1,6 +1,6 @@
 .learning-mode-controls {
   padding: 17px 0;
-  border-bottom: 1px solid #d8e5ed;
+  border-bottom: 1px solid #e8e2dd;
   margin: 4px 0 20px;
 }
 .learning-mode-options {
@@ -12,17 +12,17 @@
 .learning-mode-options button {
   flex: 1;
   padding: 12px 9px;
-  border: 1px solid #cbdde7;
-  background: #f3f8fa;
+  border: 1px solid #e0d9d2;
+  background: #fbf5f2;
   border-radius: 9px;
   font-weight: 700;
-  color: #1c4b61;
+  color: #a54826;
   min-height: 56px;
 }
 .learning-mode-options button[aria-pressed="true"] {
   color: white;
-  background: #123e52;
-  border-color: #123e52;
+  background: #a6401b;
+  border-color: #a6401b;
 }
 .learning-mode-options small {
   display: block;
@@ -33,16 +33,16 @@
 .learning-mode-controls > p {
   font-size: 13px;
   line-height: 1.7;
-  color: #567389;
+  color: #6a6e75;
   margin: 0;
 }
 .learning-focus {
   margin: 18px 0;
   padding: 25px;
-  border: 1px solid #bad9e3;
+  border: 1px solid #e6c3b7;
   border-radius: 17px;
-  background: linear-gradient(125deg, #f1fcfd, #fff);
-  color: #173b50;
+  background: linear-gradient(125deg, #fef4f0, #ffffff);
+  color: #2d313a;
 }
 .learning-focus-heading {
   display: flex;
@@ -70,13 +70,13 @@
 .syllabus-refs a {
   padding: 5px 9px;
   border-radius: 5px;
-  background: #e1eff3;
-  color: #176171;
+  background: #f4e5e0;
+  color: #b5441a;
   font-size: 14px;
 }
 .syllabus-refs > span {
   font-size: 13px;
-  color: #536c7d;
+  color: #63666d;
 }
 .learning-focus-calculations {
   display: grid;
@@ -89,7 +89,7 @@
 }
 .learning-focus-calculations article {
   background: white;
-  border: 1px solid #d4e5ed;
+  border: 1px solid #efdad2;
   border-radius: 10px;
   padding: 15px;
   min-width: 0;
@@ -97,7 +97,7 @@
 .learning-focus-calculations article > span {
   display: block;
   font-size: 14px;
-  color: #506c7d;
+  color: #62656b;
 }
 .learning-focus-calculations strong {
   display: block;
@@ -105,7 +105,7 @@
     650 22px/1.6 ui-monospace,
     monospace;
   margin-top: 5px;
-  color: #087f86;
+  color: #d03902;
 }
 .learning-focus-calculations p {
   font:
@@ -122,23 +122,23 @@
 .learning-brief summary {
   font-weight: 650;
   cursor: pointer;
-  color: #0b7886;
+  color: #cd3b06;
 }
 .learning-scope {
   font-size: 14px;
   line-height: 1.8;
-  color: #577181;
-  border-left: 3px solid #92bec9;
+  color: #676a71;
+  border-left: 3px solid #ce9e8d;
   padding-left: 14px;
 }
 .focus-equation {
   font:
     500 clamp(18px, 2vw, 25px) / 1.8 ui-monospace,
     monospace;
-  background: #eaf5f6;
+  background: #f7ede9;
   padding: 18px;
   border-radius: 10px;
-  color: #125066;
+  color: #b34016;
   overflow-wrap: anywhere;
 }
 .level-lesson {
@@ -157,23 +157,23 @@
 }
 .full-model-resources {
   margin-top: 28px;
-  border-top: 1px solid #cedfe8;
+  border-top: 1px solid #e2dbd5;
   padding-top: 20px;
 }
 .full-model-resources > summary {
   cursor: pointer;
   font-size: 16px;
   font-weight: 600;
-  color: #537184;
+  color: #666a71;
   margin-bottom: 20px;
   line-height: 1.8;
 }
 .calculation-level-scope {
   font-size: 12px;
   line-height: 1.7;
-  color: #527383;
+  color: #9a6754;
   margin: 12px 0;
-  border-top: 1px solid #dae8ef;
+  border-top: 1px solid #f1dfd8;
   padding-top: 12px;
 }
 .syllabus-page {
@@ -191,7 +191,7 @@
 .syllabus-hero > p {
   font-size: 20px;
   line-height: 1.8;
-  color: #526f84;
+  color: #666971;
   max-width: 820px;
 }
 .syllabus-track {
@@ -199,8 +199,8 @@
   flex-wrap: wrap;
   gap: 9px;
   padding: 17px 0;
-  border-top: 1px solid #cbdfe9;
-  border-bottom: 1px solid #cbdfe9;
+  border-top: 1px solid #ecd2c8;
+  border-bottom: 1px solid #ecd2c8;
 }
 .syllabus-track button,
 .course-level-gateway a {
@@ -208,14 +208,14 @@
   font-weight: 650;
   border-radius: 10px;
   padding: 13px 18px;
-  border: 1px solid #c5dbe7;
+  border: 1px solid #ded5ce;
   background: white;
-  color: #23556d;
+  color: #a74c2b;
 }
 .syllabus-track [aria-pressed="true"] {
-  background: #123d53;
-  color: #fff;
-  border-color: #123d53;
+  background: #2b303a;
+  color: #ffffff;
+  border-color: #2b303a;
 }
 .syllabus-selection {
   display: flex;
@@ -231,29 +231,29 @@
 }
 .syllabus-selection p {
   font-size: 16px;
-  color: #587486;
+  color: #6a6d74;
 }
 .syllabus-selection > label:not(.library-search) {
   font-size: 14px;
   font-weight: 600;
-  color: #476b80;
+  color: #5d616a;
 }
 .syllabus-selection select {
   display: block;
   padding: 12px;
   margin-top: 8px;
-  border: 1px solid #bcd3e1;
+  border: 1px solid #d8cec5;
   border-radius: 9px;
-  background: #fff;
-  color: #173d53;
+  background: #ffffff;
+  color: #2e333c;
 }
 .syllabus-boundary {
   font-size: 16px;
   line-height: 1.9;
-  background: #eaf5f8;
-  border-left: 4px solid #218e9e;
+  background: #f9ede9;
+  border-left: 4px solid #c74b1e;
   padding: 20px 25px;
-  color: #375d70;
+  color: #9b5941;
 }
 #path-results {
   display: grid;
@@ -265,18 +265,18 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border: 1px solid #cddfe9;
+  border: 1px solid #e2dbd4;
   border-radius: 16px;
   padding: 25px;
-  background: #fff;
-  box-shadow: 0 5px 20px #183f5606;
+  background: #ffffff;
+  box-shadow: 0 5px 20px #30353e06;
 }
 .path-stage {
   font:
     600 12px ui-monospace,
     monospace;
   letter-spacing: 0.8px;
-  color: #158590;
+  color: #c94312;
 }
 .path-card h3 {
   font-size: 25px;
@@ -286,16 +286,16 @@
 .path-card p {
   font-size: 18px;
   line-height: 1.6;
-  color: #31596d;
+  color: #9d553c;
 }
 .path-card ul {
   padding-left: 20px;
   font-size: 15px;
   line-height: 1.9;
-  color: #506d7e;
+  color: #62656c;
 }
 .path-card-bottom {
-  border-top: 1px solid #dce8ed;
+  border-top: 1px solid #efe0da;
   padding-top: 18px;
   margin-top: 14px;
 }
@@ -304,7 +304,7 @@
   font:
     12px/1.8 ui-monospace,
     monospace;
-  color: #627b8a;
+  color: #72757a;
   margin-bottom: 14px;
 }
 .path-card .button {
@@ -316,8 +316,8 @@
 .syllabus-sources,
 .syllabus-gaps {
   margin-top: 32px;
-  background: #f3f8fa;
-  border: 1px solid #cddfe7;
+  background: #fbf5f2;
+  border: 1px solid #ead3cb;
   border-radius: 15px;
   padding: 25px;
   font-size: 16px;
@@ -338,12 +338,12 @@
   display: flex;
   flex-direction: column;
   padding: 13px 0;
-  border-top: 1px solid #d2e1e9;
+  border-top: 1px solid #e3ddd8;
   gap: 3px;
 }
 .syllabus-gaps article > span {
   font-size: 14px;
-  color: #5d7684;
+  color: #6c6f75;
 }
 .course-level-gateway {
   display: flex;
@@ -352,7 +352,7 @@
   flex-wrap: wrap;
   margin: 26px 0;
   padding: 20px;
-  background: #eaf5f8;
+  background: #f9ede9;
   border-radius: 12px;
 }
 .course-level-gateway strong {
@@ -399,16 +399,16 @@
 
 .catalogue-level {
   font-size: 13px;
-  color: #587286;
+  color: #6a6d74;
   display: flex;
   gap: 10px;
   align-items: center;
 }
 .catalogue-level select {
   padding: 10px;
-  border: 1px solid #c4d9e5;
+  border: 1px solid #ddd4cc;
   background: white;
-  color: #204e64;
+  color: #a44b2a;
   border-radius: 8px;
   font: inherit;
 }
@@ -438,10 +438,10 @@
     10px/1.5 ui-monospace,
     monospace;
   letter-spacing: 0.6px;
-  color: #738996;
+  color: #818388;
   margin-bottom: 9px;
 }
 .study-control-marker.is-focus {
-  color: #087d85;
+  color: #cf3902;
   font-weight: 650;
 }

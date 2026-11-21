@@ -109,3 +109,26 @@ test('heat transfer readout follows the selected mechanism and its model power',
     assert.equal(power.value, d.sample(state, params).power);
   }
 });
+
+test("every slider endpoint can be selected in every mode a model offers", async () => {
+  const { SIMULATIONS } = await import("../js/simulations.js"),
+    { availableModes } = await import("../js/learning-paths.js"),
+    { studyParams, studyControl, visibleControlKeys } = await import("../js/study-policy.js"),
+    failures = [];
+  for (const [id, definition] of Object.entries(SIMULATIONS))
+    for (const mode of availableModes(id)) {
+      const visible = visibleControlKeys(id, mode);
+      for (const raw of definition.controls) {
+        if (visible && !visible.includes(raw.key)) continue;
+        const control = studyControl(id, mode, raw);
+        if (control.options || control.log) continue;
+        for (const end of [control.min, control.max])
+          try {
+            definition.create(studyParams(id, mode, definition, { [control.key]: Number(end) * (control.factor || 1) }));
+          } catch (error) {
+            failures.push(`${id}/${mode} ${control.key}=${end}: ${error.message}`);
+          }
+      }
+    }
+  assert.deepEqual(failures, []);
+});

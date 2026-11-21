@@ -23,7 +23,7 @@ const AREAS = [
   "Nuclear physics",
   "Space physics",
 ];
-const TOPICS = [
+export const TOPICS = [
   "Quantities & measurement",
   "Kinematics",
   "Dynamics",
@@ -105,7 +105,7 @@ export function renderSyllabus(container, query = new URLSearchParams()) {
               : track === "alevel"
                 ? "AS & A Level"
                 : "Enrichment";
-    container.innerHTML = `<div class="page-width syllabus-page"><div class="breadcrumb"><a href="#/">The laboratory</a><span>/</span><span>Cambridge learning paths</span></div><section class="syllabus-hero"><div class="eyebrow">ONE MODEL · THE RIGHT DEPTH</div><h1>Choose your level.<br><em>Learn the physics that matters.</em></h1><p>Shared topics use the same accurate simulation with different objectives, investigations, worked questions and calculation focus. A model only gets a second mode when it supports that course.</p></section><nav class="syllabus-track" aria-label="Physics learning path">${[
+    container.innerHTML = `<div class="page-width syllabus-page"><div class="breadcrumb"><a href="#/syllabus">Learning paths</a><span>/</span><span>Syllabus coverage</span></div><section class="syllabus-hero"><div class="eyebrow">ONE MODEL · THE RIGHT DEPTH</div><h1>Choose your level.<br><em>Learn the physics that matters.</em></h1><p>Shared topics use the same accurate simulation with different objectives, investigations, worked questions and calculation focus. A model only gets a second mode when it supports that course.</p></section><nav class="syllabus-track" aria-label="Physics learning path">${[
       ["igcse", "IGCSE · 0625"],
       ["as", "AS · 9702"],
       ["a2", "A2 · 9702"],

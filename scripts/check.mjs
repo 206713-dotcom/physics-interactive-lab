@@ -12,6 +12,12 @@ assert.ok(entryHTML.includes(`./js/app.js?v=${version}`));
 assert.ok(entryHTML.includes(`./cinematic.css?v=${version}`));
 assert.ok(entryHTML.includes(`./design.css?v=${version}`));
 assert.ok(entryHTML.includes(`./consolidated.css?v=${version}`));
+assert.ok(entryHTML.includes(`./focus.css?v=${version}`));
+for (const sheet of entryHTML.matchAll(/href="([.][/][^"?#]+[.]css)([?][^"]*)?"/g))
+  assert.equal(sheet[2], `?v=${version}`, "Run npm run refresh-assets to version every stylesheet.");
+await access("focus.css");
+for (const font of ["barlow-400-latin.woff2", "barlow-600-latin.woff2", "barlow-condensed-400-latin.woff2", "barlow-condensed-600-latin.woff2", "barlow-condensed-700-latin.woff2"])
+  await access(`assets/fonts/${font}`);
 for (const document of ["index.html", "integration.html", "solar-atlas.html"]) {
   const html = await readFile(document, "utf8");
   for (const match of html.matchAll(/(?:src|href)="(\.\/[^"?#]+)"/g))
@@ -81,6 +87,30 @@ for (const file of [
   "design.css",
   "assets/fonts/Manrope-variable.ttf",
   "assets/fonts/Manrope-OFL.txt",
+  "field.css",
+  "game.css",
+  "assets/fonts/Unbounded-variable.woff2",
+  "assets/fonts/Unbounded-OFL.txt",
+  "assets/fonts/ChakraPetch-400.woff2",
+  "assets/fonts/ChakraPetch-500.woff2",
+  "assets/fonts/ChakraPetch-600.woff2",
+  "assets/fonts/ChakraPetch-700.woff2",
+  "assets/fonts/ChakraPetch-OFL.txt",
+  "js/topic-map.js",
+  "js/field-backdrop.js",
+  "js/render-budget.js",
+  "js/direct-handles.js",
+  "js/apparatus-tools.js",
+  "js/level-wording.js",
+  "js/scene-look.js",
+  "js/scene-props.js",
+  "js/lesson-view.js",
+  "js/scene-materials.js",
+  "assets/fonts/Fraunces-variable.woff2",
+  "assets/fonts/Fraunces-italic-variable.woff2",
+  "assets/fonts/Fraunces-OFL.txt",
+  "assets/fonts/SpaceGrotesk-variable.woff2",
+  "assets/fonts/SpaceGrotesk-OFL.txt",
   "js/oscillation-physics.js",
   "js/spring-helix.js",
   "js/scene-oscillation-benches.js",

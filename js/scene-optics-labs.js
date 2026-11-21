@@ -78,7 +78,7 @@ export function createDispersionBench(p, k) {
   // A pale panel depicts one material half-space, not a second prism face.
   const material = k.box(2.86, 3.9, 0.018, 0xc8e5e9, [-0.07, 2.45, -0.065]);
   material.material.dispose();
-  material.material = new T.MeshBasicMaterial({ color: 0xd4e9ed, toneMapped: false });
+  material.material = new T.MeshBasicMaterial({ color: 0x1c4a5e, toneMapped: false });
   material.userData.role = "dispersion-medium";
   k.line([[-1.5, 0.5, 0.05], [-1.5, 4.38, 0.05]], INK);
   dashedPath(k, [[-4.8, q.hit[1], 0.08], [1.3, q.hit[1], 0.08]], INK, 0.5);

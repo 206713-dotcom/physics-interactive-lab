@@ -18,7 +18,7 @@ export function createWaveBench(p, root, options = {}) {
   if(introductory) {
     k.box(9.2,3.65,.12,0x42647b,[0,2.05,1.12],{metalness:.2,roughness:.5});
     const paper=k.box(9.0,3.45,.025,0xedf4f8,[0,2.05,1.2]);
-    paper.material.dispose();paper.material=new T.MeshBasicMaterial({color:0xedf4f8,toneMapped:false});
+    paper.material.dispose();paper.material=new T.MeshBasicMaterial({color:0x100e2e,toneMapped:false});
     for(let x=-4;x<=4;x++)k.line([[x,.45,1.23],[x,3.55,1.23]],0x99b5c8,.2);
     for(const dy of [-p.amplitude,0,p.amplitude])dashedPath(k,[[-4,axis+dy*vertical,1.26],[4,axis+dy*vertical,1.26]],dy?0x7ca9b7:0x476f88,dy?.4:.6);
     k.label('Travelling wave →',[0,3.55,1.4],'#176a71',2.5,'paper');

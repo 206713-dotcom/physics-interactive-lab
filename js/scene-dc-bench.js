@@ -15,7 +15,7 @@ export function createDCBench(p,k) {
   k.stand(10.2,2.6);
   k.box(9.8,5,.13,0x365a72,[0,2.4,-.28],{metalness:.3,roughness:.45});
   const paper=k.box(9.6,4.8,.025,0xeaf2f7,[0,2.4,-.19]);
-  paper.material.dispose();paper.material=new T.MeshBasicMaterial({color:0xeaf2f7,toneMapped:false});
+  paper.material.dispose();paper.material=new T.MeshBasicMaterial({color:0x100e2e,toneMapped:false});
   for(const x of [-4.65,4.65])for(const y of [.17,4.63])k.ball(.035,0x6e8da3,[x,y,-.14]);
   const holes=[];
   for(let x=-4.5;x<=4.5;x+=.5)for(let y=.4;y<4.6;y+=.5)holes.push([x,y,-.14]);

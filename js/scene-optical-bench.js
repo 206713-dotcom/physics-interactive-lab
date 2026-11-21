@@ -69,7 +69,7 @@ export function createRefractionApparatus(p, root, color = C.gold, options = {})
   k.box(8.5,4.8,.13,0x3a5c73,[0,2.25,-.3],{metalness:.25,roughness:.5});
   // Refractive index changes only a qualitative tint, not an absorption model.
   for(const [n,y,tint] of [[p.n1,3.35,0xc5dceb],[p.n2,1.05,0xb5dde1]]) {
-    const fill=new T.Color(0xf2f7fb).lerp(new T.Color(tint),Math.min(1,(n-1)/1.4)*.65+.1),
+    const fill=new T.Color(0x100e2e).lerp(new T.Color(tint).multiplyScalar(.42),Math.min(1,(n-1)/1.4)*.75+.08),
       panel=k.box(8.3,2.3,.02,0xffffff,[0,y,-.21]);
     panel.material.dispose();panel.material=new T.MeshBasicMaterial({color:fill,toneMapped:false});
     panel.userData.role='optical-medium';panel.userData.refractiveIndex=n;

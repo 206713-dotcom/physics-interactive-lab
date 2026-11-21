@@ -21,7 +21,7 @@ export function createVectorApparatus(params, k) {
   plane.castShadow = false;
   // A constant paper tone keeps contrast independent of the camera lighting.
   plane.material.dispose();
-  plane.material=new T.MeshBasicMaterial({color:0xedf4f8,toneMapped:false});
+  plane.material=new T.MeshBasicMaterial({color:0x100e2e,toneMapped:false});
   for(const x of [-4.43,4.43])for(const y of [-.18,5.48])
     k.ball(.028,0x7898ad,[x,y,-.12],{metalness:.6,roughness:.35});
   const border = k.line(

@@ -1,37 +1,53 @@
 /** Detailed carts and calibrated rulers. Wheel rotation is a visual cue;
  * rolling resistance and rotational kinetic energy are not in these models. */
 import * as T from "../vendor/three.module.min.js";
+import { FINISH, turned } from "./scene-props.js";
 import { PALETTE as C, createSceneKit } from "./scene-kit.js";
 import { motionLayout, tickStep, collisionLayout, collisionSpeedScale } from "./kinematics-display.js";
 const metal={metalness:.75,roughness:.3};
 const role=(o,name)=>{o.userData.role=name;return o;};
+/** A dynamics trolley: anodised chassis, steel deck, rubber buffers, tyred
+ * wheels on steel axles and a stack of bar masses. Exactly 0.8 units long. */
 export function detailedCart(k,color,mass=1) {
   const group=new T.Group();k.add(group);role(group,'detailed-cart');
-  const parts=[k.box(.68,.23,.57,color,[0,.32,0],{...metal,roughness:.38}),k.box(.57,.06,.5,0xc7d5db,[0,.47,0],metal)];
-  for (const z of [-.287,.287]) {
-    parts.push(k.box(.54,.043,.012,color,[0,.36,z],{roughness:.42,emissive:color,emissiveIntensity:.21}));
-    parts.push(k.box(.28,.035,.012,0xd9e8ed,[0,.285,z],{roughness:.35}));
+  const anodised={metalness:.72,roughness:.34,envMapIntensity:1.2},
+    parts=[k.box(.68,.13,.5,color,[0,.3,0],anodised),k.box(.6,.03,.44,FINISH.steel[0],[0,.38,0],FINISH.steel[1])];
+  for (const z of [-.252,.252]) parts.push(k.box(.5,.03,.008,0xf2f2f2,[0,.3,z],{roughness:.4}));
+  for(const x of [-.37,.37]) {
+    parts.push(k.box(.06,.11,.34,FINISH.rubber[0],[x,.3,0],FINISH.rubber[1]));
   }
-  for(const x of [-.37,.37]) parts.push(k.box(.06,.19,.5,0x344958,[x,.31,0],{roughness:.65}));
-  const wheels=[];
-  for(const x of [-.24,.24])for(const z of [-.32,.32]) {
-    const axle=new T.Group();axle.position.set(x,.15,z);group.add(axle);
-    const wheel=k.cylinder(.105,.07,0x152634,[0,0,0],{roughness:.85});wheel.rotation.x=Math.PI/2;
-    const hub=k.cylinder(.045,.074,0x9fb7c3,[0,0,0],metal);hub.rotation.x=Math.PI/2;
-    axle.add(wheel,hub);
-    const face=Math.sign(z)*.04;
-    axle.add(k.rod([-.07,0,face],[.07,0,face],0xa0b6c3,.009),k.rod([0,-.07,face],[0,.07,face],0xa0b6c3,.009));
-    wheels.push(axle);
+  const wheels=[],tyre=[[.05,-.035],[.1,-.035],[.115,-.02],[.115,.02],[.1,.035],[.05,.035]];
+  for(const x of [-.23,.23]) {
+    const shaft=k.cylinder(.018,.7,FINISH.chrome[0],[x,.15,0],FINISH.chrome[1]);shaft.rotation.x=Math.PI/2;parts.push(shaft);
+    for(const z of [-.32,.32]) {
+      const axle=new T.Group();axle.position.set(x,.15,z);group.add(axle);
+      const wheel=turned(k,tyre,FINISH.rubber,[0,0,0],28);wheel.rotation.x=Math.PI/2;
+      const hub=k.cylinder(.062,.074,FINISH.chrome[0],[0,0,0],FINISH.chrome[1]);hub.rotation.x=Math.PI/2;
+      axle.add(wheel,hub);
+      // Three hub bolts make the rolling visible.
+      for(let i=0;i<3;i++){const a=i*2.094,bolt=k.cylinder(.012,.08,FINISH.iron[0],[.036*Math.cos(a),.036*Math.sin(a),0],FINISH.iron[1]);bolt.rotation.x=Math.PI/2;axle.add(bolt);}
+      wheels.push(axle);
+    }
   }
-  const weight=k.box(.4,.08+.16*Math.sqrt(mass),.38,0xa58a61,[0,.54+.08*Math.sqrt(mass),0],metal);parts.push(weight);
+  // Bar masses: more bars for a heavier trolley.
+  const bars=Math.max(1,Math.min(4,Math.round(.6+Math.sqrt(mass)*1.05)));
+  for(let i=0;i<bars;i++) {
+    parts.push(k.box(.44-.02*i,.075,.32,FINISH.iron[0],[0,.435+i*.08,0],{metalness:.75,roughness:.42}));
+    parts.push(k.box(.1,.012,.324,FINISH.brass[0],[0,.435+i*.08,0],FINISH.brass[1]));
+  }
   parts.forEach(o=>group.add(o));
-  return {group,wheels,roll(x){wheels.forEach(o=>o.rotation.z=-x/.105);}};
+  return {group,wheels,roll(x){wheels.forEach(o=>o.rotation.z=-x/.115);}};
 }
+/** Aluminium runway with guide rails, buffered end stops and levelling feet. */
 export function mechanicsDeck(k) {
   k.stand(10.2,4.3);
-  k.box(9.55,.08,1.23,0x192e3e,[0,.075,0],{roughness:.68});
-  for(const z of [-.45,.45]) k.rod([-4.7,.17,z],[4.7,.17,z],0x819dab,.045);
-  for(const x of [-4.4,4.4]) k.box(.45,.12,1.35,0x3a5365,[x,.08,0],metal);
+  k.box(9.55,.08,1.23,0xb9b9b9,[0,.075,0],{metalness:.9,roughness:.42});
+  for(const z of [-.56,.56]) k.box(9.55,.1,.05,0xa2a2a2,[0,.13,z],{metalness:.9,roughness:.35});
+  for(const z of [-.45,.45]) k.rod([-4.7,.17,z],[4.7,.17,z],FINISH.chrome[0],.03).material=k.material(FINISH.chrome[0],FINISH.chrome[1]);
+  for(const x of [-4.55,4.55]) {
+    k.box(.2,.42,1.1,FINISH.iron[0],[x,.3,0],FINISH.iron[1]);
+    k.box(.07,.2,.5,FINISH.red[0],[x-Math.sign(x)*.13,.34,0],{roughness:.75,metalness:0});
+  }
 }
 export function createMotionBench(p,k) {
   mechanicsDeck(k);const layout=motionLayout(p),

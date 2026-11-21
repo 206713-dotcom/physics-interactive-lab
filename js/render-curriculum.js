@@ -64,7 +64,7 @@ export function drawCurriculum(canvas, lab) {
     t = s.t;
   const text = (str, x, y, color = MUTED, size = 17, align = "left", maxWidth) => {
     c.fillStyle = color;
-    c.font = `500 ${Math.max(size,12/scale)}px Manrope,Segoe UI,sans-serif`;
+    c.font = `600 ${Math.max(size*1.15,14/scale)}px Manrope,Segoe UI,sans-serif`;
     c.textAlign = align;
     if (maxWidth) c.fillText(String(str), x, y, maxWidth);
     else c.fillText(String(str), x, y);
@@ -618,7 +618,8 @@ export function drawCurriculum(canvas, lab) {
           p.focal * 2,
           Math.min(Math.abs(q.image || 0), 2),
         ),
-        sc = 310 / max,
+        // While the object is being dragged the scale is held, so it stays under the pointer.
+        sc = lab.heldScale ?? 310 / max,
         cx = 420,
         y = 245,
         u = p.object * sc,
@@ -1387,6 +1388,8 @@ export function curriculumThumbnail(id) {
     energy: "M65 65h70v55H65zm80 25h70m-12-10 12 10-12 10m15-35h70v55h-70z",
     gases: "M90 30h210v115H90zM120 55h1m50 30h1m60-35h1m30 65h1m-130 10h1",
     expansion: "M65 65h230v20H65zm0 45h260v20H65z",
+    charged:
+      "M55 120h85q110 0 150-85m-18 9 18-9 2 20M170 40l10 10m0-10-10 10M215 40l10 10m0-10-10 10M260 110l10 10m0-10-10 10M215 110l10 10m0-10-10 10",
     calorimetry:
       "M125 35v100h140V35m-130 45h120m-90 40 10-20 10 20 10-20 10 20 10-20",
     heat: "M65 40h70v95H65zm190 0h70v95h-70zM145 85h100m-15-12 15 12-15 12",

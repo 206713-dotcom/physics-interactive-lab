@@ -16,7 +16,7 @@ export function drawAdvanced(canvas, lab) {
   c.fillStyle = "#071522";
   c.fillRect(0, 0, w, h);
   const text = (value, x, y, color = "#8faec4", size = 13, align = "left") => {
-    c.font = `${size}px Segoe UI,sans-serif`;
+    c.font = `600 ${Math.max(size * 1.12, 14)}px Manrope,Segoe UI,sans-serif`;
     c.fillStyle = color;
     c.textAlign = align;
     c.fillText(value, x, y);

@@ -34,9 +34,9 @@ export class CalculationView {
           <label class="calculation-choice-label" for="calculation-choice">Calculate</label>
           <select id="calculation-choice">${sheet.calculations.map((item) => `<option value="${mathHTML(item.id)}">${mathHTML(item.title)}</option>`).join("")}</select>
           <article class="worked-calculation calculation-primary">
-            <h3></h3><span class="working-label">EQUATION</span><p class="calculation-formula"></p>
-            <span class="working-label">SUBSTITUTE</span><p class="calculation-substitution"></p>
-            <div class="calculation-answer"><span class="working-label">RESULT</span><output class="calculation-result"></output></div>
+            <h3></h3><span class="working-label">The rule</span><p class="calculation-formula"></p>
+            <span class="working-label">Put in the numbers</span><p class="calculation-substitution"></p>
+            <div class="calculation-answer"><span class="working-label">Answer</span><output class="calculation-result"></output></div>
             <p class="calculation-note"></p>
           </article>
           <button type="button" class="copy-working">Copy this working</button><p class="copy-working-status" role="status"></p><textarea class="calculation-copy" readonly aria-label="Calculation text to copy" hidden></textarea>
@@ -106,12 +106,12 @@ export class CalculationView {
       this.choice.value = this.selectedId || '';
       const igcse = studyMode === 'igcse';
       this.brief.hidden = !igcse;
-      this.root.querySelector('.calculation-heading .expanded-eyebrow').textContent = igcse ? 'YOUR LEARNING FOCUS' : 'LIVE CALCULATIONS';
+      this.root.querySelector('.calculation-heading .expanded-eyebrow').textContent = igcse ? 'Work it out' : 'Work it out';
       this.brief.innerHTML = igcse ? `<span class="section-kicker">0625 · ${syllabusDepth(type)}</span><h3>${mathHTML(profile.focus)}</h3><p class="focus-equation">${mathHTML(profile.equation)}</p><ul>${profile.goals.map(g=>`<li>${mathHTML(g)}</li>`).join('')}</ul><p><strong>Try this.</strong> ${mathHTML(profile.task)}</p><details><summary>${mathHTML(profile.question)}</summary><p>${mathHTML(profile.answer)}</p></details>` : '';
       this.root.querySelector('.calculation-variables').hidden = !sheet.variables.length;
-      this.root.querySelector('.calculation-overview h3').textContent = igcse ? 'Related results' : 'Other calculations';
-      this.root.querySelector('.calculation-heading h2').textContent = igcse ? 'Understand the idea.' : 'Follow the physics.';
-      this.root.querySelector('.calculation-heading p').textContent = igcse ? 'One model. A focused IGCSE explanation.' : 'Every value, connected to the model.';
+      this.root.querySelector('.calculation-overview h3').textContent = 'More you can work out';
+      this.root.querySelector('.calculation-heading h2').textContent = 'Put in the numbers.';
+      this.root.querySelector('.calculation-heading p').textContent = 'Every number comes live from the experiment above.';
       this.modeNote.textContent = igcse ? 'Core and Supplement outcomes are identified in the lesson. Advanced derivations are hidden in this mode.' : `${MODE_NAMES[studyMode]} · full model calculations`;
       for (const option of this.choice.options) {
         option.hidden = !sheet.calculations.some(c=>c.id===option.value);
@@ -141,6 +141,8 @@ export class CalculationView {
     this.root.querySelector('.worked-calculation').hidden = !item;
     this.root.querySelector('.inline-calculation-main').hidden = !item;
     this.root.querySelector('.inline-calculation-grid').hidden = !item && !sheet.variables.length;
+    // Nothing to work out at this level: leave the section out rather than show an empty box.
+    this.root.hidden = !item && !sheet.variables.length;
     this.choice.hidden = sheet.calculations.length < 2;
     this.root.querySelector('.calculation-choice-label').hidden = this.choice.hidden;
     this.root.querySelector('.copy-working').hidden = !item;

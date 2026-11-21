@@ -1,0 +1,646 @@
+/* The game skin. Loaded last: it re-dresses every page as a mission console
+ * (deep-space field, cut-corner panels, glowing world colours) without
+ * touching content or behaviour. Each topic is a "world" with its own colour,
+ * supplied as --world on <body> and --accent on topic links.
+ * No backdrop blur and no filters on large areas, so it stays cheap to draw. */
+@font-face {
+  font-family: Unbounded;
+  src: url("./assets/fonts/Unbounded-variable.woff2") format("woff2");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face { font-family: "Chakra Petch"; src: url("./assets/fonts/ChakraPetch-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Chakra Petch"; src: url("./assets/fonts/ChakraPetch-500.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Chakra Petch"; src: url("./assets/fonts/ChakraPetch-600.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Chakra Petch"; src: url("./assets/fonts/ChakraPetch-700.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+
+:root {
+  --font-display: Unbounded, "Arial Black", "Segoe UI", sans-serif;
+  --font-data: "Chakra Petch", "Space Grotesk", "Segoe UI", sans-serif;
+  --void: #070617;
+  --hull: #0f0d2c;
+  --hull-up: #1a1745;
+  --rule: rgba(150, 140, 255, 0.2);
+  --ink: #f4f2ff;
+  --soft: #bcb8e6;
+  --faint: #8a86b8;
+  --ion: #7cf4ff;
+  --plasma: #ff3d8b;
+  --solar: #ffc93c;
+  --world: #ff8a3c;
+  --cut: 14px;
+  --chamfer: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  --slant: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+}
+html { scrollbar-color: #2d2970 var(--void); }
+html body, html body :is(button, input, select, textarea, summary) { font-family: var(--font-data); }
+html body ::selection { color: #0a0820; background: var(--world); }
+html body :is(h1, h2, h3) { font-family: var(--font-display); }
+
+/* ---------- The field: every page sits in the same night sky ---------- */
+html body.field-page,
+html body.lab-dark {
+  --field: var(--void);
+  --field-raised: var(--hull-up);
+  --chalk: var(--ink);
+  --dim: var(--soft);
+  --hair: var(--rule);
+  --dk-bg: var(--void);
+  --dk-panel: var(--hull);
+  --dk-raised: var(--hull-up);
+  --dk-line: var(--rule);
+  --dk-ink: var(--ink);
+  --dk-soft: var(--soft);
+  --dk-faint: var(--faint);
+  --dk-orange: var(--world);
+  --dk-sky: #2ee6ff;
+  --dk-lime: #86ff6b;
+  --dk-violet: #a98bff;
+  --dk-yellow: #ffe04a;
+  color: var(--ink);
+  background:
+    radial-gradient(1100px 620px at 88% -8%, color-mix(in srgb, var(--world) 30%, transparent), transparent 62%),
+    radial-gradient(900px 640px at -6% 108%, rgba(91, 61, 255, 0.32), transparent 62%),
+    radial-gradient(700px 500px at 50% 120%, rgba(255, 61, 139, 0.16), transparent 65%),
+    var(--void);
+}
+/* The sky is one fixed layer, so scrolling never repaints the gradients. */
+html body.lab-dark::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: inherit;
+  transform: translateZ(0);
+}
+html:has(body.field-page), html:has(body.lab-dark) { background: var(--void); }
+
+/* ---------- Header: a console strip ---------- */
+html body .site-header {
+  background: linear-gradient(180deg, rgba(7, 6, 23, 0.96), rgba(7, 6, 23, 0.82));
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(90deg, transparent, var(--world) 22%, var(--ion) 60%, transparent) 1;
+}
+html body .site-header .brand { font-family: var(--font-display); font-weight: 800; letter-spacing: 0.04em; color: #fff; }
+html body .site-header .brand-sub { font-family: var(--font-data); font-weight: 600; letter-spacing: 0.26em; color: var(--ion); }
+html body .site-header nav a {
+  padding: 10px 20px;
+  font: 600 13px/1 var(--font-data);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--soft);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  clip-path: var(--slant);
+  transition: color 0.15s, background-color 0.15s;
+}
+html body .site-header nav a:hover { color: #fff; background: rgba(124, 244, 255, 0.12); }
+html body .site-header nav a.active { color: #0a0820; background: linear-gradient(90deg, var(--world), var(--solar)); }
+html body .site-header select,
+html body.lab-dark #main .lab-page select {
+  color: var(--ink);
+  background-color: var(--hull-up);
+  border: 1px solid rgba(124, 244, 255, 0.3);
+  border-radius: 0;
+  font-weight: 600;
+}
+html body .site-footer { background: #05040f; border-top: 1px solid var(--rule); color: var(--faint); }
+html body :is(a, button, input, select, summary):focus-visible { outline: 2px solid var(--ion); outline-offset: -3px; }
+
+/* ---------- Start screen ---------- */
+html body .field-intro { max-width: min(100%, 1040px); }
+html body .field-intro h1 {
+  position: relative;
+  padding-bottom: 26px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(40px, 6.3vw, 96px);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 0 70px color-mix(in srgb, var(--world) 60%, transparent);
+}
+/* The second line is lit from inside, like the title card of a game. */
+html body .field-intro h1 em {
+  font-style: normal;
+  font-weight: 800;
+  color: transparent;
+  background: linear-gradient(90deg, #ffc93c, #ff8a3c 30%, #ff3d8b 68%, #a98bff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-shadow: none;
+}
+html body .field-intro h1::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: min(420px, 70%);
+  height: 6px;
+  background: linear-gradient(90deg, var(--world), var(--plasma) 55%, #7a5cff);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+  transform-origin: left;
+  animation: charge 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s both;
+}
+@keyframes charge { from { transform: scaleX(0); } }
+html body .field-intro p { margin: 22px 0 24px; font-size: clamp(16px, 1.3vw, 20px); font-weight: 500; color: var(--soft); }
+html body .field-search { max-width: 560px; }
+html body .field-search input {
+  height: 58px;
+  font: 500 17px var(--font-data);
+  color: #fff;
+  background: rgba(15, 13, 44, 0.86);
+  border: 1px solid rgba(124, 244, 255, 0.38);
+  border-radius: 0;
+  clip-path: var(--chamfer);
+}
+html body .field-search input::placeholder { color: var(--faint); }
+html body .field-search input:focus { border-color: var(--ion); background: rgba(26, 23, 69, 0.94); }
+html body #search-results { background: var(--hull); border: 1px solid rgba(124, 244, 255, 0.3); border-radius: 0; }
+html body #search-results a:hover, html body #search-results a:focus-visible { background: var(--hull-up); }
+
+/* Course select: three cut-corner mode cards. */
+html body .level-entry {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  max-width: 780px;
+  margin-top: 30px;
+  padding: 0;
+  border: 0;
+}
+html body .level-entry a {
+  --c: #ff8a3c;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 6px;
+  min-height: 132px;
+  padding: 20px 22px 18px;
+  border: 0;
+  color: var(--ink);
+  background: linear-gradient(140deg, var(--c), rgba(150, 140, 255, 0.25) 45%, color-mix(in srgb, var(--c) 55%, transparent));
+  clip-path: var(--chamfer);
+  transition: transform 0.18s;
+}
+html body .level-entry a:nth-child(2) { --c: #2ee6ff; }
+html body .level-entry a:nth-child(3) { --c: #a98bff; }
+html body .level-entry a::before {
+  content: "";
+  position: absolute;
+  inset: 1.5px;
+  z-index: -1;
+  width: auto;
+  height: auto;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--c) 34%, var(--hull)), var(--hull) 62%);
+  clip-path: var(--chamfer);
+  transition: background 0.18s;
+}
+html body .level-entry a::after {
+  content: "";
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  border-left: 13px solid var(--c);
+  border-block: 8px solid transparent;
+}
+html body .level-entry a strong { font: 800 clamp(20px, 2vw, 27px)/1 var(--font-display); letter-spacing: -0.01em; text-transform: uppercase; color: #fff; }
+html body .level-entry a span { font-size: 14px; font-weight: 500; color: var(--soft); }
+html body .level-entry a:hover, html body .level-entry a:focus-visible { transform: translateY(-5px); }
+html body .level-entry a:hover strong, html body .level-entry a:focus-visible strong { color: #fff; }
+html body .level-entry a:hover::before, html body .level-entry a:focus-visible::before {
+  width: auto;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--c) 58%, var(--hull)), var(--hull-up) 70%);
+}
+html body .field-caption {
+  font: 600 13px var(--font-data);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--soft);
+  border-color: var(--accent, var(--ion));
+}
+html body .field-caption strong { font: inherit; font-style: normal; color: var(--accent, var(--ion)); }
+html body .field-more { border-top-color: var(--rule); }
+html body .field-more a { font-weight: 600; letter-spacing: 0.06em; color: var(--faint); }
+html body .field-more a:hover { color: var(--ion); }
+
+/* ---------- Shared: back button, trails, big page titles ---------- */
+html body .back-button,
+html body.lab-dark #main .lab-page :is(.small-button, .back-button, .lab-trail-step a, .lab-trail-step [aria-disabled], .copy-working) {
+  --cut: 8px;
+  font: 600 12.5px/1 var(--font-data);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--hull-up);
+  border: 1px solid rgba(124, 244, 255, 0.28);
+  border-radius: 0;
+  clip-path: var(--chamfer);
+  box-shadow: none;
+}
+html body .back-button:hover,
+html body.lab-dark #main .lab-page :is(.small-button, .back-button, .lab-trail-step a, .copy-working):hover {
+  color: #0a0820;
+  background: var(--ion);
+  border-color: var(--ion);
+}
+html body .topic-trail, html body .lab-trail { font-weight: 600; letter-spacing: 0.04em; }
+html body .topic-trail-step a { color: var(--accent, var(--ion)); border-radius: 0; clip-path: var(--slant); background: var(--hull-up); border: 0; padding-inline: 18px; }
+html body :is(.paths-heading, .topic-heading) h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(32px, 4.7vw, 70px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 0 60px color-mix(in srgb, var(--accent, var(--world)) 55%, transparent);
+}
+html body :is(.paths-heading, .topic-heading) p { font-size: 16px; font-weight: 500; color: var(--soft); }
+
+/* ---------- Learning paths: topics as mission rows ---------- */
+html body .level-switch { gap: 4px; border: 0; }
+html body .level-switch a {
+  padding: 13px 26px;
+  font: 600 14px/1 var(--font-data);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--soft);
+  background: rgba(26, 23, 69, 0.8);
+  border: 0;
+  clip-path: var(--slant);
+}
+html body .level-switch a:hover { color: #fff; background: #26226a; }
+html body .level-switch a[aria-current] { color: #0a0820; background: linear-gradient(90deg, var(--world), var(--solar)); border: 0; }
+html body .path-group h2 {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font: 700 15px/1 var(--font-display);
+  font-style: normal;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ion);
+}
+html body .path-group h2::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(124, 244, 255, 0.55), transparent); }
+html body .path-list,
+html body .path-groups:not(.is-split) .path-list { display: grid; gap: 12px; columns: auto; }
+html body .path-groups:not(.is-split) .path-list { grid-template-columns: repeat(auto-fill, minmax(min(100%, 430px), 1fr)); }
+html body .path-list li { border: 0; }
+html body .path-list a {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  min-height: 88px;
+  padding: 14px 20px 14px 0;
+  border: 0;
+  color: var(--ink);
+  background: linear-gradient(90deg, var(--accent, var(--ion)), rgba(150, 140, 255, 0.22) 55%);
+  clip-path: var(--chamfer);
+  transition: transform 0.18s;
+}
+html body .path-list a::before {
+  content: "";
+  position: absolute;
+  inset: 1.5px;
+  z-index: -1;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent, var(--ion)) 30%, var(--hull)), var(--hull) 46%);
+  clip-path: var(--chamfer);
+  transition: background 0.18s;
+}
+html body .path-list a:hover, html body .path-list a:focus-visible { transform: translateX(8px); background: var(--accent, var(--ion)); }
+html body .path-list a:hover::before, html body .path-list a:focus-visible::before {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent, var(--ion)) 52%, var(--hull)), var(--hull-up) 62%);
+}
+html body .path-topic {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  font: 600 11px/1 var(--font-data);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--soft);
+}
+html body .path-topic b {
+  font: 800 40px/1 var(--font-display);
+  letter-spacing: -0.04em;
+  color: var(--accent, var(--ion));
+  text-shadow: 0 0 26px color-mix(in srgb, var(--accent, var(--ion)) 70%, transparent);
+}
+html body .path-topic small { font: inherit; }
+html body .path-name { font-size: clamp(17px, 1.5vw, 21px); font-weight: 600; color: #fff; }
+html body .path-count {
+  padding: 7px 11px;
+  font: 600 12px/1 var(--font-data);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--accent, var(--ion));
+  border: 1px solid color-mix(in srgb, var(--accent, var(--ion)) 50%, transparent);
+}
+
+/* ---------- Topic page: experiments as mission cards ---------- */
+html body .field-topic .topic-heading .topic-label {
+  display: inline-block;
+  padding: 7px 16px;
+  font: 700 12px/1 var(--font-display);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #0a0820 !important;
+  background: var(--accent);
+  clip-path: var(--slant);
+}
+html body .topic-list { gap: 12px; }
+html body .topic-list li { border: 0; }
+html body .topic-list a {
+  position: relative;
+  isolation: isolate;
+  padding: 14px 18px 14px 14px;
+  border: 0;
+  border-radius: 0;
+  color: var(--ink);
+  background: linear-gradient(120deg, var(--accent), rgba(150, 140, 255, 0.25) 42%);
+  clip-path: var(--chamfer);
+  transition: transform 0.18s;
+}
+html body .topic-list a::before {
+  content: "";
+  position: absolute;
+  inset: 1.5px;
+  z-index: -1;
+  background: linear-gradient(120deg, color-mix(in srgb, var(--accent) 16%, var(--hull)), var(--hull) 50%);
+  clip-path: var(--chamfer);
+  transition: background 0.18s;
+}
+html body .topic-list a:hover, html body .topic-list a:focus-visible { transform: translateY(-4px); background: var(--accent); }
+html body .topic-list a:hover::before, html body .topic-list a:focus-visible::before {
+  background: linear-gradient(120deg, color-mix(in srgb, var(--accent) 40%, var(--hull)), var(--hull-up) 64%);
+}
+html body .topic-thumb {
+  --cut: 9px;
+  background: radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--accent) 34%, #0a0820), #0a0820 78%);
+  border: 0;
+  border-radius: 0;
+  clip-path: var(--chamfer);
+}
+html body .topic-item-copy strong { font: 700 clamp(16px, 1.3vw, 19px)/1.2 var(--font-data); letter-spacing: 0.01em; color: #fff; }
+html body .topic-item-copy span { font-size: 13.5px; color: var(--soft); }
+html body .topic-ref {
+  font: 700 11px/1 var(--font-display);
+  color: var(--accent);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  border-radius: 0;
+}
+
+/* ---------- Experiment page: the head-up display ---------- */
+html body.lab-dark #main .lab-page h1 {
+  font: 800 clamp(23px, 2.7vw, 40px)/1.05 var(--font-display);
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 0 44px color-mix(in srgb, var(--world) 55%, transparent);
+}
+html body.lab-dark #main .lab-page .lab-title-row p { font-size: 16px; font-weight: 500; color: var(--soft); }
+html body.lab-dark #main .lab-page :is(.eyebrow, .section-kicker, .expanded-eyebrow) { color: var(--world); letter-spacing: 0.16em; font-weight: 700; }
+html body.lab-dark #main .lab-page .subject-dot { background: var(--world); box-shadow: 0 0 12px var(--world); }
+html body.lab-dark #main .lab-page .pill { color: var(--ion); background: transparent; border: 1px solid rgba(124, 244, 255, 0.4); border-radius: 0; }
+html body.lab-dark #main .lab-page .lab-trail-path a { color: var(--ink); }
+
+html body.lab-dark #main .lab-page .stage {
+  background: #0a0920;
+  border: 1px solid color-mix(in srgb, var(--world) 55%, transparent);
+  border-radius: 3px;
+  box-shadow: 0 0 80px -22px var(--world), 0 40px 90px rgba(0, 0, 0, 0.6);
+}
+html body.lab-dark #main .lab-page :is(.stage-top, .camera-toolbar, .transport) { background: #0c0a26; border-color: var(--rule); }
+html body.lab-dark #main .lab-page .stage-top {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--world) 24%, #0c0a26), #0c0a26 58%);
+  border-bottom: 1px solid color-mix(in srgb, var(--world) 45%, transparent);
+}
+html body.lab-dark #main .lab-page .running-status {
+  padding: 6px 11px;
+  font: 700 11px/1 var(--font-data);
+  letter-spacing: 0.18em;
+  color: var(--ink);
+  border: 1px solid var(--rule);
+}
+html body.lab-dark #main .lab-page .status-dot { background: #86ff6b; box-shadow: 0 0 10px #86ff6b; }
+html body.lab-dark #main .lab-page :is(.stage-views, .camera-toolbar) button {
+  --cut: 7px;
+  font: 600 12.5px/1 var(--font-data);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--soft);
+  border-radius: 0;
+  clip-path: var(--chamfer);
+}
+html body.lab-dark #main .lab-page :is(.stage-views, .camera-toolbar) button:hover { color: #fff; background: rgba(124, 244, 255, 0.14); }
+html body.lab-dark #main .lab-page :is(.stage-views, .camera-toolbar) button[aria-pressed="true"],
+html body.lab-dark #main .lab-page .stage-views .model-screen-launch {
+  color: #0a0820;
+  background: linear-gradient(90deg, var(--world), var(--solar));
+  border-color: transparent;
+}
+html body.lab-dark #main .lab-page .apparatus-button {
+  font: 700 12.5px/1 var(--font-data);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ion);
+  background: rgba(124, 244, 255, 0.08);
+  border: 1px solid rgba(124, 244, 255, 0.5);
+  border-radius: 0;
+}
+/* Corner brackets over the viewport, like a targeting frame. */
+html body.lab-dark #main .lab-page .scene-container { background: #05040f; }
+html body.lab-dark #main .lab-page .scene-container::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.75;
+  --b: linear-gradient(var(--ion), var(--ion));
+  background:
+    var(--b) top left / 30px 2px, var(--b) top left / 2px 30px,
+    var(--b) top right / 30px 2px, var(--b) top right / 2px 30px,
+    var(--b) bottom left / 30px 2px, var(--b) bottom left / 2px 30px,
+    var(--b) bottom right / 30px 2px, var(--b) bottom right / 2px 30px;
+  background-repeat: no-repeat;
+}
+html body.lab-dark #main .lab-page .scene-equation {
+  background: rgba(8, 7, 26, 0.88);
+  border: 1px solid color-mix(in srgb, var(--world) 60%, transparent);
+  border-radius: 0;
+}
+html body.lab-dark #main .lab-page .scene-equation-label { color: var(--world); letter-spacing: 0.16em; font-weight: 700; }
+html body.lab-dark #main .lab-page .scene-equation-content { font-weight: 700; color: #fff; }
+html body.lab-dark #main .lab-page .model-variables > button {
+  --cut: 8px;
+  font: 700 13px/1 var(--font-data);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0a0820;
+  background: linear-gradient(90deg, var(--world), var(--solar));
+  border: 0;
+  border-radius: 0;
+  clip-path: var(--chamfer);
+}
+html body.lab-dark #main .lab-page .controls { background: rgba(12, 10, 38, 0.97); border: 1px solid rgba(124, 244, 255, 0.3); border-radius: 0; }
+html body.lab-dark #main .lab-page .controls .control { border-radius: 0; }
+html body.lab-dark #main .lab-page .controls input[type="range"] { accent-color: var(--world); }
+
+/* Transport: one loud button, the rest quiet. */
+html body.lab-dark #main .lab-page .transport { border-top: 1px solid var(--rule); }
+html body.lab-dark #main .lab-page .transport .play-button {
+  --cut: 10px;
+  min-width: 128px;
+  font: 700 14px/1 var(--font-data);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #0a0820;
+  background: linear-gradient(90deg, var(--world), var(--plasma));
+  border: 0;
+  border-radius: 0;
+  clip-path: var(--chamfer);
+  box-shadow: none;
+}
+html body.lab-dark #main .lab-page .transport .play-button:hover { background: linear-gradient(90deg, var(--solar), var(--world)); }
+html body.lab-dark #main .lab-page .transport .reset-button { font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--soft); }
+html body.lab-dark #main .lab-page .time-readout { font: 600 14px var(--font-data); font-variant-numeric: tabular-nums; color: var(--ion); }
+
+/* Telemetry tiles. */
+html body.lab-dark #main .lab-page :is(.instrument-hud, .reading-comparison) { background: #0c0a26; border-color: var(--rule); border-radius: 0; }
+html body.lab-dark #main .lab-page :is(.instrument-value, .metric) {
+  --tile: var(--world);
+  --cut: 12px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tile) 16%, var(--hull-up)), var(--hull) 70%);
+  border: 0;
+  border-top: 2px solid var(--tile);
+  border-radius: 0;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%);
+  box-shadow: none;
+}
+html body.lab-dark #main .lab-page .instrument-value:nth-child(4n + 1) { --tile: var(--world); box-shadow: none; }
+html body.lab-dark #main .lab-page .instrument-value:nth-child(4n + 2) { --tile: #2ee6ff; box-shadow: none; }
+html body.lab-dark #main .lab-page .instrument-value:nth-child(4n + 3) { --tile: #86ff6b; box-shadow: none; }
+html body.lab-dark #main .lab-page .instrument-value:nth-child(4n + 4) { --tile: #a98bff; box-shadow: none; }
+html body.lab-dark #main .lab-page :is(.instrument-value, .metric) :is(.metric-label, span, small) { font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--soft); }
+html body.lab-dark #main .lab-page :is(.instrument-value, .metric) :is(.metric-value, strong, output) {
+  font: 700 clamp(22px, 2.1vw, 30px)/1.1 var(--font-display);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--tile);
+  text-shadow: 0 0 22px color-mix(in srgb, var(--tile) 55%, transparent);
+}
+html body.lab-dark #main .lab-page .instrument-observe strong { color: var(--world); letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* ---------- Lesson board ---------- */
+html body.lab-dark #main .lab-page .lesson-label { font: 700 12px/1 var(--font-data); letter-spacing: 0.18em; text-transform: uppercase; color: var(--ion); }
+html body.lab-dark #main .lab-page .lesson-idea h2 {
+  font: 800 clamp(24px, 3vw, 42px)/1.06 var(--font-display);
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: #fff;
+}
+html body.lab-dark #main .lab-page .lesson-where span { color: var(--world); font-weight: 700; letter-spacing: 0.06em; }
+html body.lab-dark #main .lab-page .lesson-rule {
+  background: linear-gradient(140deg, color-mix(in srgb, var(--world) 30%, var(--hull)), var(--hull) 70%);
+  border: 0;
+  border-left: 4px solid var(--world);
+  border-radius: 0;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+}
+html body.lab-dark #main .lab-page .lesson-rule-text { font: 700 clamp(19px, 2vw, 27px)/1.25 var(--font-display); letter-spacing: -0.01em; color: #fff; }
+html body.lab-dark #main .lab-page .lesson-watch li {
+  background: var(--hull);
+  border: 0;
+  border-top: 2px solid var(--step, var(--ion));
+  border-radius: 0;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+}
+html body.lab-dark #main .lab-page .lesson-watch li:nth-child(3n + 1) { --step: #2ee6ff; }
+html body.lab-dark #main .lab-page .lesson-watch li:nth-child(3n + 2) { --step: #86ff6b; }
+html body.lab-dark #main .lab-page .lesson-watch li:nth-child(3n + 3) { --step: #a98bff; }
+html body.lab-dark #main .lab-page .lesson-step {
+  font: 800 30px/1 var(--font-display);
+  font-style: normal;
+  color: var(--step, var(--ion));
+  text-shadow: 0 0 20px color-mix(in srgb, var(--step, var(--ion)) 60%, transparent);
+}
+html body.lab-dark #main .lab-page .lesson-watch li p { font-size: 15.5px; font-weight: 500; color: var(--ink); }
+html body.lab-dark #main .lab-page :is(.lesson-card, .lesson-world) {
+  background: linear-gradient(160deg, var(--hull-up), var(--hull) 60%);
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  clip-path: var(--chamfer);
+}
+html body.lab-dark #main .lab-page .lesson-button {
+  --cut: 8px;
+  font: 700 13px/1 var(--font-data);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #0a0820;
+  background: linear-gradient(90deg, var(--world), var(--solar));
+  border: 0;
+  border-radius: 0;
+  clip-path: var(--chamfer);
+}
+html body.lab-dark #main .lab-page .lesson-button:hover { background: var(--ion); }
+
+@media (max-width: 760px) {
+  html body .level-entry { grid-template-columns: 1fr; }
+  html body .level-entry a { min-height: 92px; }
+  html body .path-list a { grid-template-columns: 74px minmax(0, 1fr); }
+  html body .path-count { grid-column: 2; justify-self: start; }
+  html body .path-topic b { font-size: 32px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html body .field-intro h1::after { animation: none; }
+  html body :is(.level-entry a, .path-list a, .topic-list a) { transition: none; }
+}
+
+/* Section headings inside an experiment share the display voice. */
+html body.lab-dark #main .lab-page :is(h2, h3):not(.lesson-label) { font-family: var(--font-display); letter-spacing: -0.02em; }
+html body.lab-dark #main .lab-page .stage .diagram-tools button,
+html body.lab-dark #main .lab-page .stage [class*="drawer"] > button:first-child {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 0;
+}
+html body.lab-dark #main .lab-page .solar-atlas-link {
+  color: var(--ink);
+  background: linear-gradient(120deg, color-mix(in srgb, var(--world) 42%, var(--hull)), var(--hull) 68%);
+  border: 0;
+  border-left: 4px solid var(--world);
+  border-radius: 0;
+  clip-path: var(--chamfer);
+  box-shadow: none;
+}
+html body.lab-dark #main .lab-page .solar-atlas-link strong { font-family: var(--font-display); font-weight: 700; color: #fff; }
+html body.lab-dark #main .lab-page .solar-atlas-link :is(small, span) { color: var(--soft); }
+/* Motor close-up: dark panel; the two drawings are flipped to light-on-dark. */
+html body.lab-dark #main .lab-page .commutator-panel { background: var(--hull); border: 1px solid var(--rule); border-radius: 0; }
+html body.lab-dark #main .lab-page .commutator-diagrams figure { background: #fff; border-radius: 0; filter: invert(1) hue-rotate(180deg); }
+html body.lab-dark #main .lab-page .commutator-diagrams figure :is(figcaption, span, p, strong) { color: #24303a; }
+html body.lab-dark #main .lab-page .commutator-modes button { color: var(--ink); background: var(--hull-up); border-color: var(--rule); border-radius: 0; }
+html body.lab-dark #main .lab-page .commutator-modes button[aria-pressed="true"] { color: #0a0820; background: var(--world); border-color: var(--world); }
+/* Light panels left over from the old theme. */
+html body.lab-dark #main .lab-page :is(.commutator-result, .machine-rule, .buoyancy-reading, .force-card, .buoyancy-reading span, article:not(.lesson-card), .lab-grid p[style*="background"]) {
+  color: var(--ink);
+  background: var(--hull-up);
+  border-color: var(--rule);
+  border-radius: 0;
+}
+html body.lab-dark #main .lab-page :is(.commutator-result, .machine-rule, .buoyancy-reading, .force-card, article:not(.lesson-card)) :is(p, span, small, li) { color: var(--soft); background: transparent; }
+html body.lab-dark #main .lab-page :is(.machine-rule, .buoyancy-reading, .force-card, article:not(.lesson-card)) :is(h2, h3, h4, strong, b) { color: #fff; }

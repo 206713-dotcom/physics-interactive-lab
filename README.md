@@ -10,6 +10,12 @@ This is an independent student prototype and a proposed contribution to [FocusPh
 
 ## What is in the laboratory?
 
+### Version 21.7: v2 on the original GitHub Pages site
+
+The Claude-updated v2 source has been imported into this original repository, including its apparatus tools, direct controls, revised scenes and topic navigation. The default interface now follows FocusPhysics's white, pale-grey and slate-blue style with self-hosted Barlow fonts. The simulations retain their dark instrument stages, with light lesson pages and readable controls around them.
+
+All 59 simulations and the existing resources remain included. The imported test suite has **350 passing tests**. The original version is preserved in the `codex/pre-v2-import-2026-11-21` branch. See [V2-IMPORT.md](V2-IMPORT.md) for source provenance, font licensing, rollback and integration details.
+
 ### Version 20.13: see the quantum physics
 
 The rebuilt **photoelectric bench** has a cutaway vacuum tube, a light source, separate emitter and collector, an ideal saturation-current meter, and photon/work-function/maximum-kinetic-energy bars sharing one fixed 0–6.5 eV scale. Above threshold, more optical power increases current and the illustrated flux without changing maximum electron energy. Below threshold, light still arrives while electron traffic and current disappear. Ultraviolet and infrared use labelled colour keys. No retarding-voltage curve or collection field is invented. Marker densities use separate square-root flux scales, and marker speeds are schematic.

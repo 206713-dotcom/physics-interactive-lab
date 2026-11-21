@@ -27,7 +27,7 @@ export function createBuoyancyApparatus(p, k) {
   for (const x of [-width / 2, width / 2])
     k.rod([x, floor + height, -depth / 2], [x, floor + height, depth / 2], 0x90bcc8, 0.025);
   k.box(width - 0.05, TANK_DEPTH * scale, depth - 0.05, 0x2b9dbc, [0, floor + TANK_DEPTH * scale / 2, 0], {
-    transparent: true, opacity: 0.085, depthWrite: false, roughness: 0.35, metalness: 0,
+    transparent: true, opacity: 0.2, depthWrite: false, roughness: 0.1, metalness: 0, emissive: 0x0b4a5c, emissiveIntensity: 0.3,
   });
   const water = waterSurface(width - 0.04, depth - 0.04);
   water.rotation.x = -Math.PI / 2;

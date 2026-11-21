@@ -1,5 +1,6 @@
 /** Calibrated oscillation apparatus. Views read the integrated SI state.
  * Decorative bearings, wheel rotation, wire and dashpot add no dynamics. */
+import { FINISH, retortStand } from './scene-props.js';
 import * as T from '../vendor/three.module.min.js';
 import { createSceneKit, PALETTE as C, putRod, setPath } from './scene-kit.js';
 import { detailedCart } from './scene-motion-benches.js';
@@ -89,20 +90,13 @@ export function createSpringBench(p,root,options={}) {
 export function createPendulumBench(p,root,options={}) {
   const k=createSceneKit(root,options),{length,pivot}=PENDULUM_RIG,scales=oscillationScales('pendulum',p);
   k.stand(8.6,4.0);
-  for(const x of [-3.7,3.7]){
-    k.box(.7,.12,1.7,0x3b5366,[x,.1,-.6],metal);
-    k.rod([x,.2,-.6],[x,5.35,-.6],0x7f9baa,.065);
-    for(const z of [-1.2,.1])k.rod([x,.17,z],[x,1.35,-.6],0x527082,.04);
-    for(const z of [-1.2,.1])k.cylinder(.035,.03,0xb2c6d1,[x,.18,z],metal);
-  }
-  k.rod([-3.7,5.35,-.6],[3.7,5.35,-.6],0xa3bbc6,.075);
-  k.rod([0,5.35,-.6],[0,pivot[1],-.6],0x7693a3,.055);
-  k.rod([0,pivot[1],-.7],[0,pivot[1],.18],0x9eb4c1,.08);
-  for(const [radius,z] of [[.21,-.1],[.14,.1],[.07,.2]]){
-    const bearing=k.cylinder(radius,.12,radius===.14?0xbaa071:0x9aafbb,[0,pivot[1],z],metal);bearing.rotation.x=Math.PI/2;
-  }
-  const bob=role(k.ball(.29+.018*Math.sqrt(p.mass),C.gold,pendulumPoint(0),{metalness:.84,roughness:.2}),'pendulum-bob'),
-    rod=role(k.rod(pivot,pendulumPoint(0),0xc7dce3,.035),'pendulum-link'),
+  // One retort stand; the thread is gripped between two cork blocks so the
+  // pivot is a sharp point, as in the real timing experiment.
+  retortStand(k,{x:-3.5,z:-.45,height:pivot[1]+.75,arm:3.75,armY:pivot[1]+.16});
+  for(const dx of [-.075,.075])k.box(.14,.3,.62,FINISH.cork[0],[dx,pivot[1]+.15,-.2],FINISH.cork[1]);
+  const grip=k.cylinder(.04,.36,FINISH.brass[0],[0,pivot[1]+.2,.02],FINISH.brass[1]);grip.rotation.z=Math.PI/2;
+  const bob=role(k.ball(.29+.018*Math.sqrt(p.mass),FINISH.brass[0],pendulumPoint(0),{metalness:1,roughness:.18,envMapIntensity:1.5}),'pendulum-bob'),
+    rod=role(k.rod(pivot,pendulumPoint(0),FINISH.thread[0],.014),'pendulum-link'),
     path=role(k.line(Array.from({length:1201},()=>pendulumPoint(0)),C.gold,.5),'pendulum-trail'),
     angle=role(k.line(Array.from({length:33},()=>[0,0,0]),C.cyan,.8),'pendulum-angle');
   const referenceRod=dashedPath(k,[pivot,pendulumPoint(0)],C.purple,.65),

@@ -26,11 +26,16 @@ export function roundedBox(w, h, d, radius = Math.min(w, h, d) * 0.1) {
 
 export function studioEnvironment(renderer) {
   const room = new T.Scene();
-  room.background = new T.Color(0x263447);
+  room.background = new T.Color(0x1b2633);
+  // A small photo studio: a large warm softbox overhead, a cool window to one
+  // side, strip lights behind, and a warm bounce from the wooden bench below.
+  // Metal and glass parts get their highlights from these, not from the lamps.
   for (const [xyz, size, color, intensity] of [
-    [[-4, 7, 3], [5, 6], 0xe8f4ff, 4],
-    [[6, 3, 1], [3, 7], 0xa3c6dc, 2],
-    [[0, 5, -6], [7, 2], 0x76d6db, 2],
+    [[-3, 8, 4], [9, 7], 0xfff2e2, 5.5],
+    [[8, 4, 1], [3, 8], 0xb9d8f0, 3.2],
+    [[-8, 3, -2], [2.5, 7], 0xd8ecff, 2],
+    [[0, 6, -8], [10, 1.6], 0x9be0e2, 2.6],
+    [[0, -3, 0], [26, 26], 0x8a6a48, 0.9],
   ]) {
     const card = new T.Mesh(new T.PlaneGeometry(...size), new T.MeshBasicMaterial({ color, side: T.DoubleSide }));
     card.material.color.multiplyScalar(intensity);
@@ -50,11 +55,11 @@ export function studioGrid() {
   const mesh = new T.Mesh(new T.PlaneGeometry(100, 100), new T.ShaderMaterial({
     transparent: true,
     depthWrite: false,
-    uniforms: { opacity: { value: 0.22 } },
+    uniforms: { opacity: { value: 0.22 }, tint: { value: new T.Color(0x47708a) } },
     vertexShader: `varying vec2 p;void main(){p=position.xy;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
-    fragmentShader: `varying vec2 p;uniform float opacity;
+    fragmentShader: `varying vec2 p;uniform float opacity;uniform vec3 tint;
       float grid(vec2 p,float s){vec2 q=p/s;vec2 a=abs(fract(q-.5)-.5)/max(fwidth(q),vec2(.001));return 1.-min(min(a.x,a.y),1.);}
-      void main(){float fade=exp(-dot(p,p)*.012);float lines=grid(p,.75)*.24+grid(p,3.)*.5;gl_FragColor=vec4(vec3(.28,.43,.54),lines*fade*opacity);}`,
+      void main(){float fade=exp(-dot(p,p)*.012);float lines=grid(p,.75)*.24+grid(p,3.)*.5;gl_FragColor=vec4(tint,lines*fade*opacity);}`,
   }));
   mesh.rotation.x = -Math.PI / 2;
   return mesh;

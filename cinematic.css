@@ -1,97 +1,97 @@
 /* A larger, quieter 3D viewer. The calculations remain beside the experiment. */
 .stage {
-  background: #0b1522;
-  border: 1px solid #273b4b;
-  box-shadow: 0 22px 55px -35px #07121ed9, inset 0 1px #ffffff0a;
+  background: #141619;
+  border: 1px solid #35383d;
+  box-shadow: 0 22px 55px -35px #101215d9, inset 0 1px #ffffff0a;
   border-radius: 20px;
 }
-.stage-top, .camera-toolbar, .transport { background: #101f2e; }
-.stage-top { border-bottom-color: #243543; }
-.camera-toolbar { border-bottom: 1px solid #243543; }
+.stage-top, .camera-toolbar, .transport { background: #1c1e22; }
+.stage-top { border-bottom-color: #303237; }
+.camera-toolbar { border-bottom: 1px solid #303237; }
 .camera-toolbar button { border-radius: 7px; }
-.camera-toolbar button[aria-pressed="true"] { background: #2c414f; color: #c7f2ed; }
-.scene-container { height: clamp(420px, 42vw, 640px); background: #080f1b; }
-.scene-camera-hint { color: #89a4b6; font-size: 11px; letter-spacing: .04em; }
+.camera-toolbar button[aria-pressed="true"] { background: #3a3c41; color: #f5d1c4; }
+.scene-container { height: clamp(420px, 42vw, 640px); background: #0f1114; }
+.scene-camera-hint { color: #9b9ea4; font-size: 11px; letter-spacing: .04em; }
 .scene-equation {
-  color: #c1d6e4;
-  background: #101c2bd9;
-  border: 1px solid #58708240;
+  color: #dbd2ca;
+  background: #1b1d20d9;
+  border: 1px solid #686b7240;
   border-radius: 9px;
   padding: 5px 12px;
   font-size: clamp(16px, 1.5vw, 23px);
 }
-.camera-reset { background: #1c2b39d9; border-color: #5e7a8b4d; }
-.transport { border-top: 1px solid #283b48; }
-.play-button { box-shadow: 0 4px 16px #5ccdbc18; }
+.camera-reset { background: #27292ed9; border-color: #7073794d; }
+.transport { border-top: 1px solid #34373c; }
+.play-button { box-shadow: 0 4px 16px #d5765418; }
 /* The expanded studio shares the Atlas's dark surround: the lit apparatus and
  * pale equations take visual priority. Ordinary lesson pages stay light. */
-.expanded-lab { background: #080f1b; color: #d7e4ec; }
-.expanded-header { background: #101f2c; border-color: #2c3e4d; }
-.expanded-lab .expanded-eyebrow { color: #82dace; }
+.expanded-lab { background: #0f1114; color: #e7e1dc; }
+.expanded-header { background: #1b1d21; border-color: #393b40; }
+.expanded-lab .expanded-eyebrow { color: #e0977c; }
 .expanded-header h2, .expanded-calculations h2, .expanded-calculations h3,
-.expanded-variables h2, .expanded-variables h3 { color: #e5edf3; }
-.expanded-full-link { color: #9ccdd5; }
-.expanded-close { background: #172b3a; color: #ccdde7; border-color: #3b5262; }
-.expanded-close kbd { color: #b5cedb; border-color: #526a7c; }
-.expanded-panel-tabs { background: #0a1723; }
-.expanded-panel-tabs button { color: #91acbf; }
-.expanded-panel-tabs button[aria-pressed="true"] { background: #294251; color: #bbf0e6; box-shadow: none; }
-.expanded-calculations, .expanded-variables .controls { background: #112332; color: #d4e2ec; border-color: #304655; }
+.expanded-variables h2, .expanded-variables h3 { color: #f0ece9; }
+.expanded-full-link { color: #daa997; }
+.expanded-close { background: #25272c; color: #e0d9d3; border-color: #4a4d53; }
+.expanded-close kbd { color: #c4c7cc; border-color: #62656c; }
+.expanded-panel-tabs { background: #141619; }
+.expanded-panel-tabs button { color: #a3a6ad; }
+.expanded-panel-tabs button[aria-pressed="true"] { background: #393c41; color: #f3c8b8; box-shadow: none; }
+.expanded-calculations, .expanded-variables .controls { background: #1e2025; color: #e6e0da; border-color: #3e4147; }
 .expanded-calculations .calculation-heading > p,
 .expanded-calculations .calculation-level-scope,
 .expanded-calculations .calculation-note,
-.expanded-calculations .calculation-footnote { color: #9fb7c8; border-color: #304655; }
+.expanded-calculations .calculation-footnote { color: #afb2b8; border-color: #3e4147; }
 .expanded-calculations .calculation-choice-label,
-.expanded-calculations .working-label { color: #94b2c5; }
-.expanded-calculations #calculation-choice { background: #1b3445; border-color: #405d70; color: #d9e8f1; color-scheme: dark; }
-.expanded-calculations .calculation-formula { color: #e7edf2; }
+.expanded-calculations .working-label { color: #a7abb2; }
+.expanded-calculations #calculation-choice { background: #2b2e35; border-color: #53565d; color: #ebe5df; color-scheme: dark; }
+.expanded-calculations .calculation-formula { color: #efecea; }
 .expanded-calculations .calculation-substitution,
-.expanded-calculations .calculation-time { background: #0b1b28; color: #b5cbd9; }
-.expanded-calculations .calculation-time.is-live { color: #84deca; }
-.expanded-calculations .calculation-answer { background: #163d42; border-color: #397170; }
+.expanded-calculations .calculation-time { background: #16181d; color: #c3c6cb; }
+.expanded-calculations .calculation-time.is-live { color: #e4997e; }
+.expanded-calculations .calculation-answer { background: #944528; border-color: #9a5a43; }
 .expanded-calculations .calculation-answer .working-label,
-.expanded-calculations .calculation-result { color: #a0ead7; }
-.expanded-calculations .copy-working { background: #1b3445; border-color: #3b596c; color: #bfdae7; }
-.expanded-calculations .calculation-variables dl > div { background: #0b1b28; border-color: #2a4354; }
+.expanded-calculations .calculation-result { color: #efb29b; }
+.expanded-calculations .copy-working { background: #2b2e35; border-color: #4e5259; color: #eac8bc; }
+.expanded-calculations .calculation-variables dl > div { background: #16181d; border-color: #3a3d44; }
 .expanded-calculations .calculation-variables dt var,
-.expanded-calculations .calculation-variables dd { color: #d8e7ed; }
+.expanded-calculations .calculation-variables dd { color: #efddd6; }
 .expanded-calculations .calculation-variables dt span,
-.expanded-calculations .calculation-variables h3 span { color: #9cb8c9; }
-.expanded-calculations .calculation-overview button { color: #9cb8c9; border-color: #304655; }
-.expanded-calculations .calculation-overview button strong { color: #a0ead7; }
-.expanded-calculations .calculation-overview button:hover { background: #1a3545; }
-.expanded-variables .controls-heading, .expanded-variables .preset-block { border-color: #334a5a; }
+.expanded-calculations .calculation-variables h3 span { color: #aeb1b7; }
+.expanded-calculations .calculation-overview button { color: #aeb1b7; border-color: #3e4147; }
+.expanded-calculations .calculation-overview button strong { color: #efb29b; }
+.expanded-calculations .calculation-overview button:hover { background: #2b2e34; }
+.expanded-variables .controls-heading, .expanded-variables .preset-block { border-color: #42454b; }
 .expanded-variables .controls-heading span, .expanded-variables .control-hint,
-.expanded-variables .slider-ends, .expanded-variables .control-footnote { color: #9bb5c7; }
-.expanded-variables .value-input { background: #0d1c2a; border-color: #395264; }
-.expanded-variables .value-input input { color: #e1edf3; }
-.expanded-variables .value-input span { color: #9cb8cb; }
-.expanded-variables .preset-button { background: #203948; border-color: #3d596c; color: #d1e3ef; }
-.expanded-variables .preset-button[aria-pressed="true"] { background: #2b5b5d; color: #bcecdf; border-color: #6da79b; }
-.expanded-variables .parameter-select { background: #1b3445; color: #d9e8f1; border-color: #405d70; color-scheme: dark; }
-.expanded-variables .learning-mode-controls { background: transparent; border-color: #395264; }
-.expanded-variables .learning-mode-controls > p { color: #a7bfce; }
-.expanded-variables .learning-mode-options button { background: #203948; border-color: #3d596c; color: #c5dce8; }
-.expanded-variables .learning-mode-options button[aria-pressed="true"] { background: #30716d; border-color: #6aa89e; color: white; }
-.expanded-variables .study-control-marker { color: #a4bdcd; }
+.expanded-variables .slider-ends, .expanded-variables .control-footnote { color: #acafb6; }
+.expanded-variables .value-input { background: #181a1f; border-color: #4a4d53; }
+.expanded-variables .value-input input { color: #f4e5e0; }
+.expanded-variables .value-input span { color: #aeb2b9; }
+.expanded-variables .preset-button { background: #303338; border-color: #4f535a; color: #e8e0d8; }
+.expanded-variables .preset-button[aria-pressed="true"] { background: #95533a; color: #efc7b9; border-color: #ae7966; }
+.expanded-variables .parameter-select { background: #2b2e35; color: #ebe5df; border-color: #53565d; color-scheme: dark; }
+.expanded-variables .learning-mode-controls { background: transparent; border-color: #4a4d53; }
+.expanded-variables .learning-mode-controls > p { color: #b6b9bf; }
+.expanded-variables .learning-mode-options button { background: #303338; border-color: #4f535a; color: #dfd6ce; }
+.expanded-variables .learning-mode-options button[aria-pressed="true"] { background: #a05539; border-color: #af7763; color: white; }
+.expanded-variables .study-control-marker { color: #b4b7bd; }
 .expanded-variables .study-control-marker.is-focus,
-.expanded-variables .section-kicker { color: #86d3c9; }
-.expanded-model .stage-caption { color: #9ab4c6; }
+.expanded-variables .section-kicker { color: #d99880; }
+.expanded-model .stage-caption { color: #abaeb5; }
 .expanded-model .orbit-legend span { font-size: 12px; }
 .expanded-model .orbit-legend span::after { display: none; }
 .expanded-panel-tabs { display: flex; }
 .expanded-panel-tabs button { min-height: 42px; }
 .scene-focus-toggle {
-  color: #bed1df;
-  background: #20323f;
-  border: 1px solid #405564;
+  color: #d7cec6;
+  background: #2c2e33;
+  border: 1px solid #4e5156;
   border-radius: 8px;
   padding: 8px 13px;
   font: inherit;
   font-size: 13px;
   cursor: pointer;
 }
-.scene-focus-toggle[aria-pressed="true"] { background: #a1e2da; color: #10252d; border-color: #a1e2da; }
+.scene-focus-toggle[aria-pressed="true"] { background: #e7b09c; color: #894228; border-color: #e7b09c; }
 /* At normal laptop widths three columns squeeze the model to a thumbnail.
  * Reuse the existing Parameters / Calculations inspector instead. */
 @media (min-width: 901px) and (max-width: 1540px) {

@@ -4,15 +4,12 @@ import { createVectorApparatus } from "./scene-vectors.js";
 import { createBuoyancyApparatus } from "./scene-buoyancy.js";
 import { createMotionBench } from "./scene-motion-benches.js";
 import { springTravel, wireTravel } from "./apparatus-scales.js";
+import { dashedPath } from "./scene-instruments.js";
+import { FINISH, retortStand, hook, slottedMasses, hookedMass, rule, upright, pulley, glassCylinder, piston, pipe, pointer, coilSpring, winchMotor, turned } from "./scene-props.js";
 const TAU = Math.PI * 2;
 
 function clampStand(k, x, height, width) {
-  k.box(0.72, 0.17, 1.25, C.dark, [x, 0.12, 0]);
-  k.cylinder(0.09, height, C.muted, [x, height / 2, 0]);
-  k.box(width, 0.16, 0.36, C.muted, [x + width / 2 - 0.12, height, 0]);
-  k.box(0.33, 0.28, 0.46, C.dark, [x, height, 0]);
-  const knob = k.cylinder(0.11, 0.18, C.gold, [x, height, 0.25]);
-  knob.rotation.x = Math.PI / 2;
+  retortStand(k, { x, height: height + 0.35, arm: width, armY: height });
 }
 
 function extensionPointer(k, zero, x) {
@@ -27,20 +24,19 @@ function extensionPointer(k, zero, x) {
 
 export const MECHANICAL_SCENES = {
   measurement(p, k) {
-    k.stand();
-    k.box(7, 0.12, 0.9, 0xc7d9dc, [0, 0.1, 0]);
-    for (let i = 0; i <= 40; i++) {
-      const x = -3.3 + (i * 6.6) / 40;
-      k.box(0.018, 0.013, i % 5 === 0 ? 0.5 : 0.23, 0x163347, [x, 0.17, 0]);
-      if (i % 10 === 0)
-        k.label(String((i / 40) * 2), [x, 0.55, -0.7], "#b7d9e5", 0.6);
+    k.stand(8.2, 3);
+    // A two-metre boxwood rule with a printed scale; the object lies against
+    // its edge, the way a length is really read.
+    const span = 6.6, left = -3.3, end = left + p.length * (span / 2);
+    rule(k, { length: span, width: 0.66, thickness: 0.08, divisions: 200, major: 20,
+      label: (i) => String(Number((i / 100).toFixed(1))), pos: [left, 0.06, -0.24] });
+    k.box(p.length * (span / 2), 0.34, 0.5, C.cyan, [left + (p.length * span) / 4, 0.19, 0.4], { metalness: 0.75, roughness: 0.3 });
+    // Reading lines square to the scale at each end of the object.
+    for (const x of [left, end]) {
+      k.line([[x, 0.11, -0.57], [x, 0.11, 0.66]], 0xff5a4f, 0.95);
+      dashedPath(k, [[x, 0.11, -0.24], [x, 1.5, -0.24]], C.gold, 0.6);
     }
-    const object = k.box(p.length * 3.3, 0.4, 0.55, C.cyan, [
-      -3.3 + (p.length * 3.3) / 2,
-      0.43,
-      0,
-    ]);
-    k.label("Object length", [-1, 1.3, 0]);
+    k.label("Object length", [(left + end) / 2, 1.0, 0.4]);
     k.label("Read perpendicular to the scale", [0, 2.3, 0], "#ffc584", 4.6);
     return () => {};
   },
@@ -53,31 +49,33 @@ export const MECHANICAL_SCENES = {
   moments: createMomentsBench,
   buoyancy: createBuoyancyApparatus,
   energy(p, k) {
-    k.stand(7, 3);
-    k.box(0.16, 4, 0.16, C.muted, [-2, 2, 0]);
-    k.box(4, 0.14, 0.3, C.muted, [0, 4, 0]);
-    const wheel = k.cylinder(0.35, 0.3, C.blue, [1.3, 3.8, 0]);
-    wheel.rotation.x = Math.PI / 2;
-    const load = k.box(0.7, 0.55, 0.7, C.gold, [1.3, 0.6, 0]),
-      rope = k.rod([1.3, 4, 0], [1.3, 0.9, 0], C.white, 0.018);
-    const input = k.box(0.18, 0.05, 0.3, C.cyan, [-2.8, 0.1, 0]),
-      useful = k.box(0.18, 0.05, 0.3, C.gold, [-2.1, 0.1, 0]);
-    k.label("Energy in / useful", [-2, 3.3, 0], "#64e8d1", 2.5);
-    k.label("Load rises", [2.4, 4.6, 0], "#ffc584", 2);
+    k.stand(7.6, 3.2);
+    // A motor winds a string over a pulley and lifts the load.
+    const px = 1.3, py = 3.72, rim = 0.28, loadX = px + rim;
+    retortStand(k, { x: -1.5, height: 4.5, arm: px + 1.5 + 0.1, armY: 4.2 });
+    const wheel = pulley(k, { pos: [px, py, 0], radius: 0.34, bracket: 0.5 }),
+      drum = winchMotor(k, [-0.1, 0.02, -0.32]);
+    k.rod([px - rim, py, 0], [-0.1, 0.52, 0], FINISH.thread[0], 0.012);
+    const size = 0.2 + 0.05 * Math.sqrt(p.mass),
+      load = hookedMass(k, { radius: size, height: size * 1.5, pos: [loadX, 1, 0] }),
+      rope = k.rod([loadX, py, 0], [loadX, 1, 0], FINISH.thread[0], 0.012),
+      low = load.userData.height + 0.06, high = py - 0.5;
+    // Two glowing columns compare the energy supplied with the useful energy.
+    k.box(1.05, 0.1, 0.6, 0x1b1b1d, [-3.05, 0.05, 0.6], { roughness: 0.6 });
+    const column = (x, color) => k.box(0.26, 0.05, 0.26, color, [x, 0.1, 0.6], { emissive: color, emissiveIntensity: 0.5, roughness: 0.35 }),
+      input = column(-3.3, C.cyan), useful = column(-2.8, C.gold);
+    k.label("Energy in / useful", [-3.05, 2.75, 0.6], "#64e8d1", 2.5);
+    k.label("Load rises", [2.75, 3.1, 0], "#ffc584", 2);
     return (s, q) => {
-      const y = 0.5 + (q.height / p.height) * 2.7;
+      const y = low + (q.height / p.height) * (high - low), full = Math.max((p.mass * 9.81 * p.height) / p.efficiency, 1);
       load.position.y = y;
-      putRod(rope, [1.3, 3.8, 0], [1.3, y + 0.3, 0]);
+      putRod(rope, [loadX, py, 0], [loadX, y, 0]);
       wheel.rotation.y = q.height * 2;
-      input.scale.y =
-        1 +
-        (q.input / Math.max((p.mass * 9.81 * p.height) / p.efficiency, 1)) * 40;
-      useful.scale.y =
-        1 +
-        (q.potential / Math.max((p.mass * 9.81 * p.height) / p.efficiency, 1)) *
-          40;
-      input.position.y = input.scale.y * 0.025;
-      useful.position.y = useful.scale.y * 0.025;
+      drum.rotation.y = q.height * 4;
+      input.scale.y = 1 + (q.input / full) * 44;
+      useful.scale.y = 1 + (q.potential / full) * 44;
+      input.position.y = 0.1 + input.scale.y * 0.025;
+      useful.position.y = 0.1 + useful.scale.y * 0.025;
     };
   },
   hydraulics(p, k) {
@@ -85,60 +83,60 @@ export const MECHANICAL_SCENES = {
     const radii = [Math.sqrt(p.inputArea) * 18, Math.sqrt(p.outputArea) * 18],
       centers = [-2.7, 2.4],
       pistons = [],
-      liquids = [],
-      rods = [];
+      liquids = [];
     for (let i = 0; i < 2; i++) {
       const r = radii[i];
-      k.cylinder(r + 0.09, 3.4, 0x85b8d1, [centers[i], 1.8, 0], {
-        transparent: true,
-        opacity: 0.14,
-        depthWrite: false,
-      });
-      pistons.push(k.cylinder(r, 0.12, C.muted, [centers[i], 2.8, 0]));
+      glassCylinder(k, { radius: r + 0.07, height: 3.4, pos: [centers[i], 0.1, 0] });
       liquids.push(
-        k.cylinder(r * 0.97, 1, 0x1eb4c6, [centers[i], 1, 0], {
-          transparent: true,
-          opacity: 0.6,
-        }),
+        k.cylinder(r * 0.98, 1, 0x1eb4c6, [centers[i], 1, 0], { transparent: true, opacity: 0.62, roughness: 0.08, emissive: 0x0a5e6b, emissiveIntensity: 0.35 }),
       );
-      rods.push(k.cylinder(0.07, 1, C.white, [centers[i], 3.3, 0]));
+      pistons.push(piston(k, { radius: r, rod: 0.9, pos: [centers[i], 2.6, 0] }));
     }
-    k.rod([-2.7, 0.25, 0], [2.4, 0.25, 0], 0x2699b2, 0.14);
-    const arrows = [
-      k.arrow([-2.7, 4.3, 0], [0, -0.8, 0], C.cyan),
-      k.arrow([2.4, 3.6, 0], [0, 0.8, 0], C.gold),
-    ];
-    k.label("Small piston", [-2.7, 4.7, 0], "#64e8d1", 2.2);
-    k.label("Large piston", [2.4, 4.7, 0], "#ffc584", 2.2);
+    // The load carried by the large piston, and a push pad on the small one.
+    pistons[1].add(turned(k, [[0, 0], [0.4, 0], [0.43, 0.03], [0.43, 0.27], [0.4, 0.3], [0, 0.3]], FINISH.brass, [0, 1.11, 0]));
+    pistons[0].add(k.cylinder(0.2, 0.1, 0xb3262b, [0, 1.16, 0], { roughness: 0.45 }));
+    pipe(k, [centers[0], 0.3, 0], [centers[1], 0.3, 0], { radius: 0.13 });
+    const out = centers[1] + radii[1] + 0.5,
+      arrows = [
+        k.arrow([centers[0], 4.75, 0], [0, -0.8, 0], C.cyan),
+        k.arrow([out, 2.2, 0], [0, 0.8, 0], C.gold),
+      ];
+    k.label("Small piston", [centers[0], 5.15, 0], "#64e8d1", 2.2);
+    k.label("Large piston", [centers[1], 5.15, 0], "#ffc584", 2.2);
     return (s, q) => {
       const sc =
         1.2 / Math.max(p.stroke, (p.stroke * p.inputArea) / p.outputArea);
       const levels = [2.5 - q.inputTravel * sc, 1.8 + q.outputTravel * sc];
       for (let i = 0; i < 2; i++) {
         pistons[i].position.y = levels[i];
-        rods[i].position.y = levels[i] + 0.55;
         liquids[i].scale.y = Math.max(0.1, levels[i] - 0.2);
         liquids[i].position.y = 0.2 + liquids[i].scale.y / 2;
       }
-      k.setArrow(arrows[1], [2.4, levels[1] + 0.5, 0], [0, 0.8, 0]);
+      k.setArrow(arrows[1], [out, levels[1] + 0.2, 0], [0, 0.8, 0]);
     };
   },
   hooke(p, k) {
     k.stand(7, 3);
-    clampStand(k, -2.05, 4.2, 3.45);
-    const c1 = k.spring(p.mode === 2 ? -1 : 0, 2.7, 0, 1.5, C.cyan),
-      c2 = p.mode ? k.spring(p.mode === 2 ? 1 : 0, 1.2, 0, 1.4, C.gold) : null,
-      load = k.box(p.mode === 2 ? 2.6 : 1, 0.35, 0.65, C.blue, [0, 2.5, 0]);
-    const pointer = extensionPointer(k, p.mode === 1 ? 2.08 : 2.7, 1.75);
-    const connector = p.mode === 1 ? k.cylinder(0.055, 0.12, C.white, [0.19, 0, 0]) : null;
-    for (const x of p.mode === 2 ? [-0.81, 1.19] : [0.19]) {
-      k.cylinder(0.055, 0.14, C.white, [x, 4.17, 0]);
-    }
+    const top = 4.2, xs = p.mode === 2 ? [-1, 1] : [0], ruleX = p.mode === 2 ? 1.95 : 1.05;
+    clampStand(k, -2.05, top + 0.12, 3.9);
+    for (const x of xs) hook(k, [x, top + 0.02, 0], FINISH.chrome, 0.07);
+    const c1 = coilSpring(k, xs[0], 2.7, 0, 1.5, { color: 0x9fd8cf }),
+      c2 = p.mode ? coilSpring(k, p.mode === 2 ? 1 : 0, 1.2, 0, 1.4, { color: 0xe5bb7c }) : null,
+      connector = p.mode === 1 ? hook(k, [0, 0, 0], FINISH.chrome, 0.06) : null,
+      bar = p.mode === 2 ? k.box(2.5, 0.07, 0.1, FINISH.chrome[0], [0, 0, 0], FINISH.chrome[1]) : null,
+      load = slottedMasses(k, { count: Math.max(1, Math.min(6, Math.round(p.load / 5))), radius: 0.3 }),
+      needle = pointer(k, [0, 0, 0.05], ruleX - 0.2 - (p.mode === 2 ? 1.25 : 0.1));
+    // A clamped rule beside the spring; the marker stays at the unloaded level.
+    const zero = p.mode === 1 ? 2.08 : 2.7;
+    upright(rule(k, { length: 2.3, width: 0.34, thickness: 0.05, divisions: 46, major: 10, label: () => "", pos: [ruleX, zero + 0.25, -0.02] }));
+    retortStand(k, { x: ruleX + 0.75, z: -0.02, height: zero + 0.2, arm: -0.6, armY: zero - 0.3 });
+    k.box(0.4, 0.035, 0.04, C.gold, [ruleX, zero, 0.02], { emissive: C.gold, emissiveIntensity: 0.45 });
+    k.label("Unloaded level", [ruleX + 1.05, zero + 0.42, 0.26], "#ffc584", 1.5);
     k.label(
       ["Single spring", "Series: same force", "Parallel: same extension"][
         p.mode
       ],
-      [0, 5, 0],
+      [0, 5.15, 0],
       "#cfe6ef",
       4.2,
     );
@@ -149,15 +147,15 @@ export const MECHANICAL_SCENES = {
         const upperTravel = q.extension > 0 ? travel * q.x1 / q.extension : 0;
         const l1 = 1 + upperTravel,
           l2 = 1 + travel - upperTravel;
-        c1.position.y = 4.2 - l1;
+        c1.position.y = top - l1;
         c1.scale.y = l1;
         connector.position.y = c1.position.y - 0.06;
-        c2.position.y = 4.2 - l1 - l2 - 0.12;
+        c2.position.y = top - l1 - l2 - 0.12;
         c2.scale.y = l2;
         bottom = c2.position.y;
       } else {
         const length = 1.5 + travel;
-        c1.position.y = 4.2 - length;
+        c1.position.y = top - length;
         c1.scale.y = length;
         if (c2) {
           c2.position.set(1, c1.position.y, 0);
@@ -165,8 +163,9 @@ export const MECHANICAL_SCENES = {
         }
         bottom = c1.position.y;
       }
-      load.position.y = bottom - 0.18;
-      pointer.position.y = bottom;
+      if (bar) bar.position.y = bottom - 0.035;
+      load.position.y = bottom - (bar ? 0.07 : 0);
+      needle.position.set(p.mode === 2 ? 1.25 : 0.1, bottom, 0.05);
     };
   },
   materials(p, k) {
